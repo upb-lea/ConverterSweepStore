@@ -27,7 +27,7 @@ Pull requests are welcome. For major changes, please open an issue first to disc
 For drawings (e.g. in readme-files), we recomment to use the program [Inkscape](https://inkscape.org/). It is open source software and runs on Linux, Mac and Windows. If you want to draw electirc circuits, we recommend this library on [github](https://github.com/upb-lea/Inkscape_electric_Symbols).
 
 ## Authors and acknowledgement
-
+ * Mohan Nagella
 
 ## Changelog
 Find the changelog [here](CHANGELOG.md)
