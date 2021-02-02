@@ -93,7 +93,7 @@ class startConnection(QObject):
         switchFreq = ps.plist('f_s',self.params['f_s'])
         temp = ps.plist('T_HS',self.params['T_HS'])
         fOut = ps.plist('f_out',self.params['f_out'])
-        paramsList = ps.pgrid(igbtList,revDiodeList,fwDiodeList,dcVoltage,loadS,cosPhi,switchFreq,temp,fOut)
+        paramsList = ps.pgrid(igbtList,revDiodeList,fwDiodeList,dcVoltage,loadS,switchFreq,cosPhi,temp,fOut)
         incrementor = 100/len(paramsList)
         Filter_C = 3.516e-3
         Filter_L = 117.33e-6
@@ -196,7 +196,6 @@ class startConnection(QObject):
             #ginst.saveFileAs(JString("D:\\thesis-research\\VS_code\\PythonGecko\\IPESFolder\\3NPC_sweep_"+pset['_pset_id']+".ipes"))
             ginst.set_dt(dt_step)  # Simulation time step
             ginst.set_Tend(t_end)  # Simulation time
-
             ginst.runSimulation()
             meanLosses = {}
             meanTemp = {}
@@ -221,7 +220,6 @@ class startConnection(QObject):
                  meanTemp[x] = np.mean(tempArray)
                 #print(meanLosses[x])
             time = ginst.getTimeArray('D13_con',t_start,t_end_new,0);
-            ginst.shutdown()
             #ginst.disconnectFromGecko()
             #set saveData to True if required to save the simulated loss data over the time range in CSV format
             if self.saveData:
@@ -242,6 +240,8 @@ class startConnection(QObject):
         
         df = ps.run(startSIM, paramsList)
         self.progressUpdate.emit(-1,'Done')
+        ginst.shutdown()
+            
         print(df)
                 
             

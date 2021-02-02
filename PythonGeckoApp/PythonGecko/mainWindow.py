@@ -10,11 +10,17 @@
 
 import sys
 import threading
-from PyQt5.QtWidgets import QApplication,QWidget,QMainWindow,QWidget,QMessageBox
+from PyQt5.QtWidgets import QApplication,QWidget,QMainWindow,QMessageBox,QAbstractButton
+from  matplotlib.backends.backend_qt5agg  import  ( NavigationToolbar2QT  as  NavigationToolbar )
+import matplotlib.pyplot as plt
+import matplotlib as mpl
+import  random
 from PyQt5 import QtCore,uic
 from PyQt5.QtGui import QIcon
 from pandasModel import pandasModel
 from thermalParamClass import thermalParamClass
+import pyqtgraph as pg
+import functools
 import re
 import os
 import numpy as np
@@ -26,12 +32,18 @@ from GISMSParameters_phi import GISMSParameters_phi
 import glob
 import psweep as ps
 import subprocess
+from pandasgui import show
 from startConnection import startConnection 
 from dataBaseClass import dataBaseClass
-
+opLabelAppend = ''
 class MainWindow(QMainWindow):
-    filepath = r'calc\\results.pk'
+    filepath = r'calc\results.pk'
     Tfilepath = r'calc\Thermal\params.csv'
+    ## Make all plots clickable
+    clickedPen = pg.mkPen('b', width=2)
+    lastClicked = []
+    data2plot ={}
+    filter = {}
     def __init__(self): 
         super().__init__()
         uic.loadUi('initializeWindow.ui',self)
@@ -41,9 +53,11 @@ class MainWindow(QMainWindow):
         self.dateTimeLabel.setText(_translate("MainWindow", "12:02:59 Jan 12 2021"))
         self.simulateBtn.clicked.connect(self.simulate)
         self.showGSIMS.stateChanged.connect(self.showGSIMSData)
+        self.tabWidget.currentChanged.connect(self.onChange)
         self.progressBar.hide()
         self.progressBar.reset()
-        self.thermalBtn.clicked.connect(self.openDataBase) 
+        self.databaseBtn.clicked.connect(self.openDataBase) 
+        self.pandasGUIBtn.clicked.connect(self.openPandasGUI)
         self.toolButtonIGBT.clicked.connect(self.loadThermalBox)
         self.toolButtonIGBT.setAutoRaise(True)
         self.toolButtonRev.clicked.connect(self.loadThermalBox)
@@ -51,6 +65,241 @@ class MainWindow(QMainWindow):
         self.toolButtonFW.clicked.connect(self.loadThermalBox)
         self.toolButtonFW.setAutoRaise(True)
         self.loadPrevParams()
+        self.plotControls.hide()
+        if not os.path.exists(self.filepath) :
+            self.thermalBtn.setEnabled(False)
+        self.MplWidget.canvas.mpl_connect('motion_notify_event', self.hover) 
+        self.buttonGroupScatterData.setId(self.invTotalRadio,1)
+        self.buttonGroupScatterData.setId(self.invIgbtRadio,2)
+        self.buttonGroupScatterData.setId(self.invDiodeRadio,3)
+        self.scDiodeCombo.textActivated.connect(self.scComboboxChanged)
+        self.scIgbtCombo.textActivated.connect(self.scComboboxChanged)
+        self.opComboType.textActivated.connect(self.updateOpBtnLabel)
+        self.buttonGroupPlotType.buttonClicked.connect(self.selectPlotType)
+        self.buttonGroupScatterData.buttonClicked.connect(self.updateScatterRadios)
+        self.opAddBtn.clicked.connect(self.addFilterCriteria)
+        self.plotBtn.clicked.connect(self.validateFilter)
+        self.opClearBtn.clicked.connect(self.clear)
+
+    def openPandasGUI(self) :
+        df = pd.read_pickle(self.filepath)
+        show(df)
+
+    def conjunction(*conditions):
+        return functools.reduce(np.logical_and, conditions)
+
+    def clear(self):
+        self.filters = {}
+        self.opSelectDisplayLabel.clear()
+        self.opAddBtn.setText('Add')
+        self.opErrorLabel.setStyleSheet("")
+        self.opErrorLabel.clear()
+        
+    def updateOpBtnLabel(self):
+        key = self.opComboType.currentText()
+        if key in self.filter:
+            self.opAddBtn.setText('Update')
+        else:
+            self.opAddBtn.setText('Add')
+
+    def validateFilter(self) :
+        filtString = {}
+        filters =[]
+        try :
+            N= len(self.df)
+            if len(self.filter) < 2 :
+                raise Exception("min 2 filters required")
+            elif len(self.filter) == 2 or len(self.filter) == 3:
+                for key in self.filter :
+                   filtString[key] =  (self.df[key] == self.filter[key])
+                   if not filtString[key].values.sum():
+                        raise Exception("{} = {} not found".format(''.join(key),''.join(str(self.filter[key]))))
+            conditionsBoolReturns = list(filtString.values())
+            resultDataFrame = self.df[self.conjunction(*conditionsBoolReturns)]
+            if resultDataFrame.empty :
+                raise Exception("Not in DBase")
+            df = resultDataFrame[['V_DC','Load_phi','InvTotalLoss']]
+            self.makeLinearPlot(df)
+        except Exception as e:
+            self.opErrorLabel.setStyleSheet("QLabel { background-color : yellow; color : red; }")
+            self.opErrorLabel.setText(str(e.args[0]))
+
+
+    def selectPlotType(self,button) :
+        checkOne =  button.text() == 'Scatter'
+        self.opPointBox.setEnabled(not checkOne)
+        self.scatterDataBox.setEnabled(checkOne)
+    
+    
+    def makeLinearPlot(self,df) :
+        self.MplWidget.canvas.axes.clear()
+        for key, grp in df.groupby(['Load_phi']):
+            self.sc = grp.plot(ax=self.MplWidget.canvas.axes, kind='line', x='V_DC', y='InvTotalLoss', marker='o',grid =True, label=key)
+            self.linear_annot(grp.V_DC,grp.InvTotalLoss)
+        self.MplWidget.canvas.draw()
+        self.MplWidget.canvas.figure.set_visible(True)
+        self.MplWidget.toolbar.show()
+        print(df)
+
+
+    def updateScatterRadios(self,button,selected=None) :       
+        yLabel = ''
+        xLabel = ''
+        xData = []
+        yData = []
+        if button.text() =='Total Inverter Loss' : 
+            self.scIgbtCombo.setCurrentIndex(-1) 
+            self.scDiodeCombo.setCurrentIndex(-1) 
+            selected = 'Total Inverter Loss'
+            
+        elif button.text() == 'IGBT ':
+            self.scDiodeCombo.setCurrentIndex(-1)
+           
+        elif button.text() == 'Diode':
+            self.scIgbtCombo.setCurrentIndex(-1) 
+           
+        if selected :
+            if selected is not 'Total Inverter Loss':
+                self.data2plot['xData']= {'V_DC': list(self.df['V_DC'])}
+                self.data2plot['yData']= {selected: list(self.df[selected+'_sw']+self.df[selected+'_con'])}
+                df = self.df
+                df[selected] = self.df[selected+'_sw']+self.df[selected+'_con']
+                self.data2plot['Dataset'] = df
+                length = len(self.data2plot['yData'][selected])
+                yLabel = button.text()+' Loss'
+            elif selected is 'Total Inverter Loss':
+                self.data2plot['xData']= {'V_DC': list(self.df['V_DC'])}
+                self.data2plot['yData']= {'InvTotalLoss': list(self.df['InvTotalLoss'])}
+                self.data2plot['Dataset'] = self.df
+                yLabel = button.text()
+                length = len(self.data2plot['yData']['InvTotalLoss'])
+           
+            xLabel = 'Dc Link Voltage'
+            self.plotScatter(self.data2plot['xData'],self.data2plot['yData'],xLabel,yLabel,length)
+
+
+    def scComboboxChanged(self):
+        sender = self.sender()
+        selection = str(sender.currentText())
+        if sender.objectName() == 'scDiodeCombo':
+            self.invDiodeRadio.setChecked(True)
+            self.updateScatterRadios(self.invDiodeRadio,selection)
+        elif sender.objectName() == 'scIgbtCombo':
+            self.invIgbtRadio.setChecked(True)
+            self.updateScatterRadios(self.invIgbtRadio,selection)
+        print(selection)
+        
+    
+    def addFilterCriteria(self):
+        try :
+            item = str(self.opComboType.currentText())
+            input = float(self.opComboInput.text())
+            global opLabelAppend
+            self.filter[item] = input
+            if item in self.filter:
+                for key in self.filter :
+                    opLabelAppend = opLabelAppend + "{} = {}\n".format("".join(key),"".join(str(self.filter[key])))
+            self.opSelectDisplayLabel.setText(opLabelAppend)
+            opLabelAppend = ''
+            self.opComboInput.clear()
+            self.opAddBtn.setText('Update')
+        except :
+            self.opErrorLabel.setStyleSheet("QLabel { background-color : yellow; color : red; }")
+            self.opErrorLabel.setText("Invalid {} input".format("".join(str(self.opComboType.currentText()))))
+
+
+    def initializeControls(self):
+        self.df = pd.read_pickle(self.filepath)
+        self.scIgbtCombo.clear()
+        self.scDiodeCombo.clear()
+        igbtList = ['IG1','IG2','IG3','IG4']
+        diodeList = ['D1','D2','D3','D4','D13','D14']
+        filterList = ['Load_S','f_s','Load_phi']
+        self.scIgbtCombo.addItems(igbtList)
+        self.scDiodeCombo.addItems(diodeList)
+        self.opComboType.addItems(filterList)
+        self.scIgbtCombo.setCurrentIndex(-1) 
+        self.scDiodeCombo.setCurrentIndex(-1) 
+        button = self.buttonGroupPlotType.checkedButton()
+        if button :
+            self.buttonGroupPlotType.setExclusive(False)
+            button.setChecked(False)
+            self.buttonGroupPlotType.setExclusive(True)
+        button = self.buttonGroupScatterData.checkedButton()
+        if button :
+            self.buttonGroupPlotType.setExclusive(False)
+            button.setChecked(False)
+            self.buttonGroupPlotType.setExclusive(True)
+        self.plotScRadio.setChecked(False)  
+        self.plotLinRadio.setChecked(False)
+      
+        self.invTotalRadio.setChecked(False)
+        self.invDiodeRadio.setChecked(False) 
+        self.invIgbtRadio.setChecked(False) 
+        self.opPointBox.setEnabled(False)  
+        self.scatterDataBox.setEnabled(False)
+        self.clear()
+        self.MplWidget.canvas.figure.set_visible(False)
+        self.MplWidget.toolbar.hide()
+        
+
+    def plotScatter(self,xData,yData,xLabel,yLabel,length):
+        self.MplWidget.canvas.axes.clear()
+        self.c = np.random.randint(1,5,size=length)
+        self.norm = plt.Normalize(1,4)
+        self.cmap = plt.cm.RdYlGn
+        self.sc = self.MplWidget.canvas.axes.scatter(list(xData.values()), list(yData.values()),c=self.c, s=10, cmap=self.cmap, norm=self.norm)
+        self.MplWidget.canvas.axes.set_xlabel(xLabel)
+        self.MplWidget.canvas.axes.set_ylabel(yLabel)
+        self.annot = self.MplWidget.canvas.axes.annotate("", xy=(0,0), xytext=(20,20),textcoords="offset points",
+                            bbox=dict(boxstyle="round", fc="w"),
+                            arrowprops=dict(arrowstyle="->"))
+        self.annot.set_visible(False)
+        self.MplWidget.canvas.figure.set_visible(True)
+        self.MplWidget.toolbar.show()
+        self.MplWidget.canvas.draw()
+        
+    def linear_annot(self,x, y):
+        a = pd.concat({'x': x, 'y': y, 'val': y}, axis=1)
+        for i, point in a.iterrows():
+            self.sc.text(point['x'], point['y'], str(round(point['val'],1)))
+
+    def update_annot(self,ind):
+        pos = self.sc.get_offsets()[ind["ind"][0]]
+        self.annot.xy = pos 
+        OpPoint = self.data2plot['Dataset'][(self.data2plot['Dataset'][[*self.data2plot['xData']][0]] == pos[0]) & (self.data2plot['Dataset'][[*self.data2plot['yData']][0]] == pos[1])]
+
+        text = "V_DC :{},\nTLoss:{},\nLoad :{},\nPhi    :{},\nFsw   :{}".format("".join(str(OpPoint.iloc[0]['V_DC'])),"".join(str(round(OpPoint.iloc[0]['InvTotalLoss'],2))),
+                                       "".join(str(OpPoint.iloc[0]['Load_S'])),"".join(str(OpPoint.iloc[0]['Load_phi'])),
+                                       "".join(str(OpPoint.iloc[0]['f_s'])))
+        self.annot.set_text(text)
+        self.annot.get_bbox_patch().set_facecolor(self.cmap(self.norm(self.c[ind["ind"][0]])))
+        self.annot.get_bbox_patch().set_alpha(0.4)
+    
+
+    def hover(self,event):
+        vis = self.annot.get_visible()
+        if event.inaxes == self.MplWidget.canvas.axes:
+            cont, ind = self.sc.contains(event)
+            if cont:
+                self.update_annot(ind)
+                self.annot.set_visible(True)
+                self.MplWidget.canvas.draw_idle()
+            else:
+                if vis:
+                    self.annot.set_visible(False)
+                    self.MplWidget.canvas.draw_idle()
+        
+
+    def onChange(self, ord):
+        if ord:
+            self.plotControls.show()
+            self.initializeControls()
+            
+        else :
+            self.plotControls.hide()
+            self.MplWidget.canvas.toolbar_visible = False
+
 
     def checkThermalParams(self,df):
         def checkIfExists(sheetList):
@@ -59,6 +308,7 @@ class MainWindow(QMainWindow):
                 areAllinDB = areAllinDB and sheet in df.index
             return areAllinDB
         return checkIfExists
+
 
     def simulate(self):       
         try :
@@ -133,6 +383,7 @@ class MainWindow(QMainWindow):
             self.statusWriteLabel.setText('Please check the inputs provided\n'+ str( sys.exc_info()[0]))
             self.statusWriteLabel.adjustSize()
    
+
     def showGSIMSData(self):
         if(self.showGSIMS.isChecked()):
             self.gridLayoutWidget.hide()
@@ -140,6 +391,8 @@ class MainWindow(QMainWindow):
         else:
             self.gridLayoutWidget.show()
             self.GSIMSLabel.show()
+    
+            
     @QtCore.pyqtSlot(dict)
     def updateGSIMS(self,out):
         print('we are inside')
@@ -151,6 +404,8 @@ class MainWindow(QMainWindow):
         self.loadZOut.setText(str(complex(round(out['Z_Load'].real,2),round(out['Z_Load'].imag,2))))
         self.lVltgOut.setText(str(round(out['U_RMS_U_Filter_L'],2)))
         self.invVtlgOut.setText(str(out['U_Load_LL']))
+    
+        
     @QtCore.pyqtSlot(int,str)
     def updateProgressBar(self,value,text) :
         if value==-1:
@@ -158,32 +413,41 @@ class MainWindow(QMainWindow):
         else :
             self.progressBar.setValue(value)
     
+
     def openDataBase(self):
         self.dataBaseWindow = dataBaseClass()
         self.dataBaseWindow.loadData()
         self.dataBaseWindow.show()
-            #self.progressBar.hide()
             
+
     def loadPrevParams(self):
-        df = pd.read_pickle(self.filepath)
-        self.model = pandasModel(df)
-        lastSweepParams = self.model.returnLastSweep()
-        self.dcVltgIn.setPlainText(str(lastSweepParams.V_DC))
-        self.loadWIn.setPlainText(str(lastSweepParams.Load_S))
-        self.pfDegreeIn.setPlainText(str(lastSweepParams.Load_phi))
-        self.switchFreqIn.setPlainText(str(lastSweepParams.f_s))
-        self.tempIn.setPlainText(str(lastSweepParams.T_HS))
-        self.fOutIn.setPlainText(str(lastSweepParams.f_out))
-        self.igbtDataIn.setPlainText(str(lastSweepParams.Transistor))
-        self.revDataIn.setPlainText(str(lastSweepParams.Transistor_revD))
-        self.fwDataIn.setPlainText(str(lastSweepParams.Transistor_fwD))
-        #print(lastSweepParams)
+        if os.path.exists(self.filepath):
+            df = pd.read_pickle(self.filepath)
+            self.model = pandasModel(df)
+            lastSweepParams = self.model.returnLastSweep()
+            self.dcVltgIn.setPlainText(str(lastSweepParams.V_DC))
+            self.loadWIn.setPlainText(str(lastSweepParams.Load_S))
+            self.pfDegreeIn.setPlainText(str(lastSweepParams.Load_phi))
+            self.switchFreqIn.setPlainText(str(lastSweepParams.f_s))
+            self.tempIn.setPlainText(str(lastSweepParams.T_HS))
+            self.fOutIn.setPlainText(str(lastSweepParams.f_out))
+            self.igbtDataIn.setPlainText(str(lastSweepParams.Transistor))
+            self.revDataIn.setPlainText(str(lastSweepParams.Transistor_revD))
+            self.fwDataIn.setPlainText(str(lastSweepParams.Transistor_fwD))
+        else : 
+            msgBox = QMessageBox()
+            msgBox.setIcon(QMessageBox.Information)
+            msgBox.setText('Could not find data base!')
+            msgBox.exec()
+        
+
     def swit(self,x):
             return {
              'toolButtonIGBT': self.igbtDataIn.toPlainText(),
              'toolButtonFW': self.fwDataIn.toPlainText(),
              'toolButtonRev': self.revDataIn.toPlainText()
             }.get(x, [])
+
 
     def loadThermalBox(self):
         sender = self.sender()
@@ -200,9 +464,7 @@ class MainWindow(QMainWindow):
 
 
 
-                
-        
-
+     
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     mainWindow = MainWindow()
