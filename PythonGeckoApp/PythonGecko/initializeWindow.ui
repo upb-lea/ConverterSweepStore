@@ -97,7 +97,7 @@
        <rect>
         <x>10</x>
         <y>10</y>
-        <width>281</width>
+        <width>271</width>
         <height>231</height>
        </rect>
       </property>
@@ -193,8 +193,8 @@
        <rect>
         <x>300</x>
         <y>10</y>
-        <width>411</width>
-        <height>111</height>
+        <width>401</width>
+        <height>121</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="dataSheetLayout">
@@ -571,24 +571,24 @@
      <widget class="QWidget" name="horizontalLayoutWidget">
       <property name="geometry">
        <rect>
-        <x>430</x>
-        <y>150</y>
+        <x>410</x>
+        <y>160</y>
         <width>195</width>
         <height>41</height>
        </rect>
       </property>
       <layout class="QHBoxLayout" name="horizontalLayout_19">
        <item>
-        <widget class="QPushButton" name="thermalBtn">
+        <widget class="QPushButton" name="databaseBtn">
          <property name="text">
           <string>Open Database</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="databaseBtn">
+        <widget class="QPushButton" name="pandasGUIBtn">
          <property name="text">
-          <string>Thermal Parameters</string>
+          <string>Pandas GUI</string>
          </property>
         </widget>
        </item>
@@ -599,17 +599,14 @@
      <attribute name="title">
       <string>Plots</string>
      </attribute>
-     <widget class="QPushButton" name="plotsBtn">
+     <widget class="MplWidget" name="MplWidget" native="true">
       <property name="geometry">
        <rect>
-        <x>110</x>
-        <y>100</y>
-        <width>75</width>
-        <height>23</height>
+        <x>10</x>
+        <y>10</y>
+        <width>631</width>
+        <height>451</height>
        </rect>
-      </property>
-      <property name="text">
-       <string>Plot</string>
       </property>
      </widget>
     </widget>
@@ -626,7 +623,287 @@
     </rect>
    </property>
   </widget>
+  <widget class="QDockWidget" name="plotControls">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="minimumSize">
+    <size>
+     <width>196</width>
+     <height>449</height>
+    </size>
+   </property>
+   <property name="sizeIncrement">
+    <size>
+     <width>0</width>
+     <height>0</height>
+    </size>
+   </property>
+   <property name="layoutDirection">
+    <enum>Qt::LeftToRight</enum>
+   </property>
+   <property name="floating">
+    <bool>false</bool>
+   </property>
+   <property name="windowTitle">
+    <string>Controls</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents_4">
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
+    </property>
+    <property name="layoutDirection">
+     <enum>Qt::LeftToRight</enum>
+    </property>
+    <layout class="QVBoxLayout" name="verticalLayout_2">
+     <item>
+      <widget class="QGroupBox" name="plotTypeBox">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>126</width>
+         <height>78</height>
+        </size>
+       </property>
+       <property name="title">
+        <string>Plot Type</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+       </property>
+       <property name="checkable">
+        <bool>false</bool>
+       </property>
+       <widget class="QWidget" name="layoutWidget">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>20</y>
+          <width>101</width>
+          <height>51</height>
+         </rect>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout">
+         <item>
+          <widget class="QRadioButton" name="plotScRadio">
+           <property name="text">
+            <string>Scatter</string>
+           </property>
+           <attribute name="buttonGroup">
+            <string notr="true">buttonGroupPlotType</string>
+           </attribute>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="plotLinRadio">
+           <property name="text">
+            <string>Linear</string>
+           </property>
+           <attribute name="buttonGroup">
+            <string notr="true">buttonGroupPlotType</string>
+           </attribute>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </widget>
+     </item>
+     <item>
+      <widget class="QGroupBox" name="scatterDataBox">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>146</width>
+         <height>107</height>
+        </size>
+       </property>
+       <property name="baseSize">
+        <size>
+         <width>128</width>
+         <height>107</height>
+        </size>
+       </property>
+       <property name="layoutDirection">
+        <enum>Qt::LeftToRight</enum>
+       </property>
+       <property name="title">
+        <string>Scatter Data</string>
+       </property>
+       <widget class="QWidget" name="layoutWidget">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>20</y>
+          <width>127</width>
+          <height>71</height>
+         </rect>
+        </property>
+        <layout class="QGridLayout" name="gridLayout_2">
+         <item row="0" column="0" colspan="2">
+          <widget class="QRadioButton" name="invTotalRadio">
+           <property name="text">
+            <string>Total Inverter Loss</string>
+           </property>
+           <attribute name="buttonGroup">
+            <string notr="true">buttonGroupScatterData</string>
+           </attribute>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QRadioButton" name="invDiodeRadio">
+           <property name="text">
+            <string>Diode</string>
+           </property>
+           <attribute name="buttonGroup">
+            <string notr="true">buttonGroupScatterData</string>
+           </attribute>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QComboBox" name="scDiodeCombo"/>
+         </item>
+         <item row="1" column="0">
+          <widget class="QRadioButton" name="invIgbtRadio">
+           <property name="text">
+            <string>IGBT </string>
+           </property>
+           <attribute name="buttonGroup">
+            <string notr="true">buttonGroupScatterData</string>
+           </attribute>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QComboBox" name="scIgbtCombo"/>
+         </item>
+        </layout>
+       </widget>
+      </widget>
+     </item>
+     <item>
+      <widget class="QGroupBox" name="opPointBox">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>178</width>
+         <height>183</height>
+        </size>
+       </property>
+       <property name="title">
+        <string>Select Operating Point</string>
+       </property>
+       <widget class="QWidget" name="layoutWidget">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>30</y>
+          <width>171</width>
+          <height>181</height>
+         </rect>
+        </property>
+        <layout class="QGridLayout" name="gridLayout">
+         <property name="sizeConstraint">
+          <enum>QLayout::SetMinimumSize</enum>
+         </property>
+         <item row="3" column="0" colspan="2">
+          <widget class="QLabel" name="opSelectDisplayLabel">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0">
+          <widget class="QComboBox" name="opComboType"/>
+         </item>
+         <item row="0" column="1">
+          <widget class="QLineEdit" name="opComboInput"/>
+         </item>
+         <item row="2" column="0" colspan="2">
+          <widget class="QLabel" name="opErrorLabel">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QPushButton" name="opAddBtn">
+           <property name="text">
+            <string>Add</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QPushButton" name="opClearBtn">
+           <property name="text">
+            <string>Clear</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="plotBtn">
+       <property name="text">
+        <string>Plot</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>MplWidget</class>
+   <extends>QWidget</extends>
+   <header>mplwidget.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
+ <buttongroups>
+  <buttongroup name="buttonGroupPlotType"/>
+  <buttongroup name="buttonGroupScatterData"/>
+ </buttongroups>
 </ui>

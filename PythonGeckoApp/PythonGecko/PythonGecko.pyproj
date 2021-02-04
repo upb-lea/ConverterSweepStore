@@ -24,12 +24,17 @@
     <Compile Include="dataBaseClass.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="GISMSParameters_phi.py" />
     <Compile Include="mainWindow.py" />
+    <Compile Include="mplwidget.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="pandasModel.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ParaSweepScript.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ruff.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="startConnection.py">
