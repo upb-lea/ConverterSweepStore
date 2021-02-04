@@ -53,9 +53,13 @@ class startConnection(QObject):
         dfwLen = 6
         def retry_if_result_none(result):
             return result is None
-
-        from jnius import autoclass
-
+        try :
+            from jnius import autoclass
+        except :
+            os.environ['JDK_HOME'] = "C:\\Program Files\\Java\\jdk1.8.0_281"
+            os.environ['JAVA_HOME'] = "C:\\Program Files\\Java\\jdk1.8.0_281"
+            os.environ['PATH'] += ';C:\\Program Files\\Java\\jdk1.8.0_281\\jre\\bin\\server\\;C:\\Program Files\\Java\\jdk1.8.0_281\\bin\\;E:\\mnagella_data\\PyGeckoCircuits\\GeckoCIRCUITS\\GeckoCIRCUITS.jar'
+            from jnius import autoclass
         # The class to control GeckoCIRCUITS:
         Inst = autoclass('gecko.GeckoRemoteObject')
         # Note that parameters must be passed as java-strings to Gecko, as it otherwise
