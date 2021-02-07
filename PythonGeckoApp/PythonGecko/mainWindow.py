@@ -90,7 +90,7 @@ class MainWindow(QMainWindow):
         return functools.reduce(np.logical_and, conditions)
 
     def clear(self):
-        self.filters = {}
+        self.filter = {}
         self.opSelectDisplayLabel.clear()
         self.opAddBtn.setText('Add')
         self.opErrorLabel.setStyleSheet("")
@@ -103,11 +103,24 @@ class MainWindow(QMainWindow):
         else:
             self.opAddBtn.setText('Add')
 
+
     def validateFilter(self) :
         filtString = {}
-        filters =[]
         try :
-            N= len(self.df)
+            button = self.buttonGroupScatterData.checkedButton()
+            if button and button.text() =='Total Inverter Loss' :
+                self.scIgbtCombo.setCurrentIndex(-1) 
+                self.scDiodeCombo.setCurrentIndex(-1) 
+                selected = 'InvTotalLoss'
+            elif button and button.text() == 'IGBT ':
+                selected =  self.scIgbtCombo.currentText()
+                self.scDiodeCombo.setCurrentIndex(-1)
+            elif button and button.text() == 'Diode':
+                selected =  self.scDiodeCombo.currentText()
+                self.scIgbtCombo.setCurrentIndex(-1) 
+            if not selected:
+                raise Exception("select the loss type")
+
             if len(self.filter) < 2 :
                 raise Exception("min 2 filters required")
             elif len(self.filter) == 2 or len(self.filter) == 3:
@@ -116,26 +129,42 @@ class MainWindow(QMainWindow):
                    if not filtString[key].values.sum():
                         raise Exception("{} = {} not found".format(''.join(key),''.join(str(self.filter[key]))))
             conditionsBoolReturns = list(filtString.values())
-            resultDataFrame = self.df[self.conjunction(*conditionsBoolReturns)]
-            if resultDataFrame.empty :
+            resultDF = self.df[self.conjunction(*conditionsBoolReturns)]
+            if resultDF.empty :
                 raise Exception("Not in DBase")
-            df = resultDataFrame[['V_DC','Load_phi','InvTotalLoss']]
-            self.makeLinearPlot(df)
+            index = set(self.filterList)-self.filter.keys()
+            key = 'Load_phi' if index == set() else index.pop()
+            self.makeLinearPlot(resultDF,selected, key)
         except Exception as e:
             self.opErrorLabel.setStyleSheet("QLabel { background-color : yellow; color : red; }")
             self.opErrorLabel.setText(str(e.args[0]))
 
 
     def selectPlotType(self,button) :
-        checkOne =  button.text() == 'Scatter'
-        self.opPointBox.setEnabled(not checkOne)
-        self.scatterDataBox.setEnabled(checkOne)
+        self.scatterDataBox.setEnabled(True)
+        buttonBox = self.buttonGroupScatterData.checkedButton()
+        if buttonBox :
+            self.buttonGroupScatterData.setExclusive(False)
+            buttonBox.setChecked(False)
+            self.buttonGroupScatterData.setExclusive(True)
+        if button.text() == 'Linear':
+            self.opPointBox.setEnabled(True)
+            self.buttonGroupScatterData.buttonClicked.disconnect()
+            self.scDiodeCombo.textActivated.disconnect()
+            self.scIgbtCombo.textActivated.disconnect()
+        else :
+            self.opPointBox.setEnabled(False)
+            self.clear()
+            self.buttonGroupScatterData.buttonClicked.connect(self.updateScatterRadios)
+            self.scDiodeCombo.textActivated.connect(self.scComboboxChanged)
+            self.scIgbtCombo.textActivated.connect(self.scComboboxChanged)
+        
     
     
-    def makeLinearPlot(self,df) :
+    def makeLinearPlot(self,df,ykey,key) :
         self.MplWidget.canvas.axes.clear()
-        for key, grp in df.groupby(['Load_phi']):
-            l= grp.plot(ax=self.MplWidget.canvas.axes, kind='line', x='V_DC', y='InvTotalLoss', marker='o',grid =True, label=key)
+        for key, grp in df.groupby([key]):
+            l= grp.plot(ax=self.MplWidget.canvas.axes, kind='line', x='V_DC', y=ykey, marker='o',grid =True, label=key)
         self.sc['linear'] = l.lines
         self.sc.pop('scatter',None)
         self.annot = self.MplWidget.canvas.axes.annotate("", xy=(0,0), xytext=(20,20),textcoords="offset points",
@@ -157,33 +186,20 @@ class MainWindow(QMainWindow):
         if button.text() =='Total Inverter Loss' : 
             self.scIgbtCombo.setCurrentIndex(-1) 
             self.scDiodeCombo.setCurrentIndex(-1) 
-            selected = 'Total Inverter Loss'
-            
+            selected = 'InvTotalLoss'
         elif button.text() == 'IGBT ':
             self.scDiodeCombo.setCurrentIndex(-1)
-           
         elif button.text() == 'Diode':
             self.scIgbtCombo.setCurrentIndex(-1) 
            
         if selected :
-            if selected is not 'Total Inverter Loss':
-                self.data2plot['xData']= {'V_DC': list(self.df['V_DC'])}
-                self.data2plot['yData']= {selected: list(self.df[selected+'_sw']+self.df[selected+'_con'])}
-                df = self.df
-                df[selected] = self.df[selected+'_sw']+self.df[selected+'_con']
-                self.data2plot['Dataset'] = df
-                length = len(self.data2plot['yData'][selected])
-                yLabel = button.text()+' Loss'
-            elif selected is 'Total Inverter Loss':
-                self.data2plot['xData']= {'V_DC': list(self.df['V_DC'])}
-                self.data2plot['yData']= {'InvTotalLoss': list(self.df['InvTotalLoss'])}
-                self.data2plot['Dataset'] = self.df
-                yLabel = button.text()
-                length = len(self.data2plot['yData']['InvTotalLoss'])
-           
+            self.data2plot['xData']= {'V_DC': list(self.df['V_DC'])}                
+            self.data2plot['yData']= {selected: list(self.df[selected])}
+            length = len(self.data2plot['yData'][selected])
             xLabel = 'Dc Link Voltage'
+            yLabel =  button.text() if 'Loss' in button.text() else button.text()+' Loss'
+            self.data2plot['Dataset'] = self.df
             self.plotScatter(self.data2plot['xData'],self.data2plot['yData'],xLabel,yLabel,length)
-
 
 
     def scComboboxChanged(self):
@@ -199,7 +215,6 @@ class MainWindow(QMainWindow):
         
     
     def addFilterCriteria(self):
-
         try :
             item = str(self.opComboType.currentText())
             input = float(self.opComboInput.text())
@@ -224,10 +239,10 @@ class MainWindow(QMainWindow):
         self.scDiodeCombo.clear()
         igbtList = ['IG1','IG2','IG3','IG4']
         diodeList = ['D1','D2','D3','D4','D13','D14']
-        filterList = ['Load_S','f_s','Load_phi']
+        self.filterList = ['Load_S','f_s','Load_phi']
         self.scIgbtCombo.addItems(igbtList)
         self.scDiodeCombo.addItems(diodeList)
-        self.opComboType.addItems(filterList)
+        self.opComboType.addItems(self.filterList)
         self.scIgbtCombo.setCurrentIndex(-1) 
         self.scDiodeCombo.setCurrentIndex(-1) 
         button = self.buttonGroupPlotType.checkedButton()
@@ -237,12 +252,11 @@ class MainWindow(QMainWindow):
             self.buttonGroupPlotType.setExclusive(True)
         button = self.buttonGroupScatterData.checkedButton()
         if button :
-            self.buttonGroupPlotType.setExclusive(False)
+            self.buttonGroupScatterData.setExclusive(False)
             button.setChecked(False)
-            self.buttonGroupPlotType.setExclusive(True)
+            self.buttonGroupScatterData.setExclusive(True)
         self.plotScRadio.setChecked(False)  
         self.plotLinRadio.setChecked(False)
-      
         self.invTotalRadio.setChecked(False)
         self.invDiodeRadio.setChecked(False) 
         self.invIgbtRadio.setChecked(False) 
@@ -288,7 +302,9 @@ class MainWindow(QMainWindow):
         leg = line.axes.get_legend()
         ind = line.axes.get_lines().index(line)
         legPhi = leg.texts[ind].get_text()
-        text = f'Phi :{legPhi},\nV_DC :{posx:.2f},\nTLoss :{posy:.2f}'
+        index = set(self.filterList)-self.filter.keys()
+        key = 'Phi' if index == set() else index.pop()
+        text = f'{key} :{legPhi},\nV_DC :{posx:.2f},\nTLoss :{posy:.2f}'
         self.annot.set_text(text)
         # annot.get_bbox_patch().set_facecolor(cmap(norm(c[ind["ind"][0]])))
         self.annot.get_bbox_patch().set_alpha(0.4)

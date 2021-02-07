@@ -108,8 +108,8 @@ class startConnection(QObject):
         #Cth_ig = 0.2381
         #Cth_d = 0.1233
         #R_th = 0.063
-        loss_keys = ['IG1_con','IG3_con','IG1_sw','IG3_sw','IG2_con','IG4_con','IG2_sw','IG4_sw','D1_con','D3_con','D1_sw','D3_sw','D2_con','D4_con','D2_sw','D4_sw',
-                          'D13_con','D14_con','D13_sw','D14_sw']
+        loss_keys = ['IG1_con','IG1_sw','IG3_con','IG3_sw','IG2_con','IG2_sw','IG4_con','IG4_sw','D1_con','D1_sw','D3_con','D3_sw','D2_con','D2_sw','D4_con','D4_sw',
+                          'D13_con','D13_sw','D14_con','D14_sw']
         temp_keys = ['Igbt1Temp','Igbt2Temp','D1Temp','D2Temp','DcTemp']
 
         count = 0
@@ -215,7 +215,15 @@ class startConnection(QObject):
                     saveLossData[x] = losses                
                  meanLosses[x] = np.mean(lossesArray)
                  totalLoss = totalLoss + meanLosses[x]
+            
             meanLosses['InvTotalLoss'] = totalLoss*3
+            length = len(loss_keys)
+            i=0
+            while i < length:
+                key = loss_keys[i+1]
+                key = key[:-3] #remove _sw from key
+                meanLosses[key] = meanLosses[loss_keys[i]] + meanLosses[loss_keys[i+1]]
+                i+=2
             for x in temp_keys:
                  temp = ginst.getSignalData(x,t_start,t_end_new,0)
                  tempArray = np.array(temp)
