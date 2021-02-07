@@ -32,7 +32,7 @@ from GISMSParameters_phi import GISMSParameters_phi
 import glob
 import psweep as ps
 import subprocess
-from pandasgui import show
+#from pandasgui import show
 from startConnection import startConnection 
 from dataBaseClass import dataBaseClass
 opLabelAppend = ''
@@ -68,7 +68,7 @@ class MainWindow(QMainWindow):
         self.plotControls.hide()
         if not os.path.exists(self.filepath) :
             self.thermalBtn.setEnabled(False)
-        self.MplWidget.canvas.mpl_connect('motion_notify_event', self.hover) 
+        self.cid = self.MplWidget.canvas.mpl_connect('motion_notify_event', self.hover) 
         self.buttonGroupScatterData.setId(self.invTotalRadio,1)
         self.buttonGroupScatterData.setId(self.invIgbtRadio,2)
         self.buttonGroupScatterData.setId(self.invDiodeRadio,3)
@@ -80,10 +80,11 @@ class MainWindow(QMainWindow):
         self.opAddBtn.clicked.connect(self.addFilterCriteria)
         self.plotBtn.clicked.connect(self.validateFilter)
         self.opClearBtn.clicked.connect(self.clear)
+        self.sc = {}
 
     def openPandasGUI(self) :
         df = pd.read_pickle(self.filepath)
-        show(df)
+        #show(df)
 
     def conjunction(*conditions):
         return functools.reduce(np.logical_and, conditions)
@@ -134,15 +135,21 @@ class MainWindow(QMainWindow):
     def makeLinearPlot(self,df) :
         self.MplWidget.canvas.axes.clear()
         for key, grp in df.groupby(['Load_phi']):
-            self.sc = grp.plot(ax=self.MplWidget.canvas.axes, kind='line', x='V_DC', y='InvTotalLoss', marker='o',grid =True, label=key)
-            self.linear_annot(grp.V_DC,grp.InvTotalLoss)
+            l= grp.plot(ax=self.MplWidget.canvas.axes, kind='line', x='V_DC', y='InvTotalLoss', marker='o',grid =True, label=key)
+        self.sc['linear'] = l.lines
+        self.sc.pop('scatter',None)
+        self.annot = self.MplWidget.canvas.axes.annotate("", xy=(0,0), xytext=(20,20),textcoords="offset points",
+                            bbox=dict(boxstyle="round", fc="w"),
+                            arrowprops=dict(arrowstyle="->"))
+        self.annot.set_visible(False)
+        self.cid = self.MplWidget.canvas.mpl_connect('motion_notify_event', self.hover)
         self.MplWidget.canvas.draw()
         self.MplWidget.canvas.figure.set_visible(True)
         self.MplWidget.toolbar.show()
         print(df)
 
 
-    def updateScatterRadios(self,button,selected=None) :       
+    def updateScatterRadios(self,button,selected=None) :         
         yLabel = ''
         xLabel = ''
         xData = []
@@ -178,6 +185,7 @@ class MainWindow(QMainWindow):
             self.plotScatter(self.data2plot['xData'],self.data2plot['yData'],xLabel,yLabel,length)
 
 
+
     def scComboboxChanged(self):
         sender = self.sender()
         selection = str(sender.currentText())
@@ -191,6 +199,7 @@ class MainWindow(QMainWindow):
         
     
     def addFilterCriteria(self):
+
         try :
             item = str(self.opComboType.currentText())
             input = float(self.opComboInput.text())
@@ -207,9 +216,10 @@ class MainWindow(QMainWindow):
             self.opErrorLabel.setStyleSheet("QLabel { background-color : yellow; color : red; }")
             self.opErrorLabel.setText("Invalid {} input".format("".join(str(self.opComboType.currentText()))))
 
-
+        
     def initializeControls(self):
         self.df = pd.read_pickle(self.filepath)
+        self.MplWidget.canvas.mpl_disconnect(self.cid)
         self.scIgbtCombo.clear()
         self.scDiodeCombo.clear()
         igbtList = ['IG1','IG2','IG3','IG4']
@@ -242,30 +252,26 @@ class MainWindow(QMainWindow):
         self.MplWidget.canvas.figure.set_visible(False)
         self.MplWidget.toolbar.hide()
         
-
     def plotScatter(self,xData,yData,xLabel,yLabel,length):
         self.MplWidget.canvas.axes.clear()
         self.c = np.random.randint(1,5,size=length)
         self.norm = plt.Normalize(1,4)
         self.cmap = plt.cm.RdYlGn
-        self.sc = self.MplWidget.canvas.axes.scatter(list(xData.values()), list(yData.values()),c=self.c, s=10, cmap=self.cmap, norm=self.norm)
+        self.sc['scatter'] = self.MplWidget.canvas.axes.scatter(list(xData.values()), list(yData.values()),c=self.c, s=10, cmap=self.cmap, norm=self.norm)
+        self.sc.pop('linear', None)
         self.MplWidget.canvas.axes.set_xlabel(xLabel)
         self.MplWidget.canvas.axes.set_ylabel(yLabel)
         self.annot = self.MplWidget.canvas.axes.annotate("", xy=(0,0), xytext=(20,20),textcoords="offset points",
                             bbox=dict(boxstyle="round", fc="w"),
                             arrowprops=dict(arrowstyle="->"))
         self.annot.set_visible(False)
+        self.cid = self.MplWidget.canvas.mpl_connect('motion_notify_event', self.hover) 
         self.MplWidget.canvas.figure.set_visible(True)
         self.MplWidget.toolbar.show()
         self.MplWidget.canvas.draw()
         
-    def linear_annot(self,x, y):
-        a = pd.concat({'x': x, 'y': y, 'val': y}, axis=1)
-        for i, point in a.iterrows():
-            self.sc.text(point['x'], point['y'], str(round(point['val'],1)))
-
-    def update_annot(self,ind):
-        pos = self.sc.get_offsets()[ind["ind"][0]]
+    def update_scatter_annot(self,sc,ind):
+        pos = sc.get_offsets()[ind]
         self.annot.xy = pos 
         OpPoint = self.data2plot['Dataset'][(self.data2plot['Dataset'][[*self.data2plot['xData']][0]] == pos[0]) & (self.data2plot['Dataset'][[*self.data2plot['yData']][0]] == pos[1])]
 
@@ -273,22 +279,38 @@ class MainWindow(QMainWindow):
                                        "".join(str(OpPoint.iloc[0]['Load_S'])),"".join(str(OpPoint.iloc[0]['Load_phi'])),
                                        "".join(str(OpPoint.iloc[0]['f_s'])))
         self.annot.set_text(text)
-        self.annot.get_bbox_patch().set_facecolor(self.cmap(self.norm(self.c[ind["ind"][0]])))
+        self.annot.get_bbox_patch().set_facecolor(self.cmap(self.norm(self.c[ind])))
         self.annot.get_bbox_patch().set_alpha(0.4)
-    
+
+    def update_linear_annot(self, line,idx) : 
+        posx, posy = [line.get_xdata()[idx], line.get_ydata()[idx]]
+        self.annot.xy = (posx, posy)
+        leg = line.axes.get_legend()
+        ind = line.axes.get_lines().index(line)
+        legPhi = leg.texts[ind].get_text()
+        text = f'Phi :{legPhi},\nV_DC :{posx:.2f},\nTLoss :{posy:.2f}'
+        self.annot.set_text(text)
+        # annot.get_bbox_patch().set_facecolor(cmap(norm(c[ind["ind"][0]])))
+        self.annot.get_bbox_patch().set_alpha(0.4)
 
     def hover(self,event):
         vis = self.annot.get_visible()
+        (key,lines),*rest = self.sc.items()
+        lines = lines if isinstance(lines, list) else [lines]
         if event.inaxes == self.MplWidget.canvas.axes:
-            cont, ind = self.sc.contains(event)
-            if cont:
-                self.update_annot(ind)
-                self.annot.set_visible(True)
-                self.MplWidget.canvas.draw_idle()
-            else:
-                if vis:
-                    self.annot.set_visible(False)
+            for plotLine in lines :
+                cont, ind = plotLine.contains(event)
+                if cont:
+                    if key == 'linear':
+                        self.update_linear_annot(plotLine, ind['ind'][0])
+                    if key == 'scatter':
+                        self.update_scatter_annot(plotLine,ind['ind'][0])
+                    self.annot.set_visible(True)
                     self.MplWidget.canvas.draw_idle()
+                else:
+                    if vis:
+                        self.annot.set_visible(False)
+                        self.MplWidget.canvas.draw_idle()
         
 
     def onChange(self, ord):
