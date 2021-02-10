@@ -24,6 +24,7 @@
     <Compile Include="dataBaseClass.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="GISMSParameters_phi.py" />
     <Compile Include="mainWindow.py" />
     <Compile Include="mplwidget.py">
       <SubType>Code</SubType>

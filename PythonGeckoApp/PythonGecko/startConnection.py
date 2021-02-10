@@ -16,7 +16,7 @@ from PyQt5.QtWidgets import QMessageBox
 class startConnection(QObject):
     gismsUpdate = pyqtSignal([dict])
     progressUpdate = pyqtSignal(int,str)
-    filepath = r'calc\Thermal\params.csv'
+    thermal_file_path = r'calc\Thermal\params.csv'
 
     def __init__(self,dataimport,saveData):
         super().__init__()
@@ -102,12 +102,11 @@ class startConnection(QObject):
         Filter_C = 3.516e-3
         Filter_L = 117.33e-6
         U_Load_LL = 115
-
-        #R_jc = 0.16
-        #Rd_jc = 0.32
-        #Cth_ig = 0.2381
-        #Cth_d = 0.1233
-        #R_th = 0.063
+        #Transformer values
+        Kt_Transformer = 1.377;
+        R_Fe_Transformer = 52;
+        R_S_Transformer = 10.88e-3 * Kt_Transformer;
+        L_par = 20e-3;
         loss_keys = ['IG1_con','IG1_sw','IG3_con','IG3_sw','IG2_con','IG2_sw','IG4_con','IG4_sw','D1_con','D1_sw','D3_con','D3_sw','D2_con','D2_sw','D4_con','D4_sw',
                           'D13_con','D13_sw','D14_con','D14_sw']
         temp_keys = ['Igbt1Temp','Igbt2Temp','D1Temp','D2Temp','DcTemp']
@@ -128,7 +127,7 @@ class startConnection(QObject):
             params["f_s"] = float(pset["f_s"])
             params["T_HS"] = int(pset["T_HS"])
             params["f_out"] = int(pset["f_out"])
-            df = pd.read_csv(self.filepath,index_col =['Datasheet'])
+            df = pd.read_csv(self.thermal_file_path,index_col =['Datasheet'])
             thermalTransData = df.loc[df.index ==params["Transistor"]].to_dict(orient = 'index')
             thermalRevDiodeData = df.loc[df.index ==params["Transistor_revD"]].to_dict(orient = 'index')
             thermalFWDiodeData = df.loc[df.index ==params["Transistor_fwD"]].to_dict(orient = 'index')
@@ -174,7 +173,7 @@ class startConnection(QObject):
             
             
             #calculation og GISMS parameters and assigning to global parameters in GECKO circuits
-            out = GISMSParameters_phi(params["V_DC"], U_Load_LL, params["f_out"], Filter_L, Filter_C, params["Load_S"], params["Load_phi"], 1)
+            out = GISMSParameters_phi(params["V_DC"], U_Load_LL, params["f_out"], Filter_L, Filter_C, params["Load_S"], params["Load_phi"],R_Fe_Transformer,R_S_Transformer,L_par , 1)
             out['U_Load_LL'] = U_Load_LL
             self.gismsUpdate.emit(out)
 
@@ -208,6 +207,7 @@ class startConnection(QObject):
             saveLossData = {}
             saveTempData = {}
             totalLoss = 0
+            meanLosses['TransformerLoss'] = out['P_Transformer']
             for x in loss_keys:
                  losses = ginst.getSignalData(x,t_start,t_end_new,0)
                  lossesArray = np.array(losses)
