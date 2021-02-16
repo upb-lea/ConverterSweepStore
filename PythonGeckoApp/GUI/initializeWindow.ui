@@ -98,7 +98,7 @@
         <x>10</x>
         <y>10</y>
         <width>271</width>
-        <height>231</height>
+        <height>241</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="inputParamsLayout">
@@ -297,7 +297,7 @@
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>350</y>
+        <y>370</y>
         <width>47</width>
         <height>13</height>
        </rect>
@@ -487,46 +487,17 @@
        </item>
       </layout>
      </widget>
-     <widget class="QCheckBox" name="showGSIMS">
-      <property name="geometry">
-       <rect>
-        <x>160</x>
-        <y>260</y>
-        <width>81</width>
-        <height>16</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Hide GSIMS</string>
-      </property>
-     </widget>
      <widget class="QPushButton" name="simulateBtn">
       <property name="geometry">
        <rect>
         <x>90</x>
-        <y>290</y>
+        <y>320</y>
         <width>101</width>
         <height>41</height>
        </rect>
       </property>
       <property name="text">
        <string>Simulate</string>
-      </property>
-     </widget>
-     <widget class="QCheckBox" name="saveLossData">
-      <property name="geometry">
-       <rect>
-        <x>30</x>
-        <y>260</y>
-        <width>101</width>
-        <height>16</height>
-       </rect>
-      </property>
-      <property name="autoFillBackground">
-       <bool>false</bool>
-      </property>
-      <property name="text">
-       <string>Save Loss Data</string>
       </property>
      </widget>
      <widget class="QLabel" name="GSIMSLabel">
@@ -546,7 +517,7 @@
       <property name="geometry">
        <rect>
         <x>80</x>
-        <y>350</y>
+        <y>370</y>
         <width>47</width>
         <height>13</height>
        </rect>
@@ -589,6 +560,55 @@
         <widget class="QPushButton" name="pandasGUIBtn">
          <property name="text">
           <string>Pandas GUI</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="gridLayoutWidget_2">
+      <property name="geometry">
+       <rect>
+        <x>50</x>
+        <y>260</y>
+        <width>181</width>
+        <height>51</height>
+       </rect>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_3">
+       <item row="0" column="1">
+        <widget class="QRadioButton" name="AFEModeBtn">
+         <property name="text">
+          <string>AFE</string>
+         </property>
+         <attribute name="buttonGroup">
+          <string notr="true">buttonGroupMode</string>
+         </attribute>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QRadioButton" name="InverterModeBtn">
+         <property name="text">
+          <string>Inverter</string>
+         </property>
+         <attribute name="buttonGroup">
+          <string notr="true">buttonGroupMode</string>
+         </attribute>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QCheckBox" name="saveLossData">
+         <property name="autoFillBackground">
+          <bool>false</bool>
+         </property>
+         <property name="text">
+          <string>Save Loss Data</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QCheckBox" name="showGSIMS">
+         <property name="text">
+          <string>Hide GSIMS</string>
          </property>
         </widget>
        </item>
@@ -802,7 +822,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QGroupBox" name="groupBox">
+      <widget class="QGroupBox" name="opPointBox">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
          <horstretch>0</horstretch>
@@ -905,5 +925,6 @@
  <buttongroups>
   <buttongroup name="buttonGroupPlotType"/>
   <buttongroup name="buttonGroupScatterData"/>
+  <buttongroup name="buttonGroupMode"/>
  </buttongroups>
 </ui>
