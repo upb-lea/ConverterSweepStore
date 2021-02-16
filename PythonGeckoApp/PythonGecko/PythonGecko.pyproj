@@ -21,6 +21,7 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="AFEParameters.py" />
     <Compile Include="dataBaseClass.py">
       <SubType>Code</SubType>
     </Compile>
@@ -33,6 +34,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ParaSweepScript.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ParaSweepScriptAFE.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ruff.py">

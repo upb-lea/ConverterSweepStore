@@ -1,4 +1,7 @@
-def AFE_Parameters(U_DC_inv, U_mains_LL, f, Filter_L, Filter_C, Mains_P, Mains_phi_degree, Kt_Transformer, R_Fe_Transformer, R_S_Transformer, L_par, plotbit):
+import math
+import cmath
+import numpy as np
+def AFE_Parameters(U_DC_inv, U_mains_LL, f, Filter_L, Filter_C, Mains_S, Mains_phi_degree, R_Fe_Transformer, R_S_Transformer, L_par, plotbit):
     """
      * Initial author: N. Foerster      
      * Date of creation: xx.xx.2020     
@@ -67,25 +70,24 @@ def AFE_Parameters(U_DC_inv, U_mains_LL, f, Filter_L, Filter_C, Mains_P, Mains_p
 
      compatibility to GISMSParameters
     
-        ---Filter_L---R_S-----+----------+------+------+
-                              |          |      |      |
-                              Filter_C   R_Fe   L_par  Z_inv
-                              |          |      |      |
+        -+-Filter_L---R_S-----+----------+------+------+
+         |                               |      |      |
+      Filter_C                          R_Fe   L_par  Z_inv
+         |                               |      |      |
         ----------------------+----------+------+------+
      All values are RMS-values
      Calculation in single phase equivalent circuit
     """
     out = {}
-    import math
-    import cmath
-    import numpy as np
+    
     ## Calculation
-    P_LN = Mains_P / 3 
-    U_mains_LN = U_mains_LL/math.sqrt(3) 
-        
     # Note: the negative sign helps to calculate from delta_phi to
     # current's phi
-    phi_mains_rad = Mains_phi_degree * 2 * math.pi / 360 
+    phi_mains_rad = math.radians(Mains_phi_degree)
+
+    Mains_P = Mains_S*math.cos(phi_mains_rad)
+    P_LN = Mains_P / 3 
+    U_mains_LN = U_mains_LL/math.sqrt(3) 
     
     # Input filter
     Z_Filter_C = 1/complex(0,2*math.pi*f*Filter_C) 
@@ -95,33 +97,33 @@ def AFE_Parameters(U_DC_inv, U_mains_LL, f, Filter_L, Filter_C, Mains_P, Mains_p
     I_mains_P_RMS = P_LN/U_mains_LN 
     I_mains_Q_RMS = I_mains_P_RMS * math.tan(phi_mains_rad) 
     I_mains = complex(I_mains_P_RMS, I_mains_Q_RMS)
-    
-    U_Filter_L = Z_Filter_L * I_mains 
-    U_R_S_Transformer = R_S_Transformer * I_mains 
+    I_Filter_C = U_mains_LN / Z_Filter_C 
+    I_Filter_L = I_mains-I_Filter_C
+    U_Filter_L = Z_Filter_L * I_Filter_L 
+    U_R_S_Transformer = R_S_Transformer * I_Filter_L 
     
     U_inv = U_mains_LN - U_Filter_L - U_R_S_Transformer 
     U_RMS_Inv = abs(U_inv)
-    I_Filter_C = U_inv / Z_Filter_C 
     I_R_Fe_Transformer = U_inv / R_Fe_Transformer 
     I_L_par = U_inv / complex(0,2*math.pi*f*L_par) 
     
-    I_inv = I_mains - I_Filter_C - I_R_Fe_Transformer - I_L_par 
+    I_inv = I_mains- I_Filter_C - I_R_Fe_Transformer - I_L_par 
     
     Z_inv = U_inv / I_inv 
     
-    #[R_ser L_ser C_ser R_par L_par C_par] = Parallel_Serial_Impedance(Z_inv, f, 0) 
+    Z_params = Parallel_Serial_Impedance(Z_inv, f, 0) 
 
     # output parameters, depending on kind of Z_inv
-    out["R_inv_par"] = R_par 
-    if imag(Z_inv) > 0 :
-         L_inv_par = L_par 
-         C_inv_par = NaN 
-    elif imag(Z_inv) < 0:
-         L_inv_par = NaN 
-         C_inv_par = C_par       
+    out["R_inv_par"] = Z_params["R_par"]
+    if Z_inv.imag > 0 :
+       out["L_inv_par"] = Z_params["L_par"]
+       out["C_inv_par"] = float("NaN") 
+    elif Z_inv.imag < 0:
+       out["L_inv_par"] = float("NaN") 
+       out["C_inv_par"] = Z_params["C_par"]       
     else :
-         L_inv_par = NaN 
-         C_inv_par = NaN             
+       out["L_inv_par"] = float("NaN") 
+       out["C_inv_par"] = float("NaN")             
     
     
     delta_phi_rad_inv = cmath.phase(U_inv) - cmath.phase(I_inv) 
@@ -153,7 +155,7 @@ def AFE_Parameters(U_DC_inv, U_mains_LL, f, Filter_L, Filter_C, Mains_P, Mains_p
     Q_Mains = S_Mains_compl.imag
     
     # Transformer power
-    P_S_Transformer = 3 * R_S_Transformer * I_mains * I_mains.conjugate() 
+    P_S_Transformer = 3 * R_S_Transformer * I_Filter_L * I_Filter_L.conjugate() 
     P_mag_Transformer = 3 * R_Fe_Transformer * I_R_Fe_Transformer * I_R_Fe_Transformer.conjugate()
     P_Transformer =  P_S_Transformer.real +  P_mag_Transformer.real 
 
@@ -175,3 +177,36 @@ def AFE_Parameters(U_DC_inv, U_mains_LL, f, Filter_L, Filter_C, Mains_P, Mains_p
         print(f"cos(phi)_inv = {round(math.cos(delta_phi_rad_inv),2)}")
 
     return out
+
+def Parallel_Serial_Impedance(Z, f, plotbit): 
+    Z_params = {}
+    #Serial parameter calculation
+    R_ser = Z.real
+    L_ser = Z.imag/(2*math.pi*f)
+    C_ser = -1/(2*math.pi*f*Z.imag)
+
+    #Parallel parameter calculation 
+    R_par = (R_ser**2 + (Z.imag)**2) / R_ser
+    X_par = (R_ser**2 + (Z.imag)**2) / Z.imag
+
+    L_par = X_par / (2*math.pi*f)
+    C_par = -1/(2*math.pi*f*X_par)
+    Z_params["R_ser"] = R_ser
+    Z_params["L_ser"] = L_ser
+    Z_params["C_ser"] = C_ser
+    Z_params["R_par"] = R_par
+    Z_params["L_par"] = L_par
+    Z_params["C_par"] = C_par
+   #disp output parameters
+    if plotbit == 1:
+        print('Serial parameters:',R_ser)
+    if (L_ser >= 0) :
+        print(L_ser)
+    else:
+        print(C_ser)
+    print('Parallel parameters:',R_par)
+    if (L_ser > 0):
+        print(L_par)
+    else:
+        print(C_par)
+    return Z_params

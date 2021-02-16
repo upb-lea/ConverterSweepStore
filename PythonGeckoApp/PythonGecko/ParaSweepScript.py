@@ -68,7 +68,7 @@ t_end = 300e-3
 #parameter goes in here
 vDC = [216]
 loadS = [40000]
-loadphi = [32]
+loadphi = [0]
 fS =  [7200]
 tHS = [95]
 fOut = [50]
