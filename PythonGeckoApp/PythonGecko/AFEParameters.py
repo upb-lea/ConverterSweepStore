@@ -166,6 +166,10 @@ def AFE_Parameters(U_DC_inv, U_mains_LL, f, Filter_L, Filter_C, Mains_S, Mains_p
     out["S_Mains"] = S_Mains
     out["P_Mains"] = P_Mains
     out["Q_Mains"] = Q_Mains
+    out["Z_Inv"] = Z_inv
+    out["U_RMS_inv"] = abs(U_inv)
+    out["I_Filter_C"] = abs(I_Filter_C)
+    out["U_Filter_L"] = abs(U_Filter_L)
     if plotbit == 1:
         print(f"P_Transformer = {round(P_Transformer)} W")
         print(f"P_Mains = {round(P_Mains)} W")
@@ -175,6 +179,9 @@ def AFE_Parameters(U_DC_inv, U_mains_LL, f, Filter_L, Filter_C, Mains_S, Mains_p
         print(f"U_RMS_LL_inv = {round(U_RMS_Inv*math.sqrt(3), 2)} V")
         print(f"delta_phi_degree_inv = {round(delta_phi_degree_inv)}°")
         print(f"cos(phi)_inv = {round(math.cos(delta_phi_rad_inv),2)}")
+        print(f"R_inv_parallel = {round(out['R_inv_par'],3)}")
+        print(f"L_inv_par = {round(out['L_inv_par'],6)}")
+        print(f"C_inv_par = {round(out['C_inv_par'],6)}")
 
     return out
 
@@ -200,13 +207,13 @@ def Parallel_Serial_Impedance(Z, f, plotbit):
    #disp output parameters
     if plotbit == 1:
         print('Serial parameters:',R_ser)
-    if (L_ser >= 0) :
-        print(L_ser)
-    else:
-        print(C_ser)
-    print('Parallel parameters:',R_par)
-    if (L_ser > 0):
-        print(L_par)
-    else:
-        print(C_par)
+        if (L_ser >= 0) :
+            print(L_ser)
+        else:
+            print(C_ser)
+        print('Parallel parameters:',R_par)
+        if (L_ser > 0):
+            print(L_par)
+        else:
+            print(C_par)
     return Z_params

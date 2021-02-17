@@ -37,7 +37,8 @@ from startConnection import startConnection
 from dataBaseClass import dataBaseClass
 opLabelAppend = ''
 class MainWindow(QMainWindow):
-    filepath = r'calc\results.pk'
+    invfilepath = r'calc\results.pk'
+    afefilepath = r'calc_AFE\results.pk'
     Tfilepath = r'calc\Thermal\params.csv'
     ## Make all plots clickable
     clickedPen = pg.mkPen('b', width=2)
@@ -64,9 +65,9 @@ class MainWindow(QMainWindow):
         self.toolButtonRev.setAutoRaise(True)
         self.toolButtonFW.clicked.connect(self.loadThermalBox)
         self.toolButtonFW.setAutoRaise(True)
-        self.loadPrevParams()
+        self.loadPrevParams(self.invfilepath)
         self.plotControls.hide()
-        if not os.path.exists(self.filepath) :
+        if not os.path.exists(self.invfilepath) :
             self.thermalBtn.setEnabled(False)
         self.cid = self.MplWidget.canvas.mpl_connect('motion_notify_event', self.hover) 
         self.buttonGroupScatterData.setId(self.invTotalRadio,1)
@@ -77,13 +78,15 @@ class MainWindow(QMainWindow):
         self.opComboType.textActivated.connect(self.updateOpBtnLabel)
         self.buttonGroupPlotType.buttonClicked.connect(self.selectPlotType)
         self.buttonGroupScatterData.buttonClicked.connect(self.updateScatterRadios)
+        self.buttonGroupMode.buttonClicked.connect(self.updateAfeLabels)
         self.opAddBtn.clicked.connect(self.addFilterCriteria)
         self.plotBtn.clicked.connect(self.validateFilter)
         self.opClearBtn.clicked.connect(self.clear)
+        self.InverterModeBtn.setChecked(True)
         self.sc = {}
 
     def openPandasGUI(self) :
-        df = pd.read_pickle(self.filepath)
+        df = pd.read_pickle(self.invfilepath)
         #show(df)
 
     def conjunction(*conditions):
@@ -95,7 +98,18 @@ class MainWindow(QMainWindow):
         self.opAddBtn.setText('Add')
         self.opErrorLabel.setStyleSheet("")
         self.opErrorLabel.clear()
-        
+    def updateAfeLabels(self,button):
+        if button.text()=='AFE':
+            self.loadWLabel.setText("Mains in VA       :")
+            self.loadVltg.setText("Mains Voltage       :")
+            self.loadPrevParams(self.afefilepath)
+            self.loadZ.setText("Load Inv(Z_inv) :")
+        else :
+            self.loadWLabel.setText("Load in VA        :")
+            self.loadVltg.setText("Load Voltage       :")
+            self.loadPrevParams(self.invfilepath)
+            self.loadZ.setText("Load Imp(Z_L)  :")
+
     def updateOpBtnLabel(self):
         key = self.opComboType.currentText()
         if key in self.filter:
@@ -233,7 +247,7 @@ class MainWindow(QMainWindow):
 
         
     def initializeControls(self):
-        self.df = pd.read_pickle(self.filepath)
+        self.df = pd.read_pickle(self.invfilepath)
         self.MplWidget.canvas.mpl_disconnect(self.cid)
         self.scIgbtCombo.clear()
         self.scDiodeCombo.clear()
@@ -374,7 +388,7 @@ class MainWindow(QMainWindow):
             revDataInList = re.split(',|\s+|;|\n',revDataInList)
             fwDataInList = self.fwDataIn.toPlainText()
             fwDataInList = re.split(',|\s+|;|\n',fwDataInList)
-            paramsContainer = {'V_DC':dcVltgListNew,'Load_S':loadWInListNew,'Load_phi':pfDegreeInListNew,'f_s':switchFreqInListNew,'f_out':fOutListNew,
+            paramsContainer = {'V_DC':dcVltgListNew,'Load_S':loadWInListNew,'Load_phi':pfDegreeInListNew,'Mains_S':loadWInListNew,'Mains_phi':pfDegreeInListNew,'f_s':switchFreqInListNew,'f_out':fOutListNew,
                                'T_HS':tempInListNew,'Transistor':igbtDataInList,'Transistor_revD':revDataInList,'Transistor_fwD':fwDataInList }
             for x in paramsContainer:
                 result = True
@@ -398,8 +412,9 @@ class MainWindow(QMainWindow):
                 msg = ('Input Sheets should be of same length', 'Thermal params file not found')[equalLenSheets]
                 raise Exception(msg)
             self.statusWriteLabel.adjustSize()
-            saveData = self.saveLossData.isChecked();
-            createobj = startConnection(paramsContainer,saveData)
+            saveData = self.saveLossData.isChecked()
+            isAFEselected = self.AFEModeBtn.isChecked()
+            createobj = startConnection(paramsContainer,saveData,isAFEselected)
             createobj.gismsUpdate.connect(self.updateGSIMS)
             createobj.progressUpdate.connect(self.updateProgressBar)
             #createobj.eventemit()
@@ -433,15 +448,19 @@ class MainWindow(QMainWindow):
             
     @QtCore.pyqtSlot(dict)
     def updateGSIMS(self,out):
-        print('we are inside')
-        self.loadVltgOut.setText(str(round(out['U_RMS_U_Load'],2)))
-        self.cCurrentOut.setText(str(round(out['I_RMS_Filter_C'],2)))
         self.invCosPhiOut.setText(str(round(out['cos_phi_inv'],3)))
         self.modulationOut.setText(str(round(out['m'],3)))
         self.peakRlcCurrentOut.setText(str(round(out['I_Peak_inv'],2)))
-        self.loadZOut.setText(str(complex(round(out['Z_Load'].real,2),round(out['Z_Load'].imag,2))))
-        self.lVltgOut.setText(str(round(out['U_RMS_U_Filter_L'],2)))
-        self.invVtlgOut.setText(str(out['U_Load_LL']))
+        
+        if self.AFEModeBtn.isChecked():
+            self.loadVltgOut.setText(str(round(out['U_Mains_LL'],2)))
+            self.loadZOut.setText(str(complex(round(out['Z_Inv'].real,2),round(out['Z_Inv'].imag,2))))
+        else :
+            self.loadVltgOut.setText(str(round(out['U_Load_LL'],2)))
+            self.loadZOut.setText(str(complex(round(out['Z_Load'].real,2),round(out['Z_Load'].imag,2))))
+        self.cCurrentOut.setText(str(round(out['I_Filter_C'],2)))
+        self.lVltgOut.setText(str(round(out['U_Filter_L'],2)))
+        self.invVtlgOut.setText(str(out['U_RMS_inv']))
     
         
     @QtCore.pyqtSlot(int,str)
@@ -458,14 +477,18 @@ class MainWindow(QMainWindow):
         self.dataBaseWindow.show()
             
 
-    def loadPrevParams(self):
-        if os.path.exists(self.filepath):
-            df = pd.read_pickle(self.filepath)
+    def loadPrevParams(self,filepath):
+        if os.path.exists(filepath):
+            df = pd.read_pickle(filepath)
             self.model = pandasModel(df)
             lastSweepParams = self.model.returnLastSweep()
             self.dcVltgIn.setPlainText(str(lastSweepParams.V_DC))
-            self.loadWIn.setPlainText(str(lastSweepParams.Load_S))
-            self.pfDegreeIn.setPlainText(str(lastSweepParams.Load_phi))
+            if self.AFEModeBtn.isChecked():
+                self.loadWIn.setPlainText(str(lastSweepParams.Mains_S))
+                self.pfDegreeIn.setPlainText(str(lastSweepParams.Mains_phi))
+            else:
+                self.loadWIn.setPlainText(str(lastSweepParams.Load_S))
+                self.pfDegreeIn.setPlainText(str(lastSweepParams.Load_phi))
             self.switchFreqIn.setPlainText(str(lastSweepParams.f_s))
             self.tempIn.setPlainText(str(lastSweepParams.T_HS))
             self.fOutIn.setPlainText(str(lastSweepParams.f_out))

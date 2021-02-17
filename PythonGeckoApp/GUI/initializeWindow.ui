@@ -121,7 +121,7 @@
          <item>
           <widget class="QLabel" name="loadWLabel">
            <property name="text">
-            <string>Load in Watts   :</string>
+            <string>Load in VA        :</string>
            </property>
           </widget>
          </item>
@@ -217,7 +217,7 @@
            </property>
            <property name="icon">
             <iconset>
-             <normaloff>../PythonGecko/thermalResistor.jpg</normaloff>../PythonGecko/thermalResistor.jpg</iconset>
+             <normaloff>thermalResistor.jpg</normaloff>thermalResistor.jpg</iconset>
            </property>
            <property name="iconSize">
             <size>
@@ -248,7 +248,7 @@
            </property>
            <property name="icon">
             <iconset>
-             <normaloff>../PythonGecko/thermalResistor.jpg</normaloff>../PythonGecko/thermalResistor.jpg</iconset>
+             <normaloff>thermalResistor.jpg</normaloff>thermalResistor.jpg</iconset>
            </property>
            <property name="iconSize">
             <size>
@@ -279,7 +279,7 @@
            </property>
            <property name="icon">
             <iconset>
-             <normaloff>../PythonGecko/thermalResistor.jpg</normaloff>../PythonGecko/thermalResistor.jpg</iconset>
+             <normaloff>thermalResistor.jpg</normaloff>thermalResistor.jpg</iconset>
            </property>
            <property name="iconSize">
             <size>
@@ -346,7 +346,7 @@
          <item>
           <widget class="QLabel" name="loadZ">
            <property name="text">
-            <string>Load Imp(ZL)   :</string>
+            <string>Load Imp(Z_L)  :</string>
            </property>
           </widget>
          </item>
@@ -364,7 +364,7 @@
          <item>
           <widget class="QLabel" name="lVltg">
            <property name="text">
-            <string>Filter L voltage    :</string>
+            <string>Filter L voltage :</string>
            </property>
           </widget>
          </item>
@@ -382,7 +382,7 @@
          <item>
           <widget class="QLabel" name="modulation">
            <property name="text">
-            <string>modulation (m) : </string>
+            <string>Modulation (m) : </string>
            </property>
           </widget>
          </item>
@@ -436,7 +436,7 @@
          <item>
           <widget class="QLabel" name="peakRlcCurrent">
            <property name="text">
-            <string>Peak I_RLC      :</string>
+            <string>Peak I_Inv          :</string>
            </property>
           </widget>
          </item>

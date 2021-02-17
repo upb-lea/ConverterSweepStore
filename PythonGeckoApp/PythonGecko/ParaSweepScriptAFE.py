@@ -1,5 +1,3 @@
-
-
 import os
 import sys
 import numpy as np
@@ -91,10 +89,10 @@ Filter_C = 3.516e-3
 Filter_L = 117.33e-6
 U_Load_LL = 115
 #Transformer values
-Kt_Transformer = 1.377;
-R_Fe_Transformer = 52;
-R_S_Transformer = 10.88e-3 * Kt_Transformer;
-L_par = 20e-3;
+Kt_Transformer = 1.377
+R_Fe_Transformer = 52
+R_S_Transformer = 10.88e-3 * Kt_Transformer
+L_par = 20e-3
 
 loss_keys = ['IG1_con','IG1_sw','IG3_con','IG3_sw','IG2_con','IG2_sw','IG4_con','IG4_sw','D1_con','D1_sw','D3_con','D3_sw','D2_con','D2_sw','D4_con','D4_sw',
                           'D13_con','D13_sw','D14_con','D14_sw']
@@ -102,7 +100,7 @@ temp_keys = ['Igbt1Temp','Igbt2Temp','D1Temp','D2Temp','DcTemp']
 
 def startSIM(pset): 
        #ginst.connectToGecko()
-    saveData = False
+    saveData = True
     params = {}
     thermalSet = {}
     params["Transistor"] = pset["Transistor"]

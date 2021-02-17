@@ -7,6 +7,7 @@ import csv
 import pandas as pd
 from retrying import retry
 from GISMSParameters_phi import GISMSParameters_phi
+from AFEParameters import AFE_Parameters
 import glob
 import psweep as ps
 import subprocess
@@ -18,10 +19,11 @@ class startConnection(QObject):
     progressUpdate = pyqtSignal(int,str)
     thermal_file_path = r'calc\Thermal\params.csv'
 
-    def __init__(self,dataimport,saveData):
+    def __init__(self,dataimport,saveData,isAfeSelected):
         super().__init__()
         self.params = dataimport
         self.saveData = saveData
+        self.afeMode = isAfeSelected
     def eventemit(self):
         print('we are inside')
         print(self.params)
@@ -92,16 +94,22 @@ class startConnection(QObject):
         revDiodeList = ps.plist('Transistor_revD',self.params['Transistor_revD'])
         fwDiodeList = ps.plist('Transistor_fwD',self.params['Transistor_fwD'])
         dcVoltage = ps.plist('V_DC',self.params['V_DC'])
-        loadS = ps.plist('Load_S',self.params['Load_S'])
-        cosPhi = ps.plist('Load_phi',self.params['Load_phi'])
         switchFreq = ps.plist('f_s',self.params['f_s'])
         temp = ps.plist('T_HS',self.params['T_HS'])
         fOut = ps.plist('f_out',self.params['f_out'])
-        paramsList = ps.pgrid(igbtList,revDiodeList,fwDiodeList,dcVoltage,loadS,switchFreq,cosPhi,temp,fOut)
+        if self.afeMode:
+            MainsS = ps.plist('Mains_S',self.params['Mains_S'])
+            MainsPhi = ps.plist('Mains_phi',self.params['Mains_phi'])
+            paramsList = ps.pgrid(igbtList,revDiodeList,fwDiodeList,dcVoltage,MainsS,switchFreq,MainsPhi,temp,fOut)
+        else :            
+            loadS = ps.plist('Load_S',self.params['Load_S'])
+            Phi = ps.plist('Load_phi',self.params['Load_phi'])
+            paramsList = ps.pgrid(igbtList,revDiodeList,fwDiodeList,dcVoltage,loadS,switchFreq,Phi,temp,fOut)
         incrementor = 100/len(paramsList)
         Filter_C = 3.516e-3
         Filter_L = 117.33e-6
         U_Load_LL = 115
+        U_Mains_LL = 115
         #Transformer values
         Kt_Transformer = 1.377;
         R_Fe_Transformer = 52;
@@ -122,11 +130,16 @@ class startConnection(QObject):
             params["Transistor_revD"] = pset["Transistor_revD"]
             params["Transistor_fwD"] = pset["Transistor_fwD"]
             params["V_DC"] = float(pset["V_DC"])
-            params["Load_S"] = float(pset["Load_S"])
-            params["Load_phi"] = float(pset["Load_phi"])
+            if self.afeMode:
+                params["Mains_S"] = float(pset["Mains_S"])
+                params["Mains_phi"] = float(pset["Mains_phi"])
+            else:
+                params["Load_S"] = float(pset["Load_S"])
+                params["Load_phi"] = float(pset["Load_phi"])
             params["f_s"] = float(pset["f_s"])
             params["T_HS"] = int(pset["T_HS"])
             params["f_out"] = int(pset["f_out"])
+            #setting up the thermal parameters
             df = pd.read_csv(self.thermal_file_path,index_col =['Datasheet'])
             thermalTransData = df.loc[df.index ==params["Transistor"]].to_dict(orient = 'index')
             thermalRevDiodeData = df.loc[df.index ==params["Transistor_revD"]].to_dict(orient = 'index')
@@ -172,9 +185,17 @@ class startConnection(QObject):
             ginst.setGlobalParameterValue(parname,Cth_fwd)
             
             
-            #calculation og GISMS parameters and assigning to global parameters in GECKO circuits
-            out = GISMSParameters_phi(params["V_DC"], U_Load_LL, params["f_out"], Filter_L, Filter_C, params["Load_S"], params["Load_phi"],R_Fe_Transformer,R_S_Transformer,L_par , 1)
-            out['U_Load_LL'] = U_Load_LL
+            #calculation of GISMS  or AFE parameters and assigning to global parameters in GECKO circuits
+            if self.afeMode:
+                 out = AFE_Parameters(params["V_DC"], U_Mains_LL, params["f_out"], Filter_L, Filter_C, params["Mains_S"], params["Mains_phi"],R_Fe_Transformer,R_S_Transformer,L_par , 1)
+                 out['U_Mains_LL'] = U_Mains_LL
+                 out["phi_degree_inv"] = 180+out["phi_degree_inv"]
+            else:
+                out = GISMSParameters_phi(params["V_DC"], U_Load_LL, params["f_out"], Filter_L, Filter_C, params["Load_S"], params["Load_phi"],R_Fe_Transformer,R_S_Transformer,L_par , 1)
+                out['U_Load_LL'] = U_Load_LL
+            
+            for i in range (3):
+                ginst.setParameter(JString("Iout."+ str(i+1)),"phase",out["phi_degree_inv"]+(i)*120)
             self.gismsUpdate.emit(out)
 
             parname = JString("$fout")
@@ -193,8 +214,6 @@ class startConnection(QObject):
             ginst.setGlobalParameterValue(parname,out["m"])
             parname = JString("$Ipeak_inv")
             ginst.setGlobalParameterValue(parname,out["I_Peak_inv"])
-            for i in range (3):
-                ginst.setParameter(JString("Iout."+ str(i+1)),"phase",out["phi_degree_inv"]+(i)*120)
             #if required to save this sweep file
             #ginst.saveFileAs(JString("D:\\thesis-research\\VS_code\\PythonGecko\\IPESFolder\\3NPC_sweep_"+pset['_pset_id']+".ipes"))
             ginst.set_dt(dt_step)  # Simulation time step
@@ -249,8 +268,10 @@ class startConnection(QObject):
                 meanLosses['file'] = "NA"
             self.progressUpdate.emit(incrementor*count,'running')
             return {**meanLosses, **meanTemp}
-        
-        df = ps.run(startSIM, paramsList)
+        if self.afeMode:
+            df = ps.run(startSIM, paramsList, calc_dir='calc_AFE')
+        else :
+            df = ps.run(startSIM, paramsList)
         self.progressUpdate.emit(-1,'Done')
         ginst.shutdown()
             
