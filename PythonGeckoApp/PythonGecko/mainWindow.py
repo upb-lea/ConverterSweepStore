@@ -15,6 +15,7 @@ from  matplotlib.backends.backend_qt5agg  import  ( NavigationToolbar2QT  as  Na
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 import  random
+import math
 from PyQt5 import QtCore,uic
 from PyQt5.QtGui import QIcon
 from pandasModel import pandasModel
@@ -73,6 +74,10 @@ class MainWindow(QMainWindow):
         self.buttonGroupScatterData.setId(self.invTotalRadio,1)
         self.buttonGroupScatterData.setId(self.invIgbtRadio,2)
         self.buttonGroupScatterData.setId(self.invDiodeRadio,3)
+        self.buttonGroupRangeType.setId(self.optPinToolBtn,1)
+        self.buttonGroupRangeType.setId(self.optVdcToolBtn,2)
+        self.buttonGroupRangeType.setId(self.optSwToolBtn,3)
+        self.buttonGroupRangeType.buttonClicked[int].connect(self.toggleSlider)
         self.scDiodeCombo.textActivated.connect(self.scComboboxChanged)
         self.scIgbtCombo.textActivated.connect(self.scComboboxChanged)
         self.opComboType.textActivated.connect(self.updateOpBtnLabel)
@@ -84,6 +89,53 @@ class MainWindow(QMainWindow):
         self.opClearBtn.clicked.connect(self.clear)
         self.InverterModeBtn.setChecked(True)
         self.sc = {}
+        self.df = pd.read_pickle(self.invfilepath)
+        self.PinRangeSelector.hide()
+        self.VdcRangeSelector.hide()
+        self.SwRangeSelector.hide()
+        self.VdcRangeSelector.setBackgroundStyle('background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #222, stop:1 #333);')
+        self.VdcRangeSelector.setSpanStyle('background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #282, stop:1 #393);')
+        self.VdcRangeSelector.setStyleSheet("""
+        QRangeSlider > QSplitter::handle {
+            background: #777;
+            border: 1px solid #555;
+        }
+        QRangeSlider > QSplitter::handle:vertical {
+            height: 2px;
+        }
+        QRangeSlider > QSplitter::handle:pressed {
+            background: #ca5;
+        }
+        """)
+        self.PinRangeSelector.setBackgroundStyle('background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #222, stop:1 #333);')
+        self.PinRangeSelector.setSpanStyle('background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #282, stop:1 #393);')
+        self.PinRangeSelector.setStyleSheet("""
+        QRangeSlider > QSplitter::handle {
+            background: #777;
+            border: 1px solid #555;
+        }
+        QRangeSlider > QSplitter::handle:vertical {
+            height: 2px;
+        }
+        QRangeSlider > QSplitter::handle:pressed {
+            background: #ca5;
+        }
+        """)
+        self.SwRangeSelector.setBackgroundStyle('background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #222, stop:1 #333);')
+        self.SwRangeSelector.setSpanStyle('background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #282, stop:1 #393);')
+        self.SwRangeSelector.setStyleSheet("""
+        QRangeSlider > QSplitter::handle {
+            background: #777;
+            border: 1px solid #555;
+        }
+        QRangeSlider > QSplitter::handle:vertical {
+            height: 2px;
+        }
+        QRangeSlider > QSplitter::handle:pressed {
+            background: #ca5;
+        }
+        """)
+
 
     def openPandasGUI(self) :
         df = pd.read_pickle(self.invfilepath)
@@ -116,7 +168,36 @@ class MainWindow(QMainWindow):
             self.opAddBtn.setText('Update')
         else:
             self.opAddBtn.setText('Add')
-
+    def toggleSlider(self,id):
+        vdcMinReq =  185
+        vdcMaxReq = 260
+        vdcNominal = 216
+        fsMaxReq = 14400
+        fsMinReq = 7200
+        fsNominal = 10800
+        pWNomial = 32000
+        vDcMax = self.df['V_DC'].max()
+        vDcMin = self.df['V_DC'].min()
+        fsMax = self.df['f_s'].max()    
+        fsMin = self.df['f_s'].min()
+        if not 'PWatts' in self.df.columns:
+            self.df['PWatts'] = self.df['Load_S']* self.df['Load_phi'].apply(math.cos)
+        pWMax = self.df['PWatts'].max()
+        pWMin = self.df['PWatts'].min()
+        btnOptions = { 1:{'rangeBtn':self.PinRangeSelector,'inputBtn':self.optPinInput,'Max':pWMax,'Min':pWMin,'normValue':1000,'decimalValue':1},
+                       2:{'rangeBtn':self.VdcRangeSelector,'inputBtn':self.optVdcInput,'Max':vDcMax,'Min':vDcMin},
+                       3:{'rangeBtn':self.SwRangeSelector,'inputBtn':self.optSwInput,'Max':fsMax,'Min':fsMin,'normValue':1000,'decimalValue':1}
+                      }
+        self.toggleInput(**btnOptions[id])
+    def toggleInput(self,rangeBtn,inputBtn,Max,Min,normValue= 1,decimalValue = 0):
+            if rangeBtn.isVisible():
+                rangeBtn.hide()
+                inputBtn.show()
+            else :
+                rangeBtn.show()
+                rangeBtn.setMin(round(Min/normValue,decimalValue))
+                rangeBtn.setMax(round(Max/normValue,decimalValue))
+                inputBtn.hide()    
 
     def validateFilter(self) :
         filtString = {}
@@ -344,10 +425,9 @@ class MainWindow(QMainWindow):
         
 
     def onChange(self, ord):
-        if ord:
+        if ord ==1:
             self.plotControls.show()
             self.initializeControls()
-            
         else :
             self.plotControls.hide()
             self.MplWidget.canvas.toolbar_visible = False

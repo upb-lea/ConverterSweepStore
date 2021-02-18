@@ -39,6 +39,7 @@
     <Compile Include="ParaSweepScriptAFE.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="RangeSlider.py" />
     <Compile Include="ruff.py">
       <SubType>Code</SubType>
     </Compile>
