@@ -88,6 +88,7 @@ class MainWindow(QMainWindow):
         self.plotBtn.clicked.connect(self.validateFilter)
         self.opClearBtn.clicked.connect(self.clear)
         self.InverterModeBtn.setChecked(True)
+        self.searchOptBtn.clicked.connect(self.findOptimum)
         self.sc = {}
         self.df = pd.read_pickle(self.invfilepath)
         self.PinRangeSelector.hide()
@@ -150,6 +151,7 @@ class MainWindow(QMainWindow):
         self.opAddBtn.setText('Add')
         self.opErrorLabel.setStyleSheet("")
         self.opErrorLabel.clear()
+
     def updateAfeLabels(self,button):
         if button.text()=='AFE':
             self.loadWLabel.setText("Mains in VA       :")
@@ -168,6 +170,7 @@ class MainWindow(QMainWindow):
             self.opAddBtn.setText('Update')
         else:
             self.opAddBtn.setText('Add')
+
     def toggleSlider(self,id):
         vdcMinReq =  185
         vdcMaxReq = 260
@@ -176,20 +179,91 @@ class MainWindow(QMainWindow):
         fsMinReq = 7200
         fsNominal = 10800
         pWNomial = 32000
+        def findRange(Min,Max,MinReq,MaxReq):
+            if(MinReq > Min):
+                Min = MinReq
+            if(MaxReq < Max):
+                Max = MaxReq
+            return Max,Min
         vDcMax = self.df['V_DC'].max()
         vDcMin = self.df['V_DC'].min()
         fsMax = self.df['f_s'].max()    
         fsMin = self.df['f_s'].min()
         if not 'PWatts' in self.df.columns:
-            self.df['PWatts'] = self.df['Load_S']* self.df['Load_phi'].apply(math.cos)
+            self.df['PWatts'] = round(self.df['Load_S']* self.df['Load_phi'].apply(math.cos))
         pWMax = self.df['PWatts'].max()
         pWMin = self.df['PWatts'].min()
-        btnOptions = { 1:{'rangeBtn':self.PinRangeSelector,'inputBtn':self.optPinInput,'Max':pWMax,'Min':pWMin,'normValue':1000,'decimalValue':1},
-                       2:{'rangeBtn':self.VdcRangeSelector,'inputBtn':self.optVdcInput,'Max':vDcMax,'Min':vDcMin},
-                       3:{'rangeBtn':self.SwRangeSelector,'inputBtn':self.optSwInput,'Max':fsMax,'Min':fsMin,'normValue':1000,'decimalValue':1}
+        setVDcMax,setVDcMin = findRange(vDcMin,vDcMax,vdcMinReq,vdcMaxReq)
+        setFsMax,setFsMin = findRange(fsMin,fsMax,fsMinReq,fsMaxReq)
+        setPWMax,setPWMin = findRange(pWMin,pWMax,10000,pWNomial)
+        btnOptions = { 1:{'rangeBtn':self.PinRangeSelector,'inputBtn':self.optPinInput,'Max':pWMax,'Min':pWMin,'rangeMin':setPWMin,'rangeMax':setPWMax,'normValue':1000,'decimalValue':1},
+                       2:{'rangeBtn':self.VdcRangeSelector,'inputBtn':self.optVdcInput,'Max':vDcMax,'Min':vDcMin,'rangeMin':setVDcMin,'rangeMax':setVDcMax},
+                       3:{'rangeBtn':self.SwRangeSelector,'inputBtn':self.optSwInput,'Max':fsMax,'Min':fsMin,'rangeMin':setFsMin,'rangeMax':setFsMax,'normValue':1000,'decimalValue':1}
                       }
         self.toggleInput(**btnOptions[id])
-    def toggleInput(self,rangeBtn,inputBtn,Max,Min,normValue= 1,decimalValue = 0):
+   
+    def findOptimum(self):
+        searchSeries = {}
+        searchValue = []
+        if not 'PWatts' in self.df.columns:
+            self.df['PWatts'] = round(self.df['Load_S']* self.df['Load_phi'].apply(math.cos))
+        try:
+            def searchOptBtn(rangeBtn,column,inputBtn,normalizeValue =1):
+                if rangeBtn.isVisible(): 
+                    range = rangeBtn.getRange()
+                    actual_range = tuple([normalizeValue*x for x in range])
+                    searchValue = list(actual_range)
+                    filterSeries = self.df[column].between(*actual_range)
+                else:
+                    searchValue = float(inputBtn.text())
+                    filterSeries = self.df[column]==float(inputBtn.text())
+                isAValidSeries = filterSeries.sum()                                
+                if not isAValidSeries:
+                    raise Exception("{} = {} not found".format(''.join(column),''.join(str(searchValue))))
+                else : 
+                    return filterSeries
+            
+            searchSeries['pSearchSeries'] = searchOptBtn(self.PinRangeSelector,'PWatts',self.optPinInput,1000)
+            searchSeries['vDcSearchSeries'] = searchOptBtn(self.VdcRangeSelector,'V_DC',self.optVdcInput)
+            searchSeries['sWSearchSeries'] = searchOptBtn(self.SwRangeSelector,'f_s',self.optSwInput,1000)
+            conditionsBoolReturns = list(searchSeries.values())
+            resultDataFrame = self.df[self.conjunction(*conditionsBoolReturns)]
+            if resultDataFrame.empty :
+                raise Exception("Not in DBase")
+            else :
+                self.processAndMaptoFigure(resultDataFrame)
+        except Exception as e:
+            #self.opErrorLabel.setStyleSheet("QLabel { background-color : yellow; color : red; }")
+            print(str(e.args[0]))
+    
+    def processAndMaptoFigure(self,df):
+        finalRow = df[df['InvTotalLoss']==df['InvTotalLoss'].min()].to_dict('records')[0]
+        conductionLoss = [finalRow['IG1_con'],finalRow['D1_con'],finalRow['IG2_con'],finalRow['D2_con'],finalRow['D13_con']]
+        switchLoss = [finalRow['IG1_sw'],finalRow['D1_sw'],finalRow['IG2_sw'],finalRow['D2_sw'],finalRow['D13_sw']]
+        index  = ['T1/T4','D1/D4','T2/T3','D2/D3','D5/D6']
+        df = pd.DataFrame({'Cond Loss': conductionLoss,'SW Loss': switchLoss}, index=index)
+        self.OptimalChartArea.canvas.axes.clear()
+        ax= df.plot(kind='bar',ax=self.OptimalChartArea.canvas.axes,rot=0)
+        rects = ax.patches
+        for rect in rects:
+            height = rect.get_height()
+            ax.text(rect.get_x() + rect.get_width() / 2, height, round(height,2),
+                    ha='center', va='bottom')
+        ax.set_title('Operating Losses')
+        ax.set_xlabel('Switches')
+        ax.set_ylabel('Loss In Watts')
+        textstr = "V_DC :{},\nTLoss:{},\nPdel :{},\nFsw   :{}".format("".join(str(finalRow['V_DC'])),"".join(str(round(finalRow['InvTotalLoss'],2))),
+                                       "".join(str(finalRow['PWatts'])),"".join(str(finalRow['f_s'])))
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+        ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=6,
+                verticalalignment='top',horizontalalignment='left', bbox=props)
+        self.OptimalChartArea.canvas.draw()
+        self.OptimalChartArea.canvas.figure.set_visible(True)
+        self.OptimalChartArea.toolbar.hide()
+        self.OptimalChartArea.canvas.draw_idle()
+
+
+    def toggleInput(self,rangeBtn,inputBtn,Max,Min,rangeMin,rangeMax,normValue= 1,decimalValue = 0):
             if rangeBtn.isVisible():
                 rangeBtn.hide()
                 inputBtn.show()
@@ -197,6 +271,7 @@ class MainWindow(QMainWindow):
                 rangeBtn.show()
                 rangeBtn.setMin(round(Min/normValue,decimalValue))
                 rangeBtn.setMax(round(Max/normValue,decimalValue))
+                rangeBtn.setRange(round(rangeMin/normValue,decimalValue),round(rangeMax/normValue,decimalValue))
                 inputBtn.hide()    
 
     def validateFilter(self) :
@@ -289,7 +364,7 @@ class MainWindow(QMainWindow):
            
         if selected :
             self.data2plot['xData']= {'V_DC': list(self.df['V_DC'])}                
-            self.data2plot['yData']= {selected: list(self.df[selected])}
+            self.data2plot['yData']= {selected: list(self.df[selected].fillna(0))}
             length = len(self.data2plot['yData'][selected])
             xLabel = 'Dc Link Voltage'
             yLabel =  button.text() if 'Loss' in button.text() else button.text()+' Loss'
@@ -378,6 +453,7 @@ class MainWindow(QMainWindow):
         self.MplWidget.canvas.figure.set_visible(True)
         self.MplWidget.toolbar.show()
         self.MplWidget.canvas.draw()
+
         
     def update_scatter_annot(self,sc,ind):
         pos = sc.get_offsets()[ind]
@@ -599,13 +675,7 @@ class MainWindow(QMainWindow):
         self.thermalWindow.show()
 
 
-            
-
-
-
-
-
-     
+                 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     mainWindow = MainWindow()
