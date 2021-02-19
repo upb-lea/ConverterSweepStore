@@ -77,7 +77,7 @@ class MainWindow(QMainWindow):
         self.buttonGroupRangeType.setId(self.optPinToolBtn,1)
         self.buttonGroupRangeType.setId(self.optVdcToolBtn,2)
         self.buttonGroupRangeType.setId(self.optSwToolBtn,3)
-        self.buttonGroupRangeType.buttonClicked[int].connect(self.toggleSlider)
+        self.buttonGroupRangeType.buttonClicked[int].connect(self.rangeAndUpdate)
         self.scDiodeCombo.textActivated.connect(self.scComboboxChanged)
         self.scIgbtCombo.textActivated.connect(self.scComboboxChanged)
         self.opComboType.textActivated.connect(self.updateOpBtnLabel)
@@ -86,6 +86,8 @@ class MainWindow(QMainWindow):
         self.buttonGroupMode.buttonClicked.connect(self.updateAfeLabels)
         self.opAddBtn.clicked.connect(self.addFilterCriteria)
         self.plotBtn.clicked.connect(self.validateFilter)
+        self.optInvBtn.setChecked(True)
+        self.buttonGroupOptMode.buttonClicked.connect(self.pointToAfeDb)
         self.opClearBtn.clicked.connect(self.clear)
         self.InverterModeBtn.setChecked(True)
         self.searchOptBtn.clicked.connect(self.findOptimum)
@@ -163,6 +165,18 @@ class MainWindow(QMainWindow):
             self.loadVltg.setText("Load Voltage       :")
             self.loadPrevParams(self.invfilepath)
             self.loadZ.setText("Load Imp(Z_L)  :")
+    
+    def pointToAfeDb(self,button):
+        self.optStatusLabel.setStyleSheet("")  #check the position
+        self.optStatusLabel.clear()
+        if button.text()=='AFE':
+            self.df = pd.read_pickle(self.afefilepath)
+        else:
+            self.df = pd.read_pickle(self.invfilepath)
+        self.rangeAndUpdate() #UPDATES all sliders irrespective of visibility of each slider everytime db gets changed
+        self.OptimalChartArea.canvas.figure.set_visible(False)
+        self.OptimalChartArea.toolbar.hide()
+        self.OptimalChartArea.canvas.draw()
 
     def updateOpBtnLabel(self):
         key = self.opComboType.currentText()
@@ -171,7 +185,7 @@ class MainWindow(QMainWindow):
         else:
             self.opAddBtn.setText('Add')
 
-    def toggleSlider(self,id):
+    def rangeAndUpdate(self,id=None):
         vdcMinReq =  185
         vdcMaxReq = 260
         vdcNominal = 216
@@ -189,7 +203,9 @@ class MainWindow(QMainWindow):
         vDcMin = self.df['V_DC'].min()
         fsMax = self.df['f_s'].max()    
         fsMin = self.df['f_s'].min()
-        if not 'PWatts' in self.df.columns:
+        if self.buttonGroupOptMode.checkedButton().text() == 'AFE':
+            self.df['PWatts'] = round(self.df['Mains_S']* self.df['Mains_phi'].apply(math.cos))
+        else :
             self.df['PWatts'] = round(self.df['Load_S']* self.df['Load_phi'].apply(math.cos))
         pWMax = self.df['PWatts'].max()
         pWMin = self.df['PWatts'].min()
@@ -200,13 +216,22 @@ class MainWindow(QMainWindow):
                        2:{'rangeBtn':self.VdcRangeSelector,'inputBtn':self.optVdcInput,'Max':vDcMax,'Min':vDcMin,'rangeMin':setVDcMin,'rangeMax':setVDcMax},
                        3:{'rangeBtn':self.SwRangeSelector,'inputBtn':self.optSwInput,'Max':fsMax,'Min':fsMin,'rangeMin':setFsMin,'rangeMax':setFsMax,'normValue':1000,'decimalValue':1}
                       }
-        self.toggleInput(**btnOptions[id])
+        if id is None :
+            for slider in btnOptions:
+                self.updateSlider(**btnOptions[slider])
+        else :
+            self.toggleInput(**btnOptions[id])
    
     def findOptimum(self):
         searchSeries = {}
         searchValue = []
+        self.optStatusLabel.setStyleSheet("")  #check the position
+        self.optStatusLabel.clear()
         if not 'PWatts' in self.df.columns:
-            self.df['PWatts'] = round(self.df['Load_S']* self.df['Load_phi'].apply(math.cos))
+            if self.buttonGroupOptMode.checkedButton().text() == 'AFE':
+                self.df['PWatts'] = round(self.df['Mains_S']* self.df['Mains_phi'].apply(math.cos))
+            else :
+                self.df['PWatts'] = round(self.df['Load_S']* self.df['Load_phi'].apply(math.cos))
         try:
             def searchOptBtn(rangeBtn,column,inputBtn,normalizeValue =1):
                 if rangeBtn.isVisible(): 
@@ -232,10 +257,14 @@ class MainWindow(QMainWindow):
                 raise Exception("Not in DBase")
             else :
                 self.processAndMaptoFigure(resultDataFrame)
+        except ValueError:
+            self.optStatusLabel.setStyleSheet("QLabel { background-color : yellow; color : red; }")
+            self.optStatusLabel.setText("Please check the inputs provided")
         except Exception as e:
-            #self.opErrorLabel.setStyleSheet("QLabel { background-color : yellow; color : red; }")
+            self.optStatusLabel.setStyleSheet("QLabel { background-color : yellow; color : red; }")
+            self.optStatusLabel.setText(str(e.args[0]))
             print(str(e.args[0]))
-    
+        
     def processAndMaptoFigure(self,df):
         finalRow = df[df['InvTotalLoss']==df['InvTotalLoss'].min()].to_dict('records')[0]
         conductionLoss = [finalRow['IG1_con'],finalRow['D1_con'],finalRow['IG2_con'],finalRow['D2_con'],finalRow['D13_con']]
@@ -257,23 +286,30 @@ class MainWindow(QMainWindow):
         props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
         ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=6,
                 verticalalignment='top',horizontalalignment='left', bbox=props)
-        self.OptimalChartArea.canvas.draw()
+        #self.OptimalChartArea.canvas.draw()
+        #self.OptimalChartArea.toolbar.hide()
         self.OptimalChartArea.canvas.figure.set_visible(True)
-        self.OptimalChartArea.toolbar.hide()
         self.OptimalChartArea.canvas.draw_idle()
 
 
-    def toggleInput(self,rangeBtn,inputBtn,Max,Min,rangeMin,rangeMax,normValue= 1,decimalValue = 0):
+    def toggleInput(self,rangeBtn,inputBtn,Max,Min,rangeMin,rangeMax,normValue=1,decimalValue=0):
             if rangeBtn.isVisible():
                 rangeBtn.hide()
                 inputBtn.show()
             else :
                 rangeBtn.show()
+                self.updateSlider(rangeBtn,inputBtn,Max,Min,rangeMin,rangeMax,normValue,decimalValue)
+                inputBtn.hide()    
+    def updateSlider(self,rangeBtn,inputBtn,Max,Min,rangeMin,rangeMax,normValue= 1,decimalValue = 0):
+                if Max == Min:
+                    inputBtn.show()
+                    inputBtn.setText(str(Max))
+                    rangeBtn.hide()
+                    return
                 rangeBtn.setMin(round(Min/normValue,decimalValue))
                 rangeBtn.setMax(round(Max/normValue,decimalValue))
                 rangeBtn.setRange(round(rangeMin/normValue,decimalValue),round(rangeMax/normValue,decimalValue))
-                inputBtn.hide()    
-
+                
     def validateFilter(self) :
         filtString = {}
         try :
@@ -507,6 +543,7 @@ class MainWindow(QMainWindow):
         else :
             self.plotControls.hide()
             self.MplWidget.canvas.toolbar_visible = False
+            self.OptimalChartArea.toolbar.hide()
 
 
     def checkThermalParams(self,df):
