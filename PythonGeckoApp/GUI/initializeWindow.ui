@@ -1025,7 +1025,7 @@
         <rect>
          <x>10</x>
          <y>140</y>
-         <width>121</width>
+         <width>129</width>
          <height>31</height>
         </rect>
        </property>
@@ -1161,9 +1161,9 @@
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_3">
        <item>
-        <widget class="QLabel" name="optStatus">
+        <widget class="QLabel" name="optStatusLabel">
          <property name="text">
-          <string>Status</string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -1195,8 +1195,14 @@
    </property>
    <property name="minimumSize">
     <size>
-     <width>218</width>
-     <height>449</height>
+     <width>210</width>
+     <height>451</height>
+    </size>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>228</width>
+     <height>600</height>
     </size>
    </property>
    <property name="sizeIncrement">
@@ -1235,61 +1241,116 @@
     </property>
     <layout class="QVBoxLayout" name="verticalLayout_2">
      <item>
-      <widget class="QGroupBox" name="plotTypeBox">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="minimumSize">
-        <size>
-         <width>126</width>
-         <height>78</height>
-        </size>
-       </property>
-       <property name="title">
-        <string>Plot Type</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-       </property>
-       <property name="checkable">
-        <bool>false</bool>
-       </property>
-       <widget class="QWidget" name="layoutWidget">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>20</y>
-          <width>101</width>
-          <height>51</height>
-         </rect>
-        </property>
-        <layout class="QVBoxLayout" name="verticalLayout">
-         <item>
-          <widget class="QRadioButton" name="plotScRadio">
-           <property name="text">
-            <string>Scatter</string>
-           </property>
-           <attribute name="buttonGroup">
-            <string notr="true">buttonGroupPlotType</string>
-           </attribute>
-          </widget>
-         </item>
-         <item>
-          <widget class="QRadioButton" name="plotLinRadio">
-           <property name="text">
-            <string>Linear</string>
-           </property>
-           <attribute name="buttonGroup">
-            <string notr="true">buttonGroupPlotType</string>
-           </attribute>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </widget>
+      <layout class="QHBoxLayout" name="horizontalLayout_26">
+       <item>
+        <widget class="QGroupBox" name="plotTypeBox">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>96</width>
+           <height>78</height>
+          </size>
+         </property>
+         <property name="title">
+          <string>Plot Type</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+         </property>
+         <property name="checkable">
+          <bool>false</bool>
+         </property>
+         <widget class="QWidget" name="layoutWidget">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>20</y>
+            <width>71</width>
+            <height>51</height>
+           </rect>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout">
+           <item>
+            <widget class="QRadioButton" name="plotScRadio">
+             <property name="text">
+              <string>Scatter</string>
+             </property>
+             <attribute name="buttonGroup">
+              <string notr="true">buttonGroupPlotType</string>
+             </attribute>
+            </widget>
+           </item>
+           <item>
+            <widget class="QRadioButton" name="plotLinRadio">
+             <property name="text">
+              <string>Linear</string>
+             </property>
+             <attribute name="buttonGroup">
+              <string notr="true">buttonGroupPlotType</string>
+             </attribute>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBox_2">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>88</width>
+           <height>78</height>
+          </size>
+         </property>
+         <property name="title">
+          <string>Plot Mode</string>
+         </property>
+         <widget class="QWidget" name="verticalLayoutWidget_4">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>20</y>
+            <width>71</width>
+            <height>51</height>
+           </rect>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_4">
+           <item>
+            <widget class="QRadioButton" name="plotInvBtn">
+             <property name="text">
+              <string>Inverter</string>
+             </property>
+             <attribute name="buttonGroup">
+              <string notr="true">buttonGroupPlotMode</string>
+             </attribute>
+            </widget>
+           </item>
+           <item>
+            <widget class="QRadioButton" name="plotAFEBtn">
+             <property name="text">
+              <string>AFE</string>
+             </property>
+             <attribute name="buttonGroup">
+              <string notr="true">buttonGroupPlotMode</string>
+             </attribute>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </widget>
+       </item>
+      </layout>
      </item>
      <item>
       <widget class="QGroupBox" name="scatterDataBox">
@@ -1475,10 +1536,11 @@
  <resources/>
  <connections/>
  <buttongroups>
+  <buttongroup name="buttonGroupPlotType"/>
   <buttongroup name="buttonGroupMode"/>
   <buttongroup name="buttonGroupRangeType"/>
   <buttongroup name="buttonGroupScatterData"/>
-  <buttongroup name="buttonGroupPlotType"/>
   <buttongroup name="buttonGroupOptMode"/>
+  <buttongroup name="buttonGroupPlotMode"/>
  </buttongroups>
 </ui>

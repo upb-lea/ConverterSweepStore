@@ -87,9 +87,12 @@ class MainWindow(QMainWindow):
         self.opAddBtn.clicked.connect(self.addFilterCriteria)
         self.plotBtn.clicked.connect(self.validateFilter)
         self.optInvBtn.setChecked(True)
-        self.buttonGroupOptMode.buttonClicked.connect(self.pointToAfeDb)
-        self.opClearBtn.clicked.connect(self.clear)
+        self.plotInvBtn.setChecked(True)
         self.InverterModeBtn.setChecked(True)
+        self.buttonGroupPlotMode.buttonClicked.connect(self.plotChangeDb)
+        self.buttonGroupOptMode.buttonClicked.connect(self.optChangeDb)
+        self.opClearBtn.clicked.connect(self.clear)
+        
         self.searchOptBtn.clicked.connect(self.findOptimum)
         self.sc = {}
         self.df = pd.read_pickle(self.invfilepath)
@@ -165,8 +168,14 @@ class MainWindow(QMainWindow):
             self.loadVltg.setText("Load Voltage       :")
             self.loadPrevParams(self.invfilepath)
             self.loadZ.setText("Load Imp(Z_L)  :")
-    
-    def pointToAfeDb(self,button):
+    def plotChangeDb(self,button):
+        if button.text()=='AFE':
+            self.df = pd.read_pickle(self.afefilepath)
+        else:
+            self.df = pd.read_pickle(self.invfilepath)
+        self.opComboType
+        
+    def optChangeDb(self,button):
         self.optStatusLabel.setStyleSheet("")  #check the position
         self.optStatusLabel.clear()
         if button.text()=='AFE':

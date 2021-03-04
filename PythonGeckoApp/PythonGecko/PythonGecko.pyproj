@@ -21,6 +21,9 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="AddToTransistorDB.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="AFEParameters.py" />
     <Compile Include="dataBaseClass.py">
       <SubType>Code</SubType>

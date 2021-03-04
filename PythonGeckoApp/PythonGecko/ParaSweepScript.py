@@ -1,4 +1,3 @@
-
 import os
 import sys
 import numpy as np
@@ -68,7 +67,7 @@ t_end = 300e-3
 #parameter goes in here
 vDC = [216]
 loadS = [40000]
-loadphi = [0]
+loadphi = [32]
 fS =  [7200]
 tHS = [95]
 fOut = [50]
@@ -160,6 +159,7 @@ def startSIM(pset):
     
     #calculation og GISMS parameters and assigning to global parameters in GECKO circuits
     out = GISMSParameters_phi(params["V_DC"], U_Load_LL, params["f_out"], Filter_L, Filter_C, params["Load_S"], params["Load_phi"],R_Fe_Transformer,R_S_Transformer,L_par, 1)
+    print(out)
     out['U_Load_LL'] = U_Load_LL
     
     parname = JString("$fout")
