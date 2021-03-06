@@ -97,8 +97,8 @@
        <rect>
         <x>10</x>
         <y>10</y>
-        <width>261</width>
-        <height>231</height>
+        <width>281</width>
+        <height>241</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="inputParamsLayout">
@@ -183,111 +183,6 @@
          </item>
          <item>
           <widget class="QPlainTextEdit" name="fOutIn"/>
-         </item>
-        </layout>
-       </item>
-      </layout>
-     </widget>
-     <widget class="QWidget" name="verticalLayoutWidget">
-      <property name="geometry">
-       <rect>
-        <x>280</x>
-        <y>10</y>
-        <width>421</width>
-        <height>121</height>
-       </rect>
-      </property>
-      <layout class="QVBoxLayout" name="dataSheetLayout">
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_6">
-         <item>
-          <widget class="QLabel" name="igbtDataLabel">
-           <property name="text">
-            <string>IGBT DataSheet :</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPlainTextEdit" name="igbtDataIn"/>
-         </item>
-         <item>
-          <widget class="QToolButton" name="toolButtonIGBT">
-           <property name="text">
-            <string>...</string>
-           </property>
-           <property name="icon">
-            <iconset>
-             <normaloff>thermalResistor.jpg</normaloff>thermalResistor.jpg</iconset>
-           </property>
-           <property name="iconSize">
-            <size>
-             <width>18</width>
-             <height>18</height>
-            </size>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_7">
-         <item>
-          <widget class="QLabel" name="revDataLabel">
-           <property name="text">
-            <string>Rev Diode Data  :</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPlainTextEdit" name="revDataIn"/>
-         </item>
-         <item>
-          <widget class="QToolButton" name="toolButtonRev">
-           <property name="text">
-            <string>...</string>
-           </property>
-           <property name="icon">
-            <iconset>
-             <normaloff>thermalResistor.jpg</normaloff>thermalResistor.jpg</iconset>
-           </property>
-           <property name="iconSize">
-            <size>
-             <width>18</width>
-             <height>18</height>
-            </size>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_8">
-         <item>
-          <widget class="QLabel" name="fwDataLabel">
-           <property name="text">
-            <string>FW diode Data   :</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPlainTextEdit" name="fwDataIn"/>
-         </item>
-         <item>
-          <widget class="QToolButton" name="toolButtonFW">
-           <property name="text">
-            <string>...</string>
-           </property>
-           <property name="icon">
-            <iconset>
-             <normaloff>thermalResistor.jpg</normaloff>thermalResistor.jpg</iconset>
-           </property>
-           <property name="iconSize">
-            <size>
-             <width>18</width>
-             <height>18</height>
-            </size>
-           </property>
-          </widget>
          </item>
         </layout>
        </item>
@@ -490,8 +385,8 @@
      <widget class="QPushButton" name="simulateBtn">
       <property name="geometry">
        <rect>
-        <x>90</x>
-        <y>320</y>
+        <x>380</x>
+        <y>90</y>
         <width>101</width>
         <height>41</height>
        </rect>
@@ -542,8 +437,8 @@
      <widget class="QWidget" name="horizontalLayoutWidget">
       <property name="geometry">
        <rect>
-        <x>410</x>
-        <y>160</y>
+        <x>40</x>
+        <y>260</y>
         <width>195</width>
         <height>41</height>
        </rect>
@@ -568,14 +463,14 @@
      <widget class="QWidget" name="gridLayoutWidget_2">
       <property name="geometry">
        <rect>
-        <x>50</x>
-        <y>260</y>
-        <width>189</width>
-        <height>51</height>
+        <x>540</x>
+        <y>80</y>
+        <width>191</width>
+        <height>71</height>
        </rect>
       </property>
       <layout class="QGridLayout" name="gridLayout_3">
-       <item row="1" column="0">
+       <item row="2" column="0">
         <widget class="QCheckBox" name="saveLossData">
          <property name="autoFillBackground">
           <bool>false</bool>
@@ -585,17 +480,7 @@
          </property>
         </widget>
        </item>
-       <item row="0" column="1">
-        <widget class="QRadioButton" name="AFEModeBtn">
-         <property name="text">
-          <string>AFE</string>
-         </property>
-         <attribute name="buttonGroup">
-          <string notr="true">buttonGroupMode</string>
-         </attribute>
-        </widget>
-       </item>
-       <item row="0" column="0">
+       <item row="1" column="0">
         <widget class="QRadioButton" name="InverterModeBtn">
          <property name="text">
           <string>Inverter</string>
@@ -605,12 +490,180 @@
          </attribute>
         </widget>
        </item>
-       <item row="1" column="1">
+       <item row="2" column="1">
         <widget class="QCheckBox" name="showGSIMS">
          <property name="text">
           <string>Hide GSIMS</string>
          </property>
         </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QRadioButton" name="AFEModeBtn">
+         <property name="text">
+          <string>AFE</string>
+         </property>
+         <attribute name="buttonGroup">
+          <string notr="true">buttonGroupMode</string>
+         </attribute>
+        </widget>
+       </item>
+       <item row="0" column="0" colspan="2">
+        <widget class="QLabel" name="modeLabel">
+         <property name="layoutDirection">
+          <enum>Qt::RightToLeft</enum>
+         </property>
+         <property name="text">
+          <string>Mode</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="gridLayoutWidget_3">
+      <property name="geometry">
+       <rect>
+        <x>540</x>
+        <y>0</y>
+        <width>191</width>
+        <height>71</height>
+       </rect>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_4">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <item row="1" column="0">
+        <widget class="QRadioButton" name="radioBSix">
+         <property name="layoutDirection">
+          <enum>Qt::LeftToRight</enum>
+         </property>
+         <property name="autoFillBackground">
+          <bool>false</bool>
+         </property>
+         <property name="text">
+          <string>B6</string>
+         </property>
+         <attribute name="buttonGroup">
+          <string notr="true">buttonGroupTopology</string>
+         </attribute>
+        </widget>
+       </item>
+       <item row="0" column="0" colspan="2">
+        <widget class="QLabel" name="topologyLabel">
+         <property name="layoutDirection">
+          <enum>Qt::RightToLeft</enum>
+         </property>
+         <property name="text">
+          <string>Topology </string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QRadioButton" name="radioNPC">
+         <property name="text">
+          <string>NPC</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+         <attribute name="buttonGroup">
+          <string notr="true">buttonGroupTopology</string>
+         </attribute>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QRadioButton" name="radioMulti">
+         <property name="autoFillBackground">
+          <bool>false</bool>
+         </property>
+         <property name="text">
+          <string>Multi</string>
+         </property>
+         <attribute name="buttonGroup">
+          <string notr="true">buttonGroupTopology</string>
+         </attribute>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QRadioButton" name="radioTNPC">
+         <property name="text">
+          <string>TNPC</string>
+         </property>
+         <attribute name="buttonGroup">
+          <string notr="true">buttonGroupTopology</string>
+         </attribute>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="verticalLayoutWidget">
+      <property name="geometry">
+       <rect>
+        <x>330</x>
+        <y>10</y>
+        <width>201</width>
+        <height>61</height>
+       </rect>
+      </property>
+      <layout class="QVBoxLayout" name="dataSheetLayout">
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_6">
+         <item>
+          <spacer name="horizontalSpacer">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeType">
+            <enum>QSizePolicy::Fixed</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>31</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QLabel" name="sheetsLabel">
+           <property name="maximumSize">
+            <size>
+             <width>114</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Available DataSheets </string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QToolButton" name="toolButtonThermal">
+           <property name="text">
+            <string>...</string>
+           </property>
+           <property name="icon">
+            <iconset>
+             <normaloff>thermalResistor.jpg</normaloff>thermalResistor.jpg</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>18</width>
+             <height>18</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="CheckableComboBox" name="dataSheetComboBox"/>
        </item>
       </layout>
      </widget>
@@ -1221,7 +1274,7 @@
     <set>QDockWidget::AllDockWidgetFeatures</set>
    </property>
    <property name="allowedAreas">
-    <set>Qt::LeftDockWidgetArea|Qt::RightDockWidgetArea</set>
+    <set>Qt::LeftDockWidgetArea|Qt::RightDockWidgetArea|Qt::TopDockWidgetArea</set>
    </property>
    <property name="windowTitle">
     <string>Controls</string>
@@ -1532,15 +1585,21 @@
    <header>RangeSlider.h</header>
    <container>1</container>
   </customwidget>
+  <customwidget>
+   <class>CheckableComboBox</class>
+   <extends>QComboBox</extends>
+   <header>checkablecombobox.h</header>
+  </customwidget>
  </customwidgets>
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="buttonGroupPlotType"/>
-  <buttongroup name="buttonGroupMode"/>
-  <buttongroup name="buttonGroupRangeType"/>
   <buttongroup name="buttonGroupScatterData"/>
+  <buttongroup name="buttonGroupRangeType"/>
   <buttongroup name="buttonGroupOptMode"/>
+  <buttongroup name="buttonGroupPlotType"/>
   <buttongroup name="buttonGroupPlotMode"/>
+  <buttongroup name="buttonGroupMode"/>
+  <buttongroup name="buttonGroupTopology"/>
  </buttongroups>
 </ui>

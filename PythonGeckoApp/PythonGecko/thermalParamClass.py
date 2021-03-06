@@ -44,14 +44,13 @@ class thermalParamClass(QWidget):
     def readAnyExisting(self) :
         if os.path.exists(self.filepath):
             df = pd.read_csv(self.filepath,index_col =['Datasheet'])
-            print(df)
             thermalSet = {}
             for sheet in self.datasheets:
                 if sheet in df.index:
-                    thermalSet = df.loc[df.index ==sheet].to_dict(orient = 'index')
+                    thermalSet.update(df.loc[df.index ==sheet].to_dict(orient = 'index'))
             if len(thermalSet) == len(self.datasheets):
                 self.inputLabel.setText('Available :')
-                self.displayLabel.setText(str(len(thermalSet)))
+                self.displayEdit.setText(str(len(thermalSet)))
                 for x in thermalSet:
                     self.rcs.append(str(thermalSet[x]['Rcs']))
                     self.rjc.append(str(thermalSet[x]['Rjc']))
@@ -65,7 +64,7 @@ class thermalParamClass(QWidget):
                             self.missingSheets.remove(index)
                 self.inputLabel.setText('Missing :'+ str(len(self.missingSheets)))
                 missingSheets_text = ',\n'.join(map(str, self.missingSheets)) 
-                self.displayLabel.setText(missingSheets_text)
+                self.displayEdit.setText(missingSheets_text)
            
         else :
             msgBox = QMessageBox();
@@ -74,6 +73,6 @@ class thermalParamClass(QWidget):
             msgBox.exec();
             self.inputLabel.setText('Missing :'+ str(len(self.missingSheets)))
             missingSheets_text = ','.join(map(str, self.missingSheets)) 
-            self.displayLabel.setText(missingSheets_text)
+            self.displayEdit.setText(missingSheets_text)
             
   

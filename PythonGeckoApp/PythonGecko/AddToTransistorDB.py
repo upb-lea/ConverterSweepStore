@@ -17,16 +17,16 @@ clampingDiode = {}
 isvalid = False
 
 topology = 'NPC'
-datasheet = 'F3L300R07PE4'
-transistor['T1']  = 'F3L300R07PE4_T'
-transistor['T2']  = 'F3L300R07PE4_T'
-transistor['T3']  = 'F3L300R07PE4_T'                #not required for B6 topology
-transistor['T4']  = 'F3L300R07PE4_T'                #not required for B6 topology
+datasheet = 'F3L300R07PE5'
+transistor['T1']  = 'F3L300R07PE5_T'
+transistor['T2']  = 'F3L300R07PE5_T'
+transistor['T3']  = 'F3L300R07PE5_T'                #not required for B6 topology
+transistor['T4']  = 'F3L300R07PE5_T'                #not required for B6 topology
 
-bypassDiode['D1']  = 'F3L300R07PE4_RD'
-bypassDiode['D2']  = 'F3L300R07PE4_RD'
-bypassDiode['D3']  = 'F3L300R07PE4_RD'            #not required for B6 topology
-bypassDiode['D4']  = 'F3L300R07PE4_RD'            #not required for B6 topology
+bypassDiode['D1']  = 'F3L300R07PE5_RD'
+bypassDiode['D2']  = 'F3L300R07PE5_RD'
+bypassDiode['D3']  = 'F3L300R07PE5_RD'            #not required for B6 topology
+bypassDiode['D4']  = 'F3L300R07PE5_RD'            #not required for B6 topology
 
 #only required for NPC topology
 clampingDiode['D5'] = 'F3L300R07PE4_RD'

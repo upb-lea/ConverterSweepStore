@@ -25,6 +25,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="AFEParameters.py" />
+    <Compile Include="checkablecombobox.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="dataBaseClass.py">
       <SubType>Code</SubType>
     </Compile>

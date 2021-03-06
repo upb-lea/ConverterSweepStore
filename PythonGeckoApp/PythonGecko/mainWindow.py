@@ -16,10 +16,12 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 import  random
 import math
+import itertools
 from PyQt5 import QtCore,uic
 from PyQt5.QtGui import QIcon
 from pandasModel import pandasModel
 from thermalParamClass import thermalParamClass
+from checkablecombobox import CheckableComboBox
 import pyqtgraph as pg
 import functools
 import re
@@ -41,6 +43,7 @@ class MainWindow(QMainWindow):
     invfilepath = r'calc\results.pk'
     afefilepath = r'calc_AFE\results.pk'
     Tfilepath = r'calc\Thermal\params.csv'
+    datasheetpath = r'calc\Thermal\DatasheetDB.csv'
     ## Make all plots clickable
     clickedPen = pg.mkPen('b', width=2)
     lastClicked = []
@@ -60,16 +63,9 @@ class MainWindow(QMainWindow):
         self.progressBar.reset()
         self.databaseBtn.clicked.connect(self.openDataBase) 
         self.pandasGUIBtn.clicked.connect(self.openPandasGUI)
-        self.toolButtonIGBT.clicked.connect(self.loadThermalBox)
-        self.toolButtonIGBT.setAutoRaise(True)
-        self.toolButtonRev.clicked.connect(self.loadThermalBox)
-        self.toolButtonRev.setAutoRaise(True)
-        self.toolButtonFW.clicked.connect(self.loadThermalBox)
-        self.toolButtonFW.setAutoRaise(True)
-        self.loadPrevParams(self.invfilepath)
+        self.toolButtonThermal.clicked.connect(self.loadThermalBox)
+        self.toolButtonThermal.setAutoRaise(True)
         self.plotControls.hide()
-        if not os.path.exists(self.invfilepath) :
-            self.thermalBtn.setEnabled(False)
         self.cid = self.MplWidget.canvas.mpl_connect('motion_notify_event', self.hover) 
         self.buttonGroupScatterData.setId(self.invTotalRadio,1)
         self.buttonGroupScatterData.setId(self.invIgbtRadio,2)
@@ -81,6 +77,7 @@ class MainWindow(QMainWindow):
         self.scDiodeCombo.textActivated.connect(self.scComboboxChanged)
         self.scIgbtCombo.textActivated.connect(self.scComboboxChanged)
         self.opComboType.textActivated.connect(self.updateOpBtnLabel)
+        self.buttonGroupTopology.buttonClicked.connect(self.loadDataSheets)
         self.buttonGroupPlotType.buttonClicked.connect(self.selectPlotType)
         self.buttonGroupScatterData.buttonClicked.connect(self.updateScatterRadios)
         self.buttonGroupMode.buttonClicked.connect(self.updateAfeLabels)
@@ -92,10 +89,8 @@ class MainWindow(QMainWindow):
         self.buttonGroupPlotMode.buttonClicked.connect(self.plotChangeDb)
         self.buttonGroupOptMode.buttonClicked.connect(self.optChangeDb)
         self.opClearBtn.clicked.connect(self.clear)
-        
         self.searchOptBtn.clicked.connect(self.findOptimum)
         self.sc = {}
-        self.df = pd.read_pickle(self.invfilepath)
         self.PinRangeSelector.hide()
         self.VdcRangeSelector.hide()
         self.SwRangeSelector.hide()
@@ -141,7 +136,17 @@ class MainWindow(QMainWindow):
             background: #ca5;
         }
         """)
-
+        if os.path.exists(self.invfilepath) :
+            self.loadPrevParams(self.invfilepath)
+            self.df = pd.read_pickle(self.invfilepath)
+        self.loadDataSheets()
+        
+    def loadDataSheets(self):
+        self.dataSheetComboBox.clear()
+        df = pd.read_csv(self.datasheetpath)
+        topology = self.buttonGroupTopology.checkedButton().text()
+        datasheets = df[df['Topology'] == topology]['Datasheet'].tolist()
+        self.dataSheetComboBox.insertItems(0,datasheets)
 
     def openPandasGUI(self) :
         df = pd.read_pickle(self.invfilepath)
@@ -156,18 +161,22 @@ class MainWindow(QMainWindow):
         self.opAddBtn.setText('Add')
         self.opErrorLabel.setStyleSheet("")
         self.opErrorLabel.clear()
+    
 
     def updateAfeLabels(self,button):
         if button.text()=='AFE':
             self.loadWLabel.setText("Mains in VA       :")
             self.loadVltg.setText("Mains Voltage       :")
-            self.loadPrevParams(self.afefilepath)
             self.loadZ.setText("Load Inv(Z_inv) :")
+            self.loadPrevParams(self.afefilepath)
+            self.updateGSIMS(False)
+            
         else :
             self.loadWLabel.setText("Load in VA        :")
             self.loadVltg.setText("Load Voltage       :")
-            self.loadPrevParams(self.invfilepath)
             self.loadZ.setText("Load Imp(Z_L)  :")
+            self.loadPrevParams(self.invfilepath)
+            self.updateGSIMS(False)
     def plotChangeDb(self,button):
         if button.text()=='AFE':
             self.df = pd.read_pickle(self.afefilepath)
@@ -557,10 +566,11 @@ class MainWindow(QMainWindow):
 
     def checkThermalParams(self,df):
         def checkIfExists(sheetList):
-            areAllinDB = True
+            isthere = False
             for sheet in sheetList:
-                areAllinDB = areAllinDB and sheet in df.index
-            return areAllinDB
+                isthere = ~isthere 
+                isthere = isthere and sheet in df.index
+            return isthere
         return checkIfExists
 
 
@@ -584,39 +594,32 @@ class MainWindow(QMainWindow):
             fOutList = self.fOutIn.toPlainText()
             fOutList = re.split(',|\s+|;|\n',fOutList)
             fOutListNew = [int(i) for i in fOutList]
-            igbtDataInList = self.igbtDataIn.toPlainText()
-            igbtDataInList = re.split(',|\s+|;|\n',igbtDataInList)
-            revDataInList = self.revDataIn.toPlainText()
-            revDataInList = re.split(',|\s+|;|\n',revDataInList)
-            fwDataInList = self.fwDataIn.toPlainText()
-            fwDataInList = re.split(',|\s+|;|\n',fwDataInList)
+            dataSheets = self.dataSheetComboBox.checkedItems()
+            if dataSheets == []:
+                raise Exception('Please select atleast one Datasheet!\n(Hint : Check should appear)')
             paramsContainer = {'V_DC':dcVltgListNew,'Load_S':loadWInListNew,'Load_phi':pfDegreeInListNew,'Mains_S':loadWInListNew,'Mains_phi':pfDegreeInListNew,'f_s':switchFreqInListNew,'f_out':fOutListNew,
-                               'T_HS':tempInListNew,'Transistor':igbtDataInList,'Transistor_revD':revDataInList,'Transistor_fwD':fwDataInList }
+                               'T_HS':tempInListNew,'dataSheets':dataSheets}
             for x in paramsContainer:
-                result = True
-                if x=='Transistor' or x == 'Transistor_revD' or x== 'Transistor_fwD':
-                    result = not(any([re.search("^\s*$", elem) for elem in paramsContainer[x]]))
-                if paramsContainer[x] and result :
-                    print(x + ':Accepted')
-                else:
-                    raise Exception('Please check the DataSheet inputs provided')
+                #result = True
+                #if x=='Transistor' or x == 'Transistor_revD' or x== 'Transistor_fwD':
+                #    result = not(any([re.search("^\s*$", elem) for elem in paramsContainer[x]]))
+                #if paramsContainer[x] and result :
+                print(x + ' = '+ str(paramsContainer[x])+':Accepted')
             self.statusWriteLabel.setStyleSheet("QLabel { background-color : green; color : black; }")
             self.statusWriteLabel.setText('Inputs are good')
-            areAllinDb = False
-            equalLenSheets = len(igbtDataInList)==len(revDataInList) and len(revDataInList)==len(fwDataInList)
-            if os.path.exists(self.Tfilepath) and equalLenSheets:
+            if os.path.exists(self.Tfilepath) :
                 df = pd.read_csv(self.Tfilepath,index_col =['Datasheet'])
-                tocheck = self.checkThermalParams(df)
-                areAllinDb = tocheck(igbtDataInList) and tocheck(revDataInList) and tocheck(fwDataInList)
-                if not areAllinDb:
+                checkIf = self.checkThermalParams(df)
+                totalSheets = self.loadThermalBox(True)
+                if not checkIf(totalSheets):
                     raise Exception('Check the Thermal Params')
             else :
-                msg = ('Input Sheets should be of same length', 'Thermal params file not found')[equalLenSheets]
-                raise Exception(msg)
+                raise Exception('Thermal params file not found')
             self.statusWriteLabel.adjustSize()
             saveData = self.saveLossData.isChecked()
             isAFEselected = self.AFEModeBtn.isChecked()
-            createobj = startConnection(paramsContainer,saveData,isAFEselected)
+            topology = self.buttonGroupTopology.checkedButton().text()
+            createobj = startConnection(paramsContainer,saveData,isAFEselected, topology)
             createobj.gismsUpdate.connect(self.updateGSIMS)
             createobj.progressUpdate.connect(self.updateProgressBar)
             #createobj.eventemit()
@@ -625,7 +628,11 @@ class MainWindow(QMainWindow):
             self.progressBar.setMaximum(100)
             test_thread = threading.Thread(target = createobj.initiateConnection)
             test_thread.start()
-        
+        except ValueError:
+            msgBox = QMessageBox()
+            msgBox.setIcon(QMessageBox.Information)
+            msgBox.setText("Please check the inputs provided")
+            msgBox.exec()
         except Exception as e:
             msgBox = QMessageBox()
             msgBox.setIcon(QMessageBox.Information)
@@ -650,20 +657,30 @@ class MainWindow(QMainWindow):
             
     @QtCore.pyqtSlot(dict)
     def updateGSIMS(self,out):
-        self.invCosPhiOut.setText(str(round(out['cos_phi_inv'],3)))
-        self.modulationOut.setText(str(round(out['m'],3)))
-        self.peakRlcCurrentOut.setText(str(round(out['I_Peak_inv'],2)))
-        
-        if self.AFEModeBtn.isChecked():
-            self.loadVltgOut.setText(str(round(out['U_Mains_LL'],2)))
-            self.loadZOut.setText(str(complex(round(out['Z_Inv'].real,2),round(out['Z_Inv'].imag,2))))
+        if out :
+            self.invCosPhiOut.setText(str(round(out['cos_phi_inv'],3)))
+            self.modulationOut.setText(str(round(out['m'],3)))
+            self.peakRlcCurrentOut.setText(str(round(out['I_Peak_inv'],2)))
+            self.cCurrentOut.setText(str(round(out['I_Filter_C'],2)))
+            self.lVltgOut.setText(str(round(out['U_Filter_L'],2)))
+            self.invVtlgOut.setText(str(out['U_RMS_inv']))
+            if self.AFEModeBtn.isChecked():
+                self.loadVltgOut.setText(str(round(out['U_Mains_LL'],2)))
+                self.loadZOut.setText(str(complex(round(out['Z_Inv'].real,2),round(out['Z_Inv'].imag,2))))
+            else :
+                self.loadVltgOut.setText(str(round(out['U_Load_LL'],2)))
+                self.loadZOut.setText(str(complex(round(out['Z_Load'].real,2),round(out['Z_Load'].imag,2))))
         else :
-            self.loadVltgOut.setText(str(round(out['U_Load_LL'],2)))
-            self.loadZOut.setText(str(complex(round(out['Z_Load'].real,2),round(out['Z_Load'].imag,2))))
-        self.cCurrentOut.setText(str(round(out['I_Filter_C'],2)))
-        self.lVltgOut.setText(str(round(out['U_Filter_L'],2)))
-        self.invVtlgOut.setText(str(out['U_RMS_inv']))
-    
+            self.invCosPhiOut.setText('')
+            self.modulationOut.setText('')
+            self.peakRlcCurrentOut.setText('')
+            self.cCurrentOut.setText('')
+            self.lVltgOut.setText('')
+            self.invVtlgOut.setText('')
+            self.loadVltgOut.setText('')
+            self.loadZOut.setText('')
+            
+        
         
     @QtCore.pyqtSlot(int,str)
     def updateProgressBar(self,value,text) :
@@ -674,53 +691,69 @@ class MainWindow(QMainWindow):
     
 
     def openDataBase(self):
-        self.dataBaseWindow = dataBaseClass()
-        self.dataBaseWindow.loadData()
-        self.dataBaseWindow.show()
-            
-
-    def loadPrevParams(self,filepath):
-        if os.path.exists(filepath):
-            df = pd.read_pickle(filepath)
-            self.model = pandasModel(df)
-            lastSweepParams = self.model.returnLastSweep()
-            self.dcVltgIn.setPlainText(str(lastSweepParams.V_DC))
-            if self.AFEModeBtn.isChecked():
-                self.loadWIn.setPlainText(str(lastSweepParams.Mains_S))
-                self.pfDegreeIn.setPlainText(str(lastSweepParams.Mains_phi))
-            else:
-                self.loadWIn.setPlainText(str(lastSweepParams.Load_S))
-                self.pfDegreeIn.setPlainText(str(lastSweepParams.Load_phi))
-            self.switchFreqIn.setPlainText(str(lastSweepParams.f_s))
-            self.tempIn.setPlainText(str(lastSweepParams.T_HS))
-            self.fOutIn.setPlainText(str(lastSweepParams.f_out))
-            self.igbtDataIn.setPlainText(str(lastSweepParams.Transistor))
-            self.revDataIn.setPlainText(str(lastSweepParams.Transistor_revD))
-            self.fwDataIn.setPlainText(str(lastSweepParams.Transistor_fwD))
-        else : 
+         if os.path.exists(self.invfilepath) :
+            self.dataBaseWindow = dataBaseClass()
+            self.dataBaseWindow.loadData()
+            self.dataBaseWindow.show()
+         else : 
             msgBox = QMessageBox()
             msgBox.setIcon(QMessageBox.Information)
             msgBox.setText('Could not find data base!')
             msgBox.exec()
+
+    def loadPrevParams(self,filepath):
+       
+        df = pd.read_pickle(filepath)
+        self.model = pandasModel(df)
+        lastSweepParams = self.model.returnLastSweep()
+        self.dcVltgIn.setPlainText(str(lastSweepParams.V_DC))
+        if self.AFEModeBtn.isChecked():
+            self.loadWIn.setPlainText(str(lastSweepParams.Mains_S))
+            self.pfDegreeIn.setPlainText(str(lastSweepParams.Mains_phi))
+        else:
+            self.loadWIn.setPlainText(str(lastSweepParams.Load_S))
+            self.pfDegreeIn.setPlainText(str(lastSweepParams.Load_phi))
+        self.switchFreqIn.setPlainText(str(lastSweepParams.f_s))
+        self.tempIn.setPlainText(str(lastSweepParams.T_HS))
+        self.fOutIn.setPlainText(str(lastSweepParams.f_out))
+        #self.igbtDataIn.setPlainText(str(lastSweepParams.Transistor))  !! need to think  ??
+            #self.revDataIn.setPlainText(str(lastSweepParams.Transistor_revD))
+            #self.fwDataIn.setPlainText(str(lastSweepParams.Transistor_fwD))
         
 
-    def swit(self,x):
-            return {
-             'toolButtonIGBT': self.igbtDataIn.toPlainText(),
-             'toolButtonFW': self.fwDataIn.toPlainText(),
-             'toolButtonRev': self.revDataIn.toPlainText()
-            }.get(x, [])
+    #def switchCase(self,x):
+    #        return {
+    #         'toolButtonIGBT': self.igbtDataIn.toPlainText(),
+    #         'toolButtonFW': self.fwDataIn.toPlainText(),
+    #         'toolButtonRev': self.revDataIn.toPlainText()
+    #        }.get(x, [])
 
-
-    def loadThermalBox(self):
-        sender = self.sender()
-        obj = sender.objectName()
-        sheetList = self.swit(obj)
-        sheetList = re.split(',|\s+|;|\n',sheetList)
-        self.thermalWindow = thermalParamClass(sheetList)
-        self.thermalWindow.show()
-
-
+   
+    def loadThermalBox(self,isInnerCall):
+        try :
+            datasheets = []
+            selectedSheets = self.dataSheetComboBox.checkedItems()
+            if not selectedSheets :
+                raise Exception('Select atleast one Datasheet!')
+            df = pd.read_csv(self.datasheetpath)
+            topology = self.buttonGroupTopology.checkedButton().text()
+            for datasheet in selectedSheets:
+                datasheets = datasheets+df[(df['Topology'] == topology)&(df['Datasheet']==datasheet)][['T1','T2','T3','T4','D1','D2','D3','D4','D5','D6']].values.tolist()
+            datasheets = list(itertools.chain.from_iterable(datasheets))
+            array = np.array(datasheets)
+            array = array[array!='nan']
+            datasheets = np.unique(array).tolist()
+            if not isInnerCall:
+                self.thermalWindow = thermalParamClass(datasheets)  #always expects non emtpy datasheets else is [] is given then unchecked error type returns
+                self.thermalWindow.show()
+            else :
+                return datasheets
+        except Exception as e:
+            msgBox = QMessageBox()
+            msgBox.setIcon(QMessageBox.Information)
+            msgBox.setText(str(e.args[0]))
+            msgBox.exec()
+                
                  
 if __name__ == "__main__":
     app = QApplication(sys.argv)
@@ -730,3 +763,4 @@ if __name__ == "__main__":
         sys.exit(app.exec_())
     except SystemExit:
         print('Closing Window....')
+

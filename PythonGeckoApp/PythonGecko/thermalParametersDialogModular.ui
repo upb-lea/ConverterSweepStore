@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>242</width>
-    <height>250</height>
+    <width>239</width>
+    <height>248</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,7 +15,7 @@
   </property>
   <property name="windowIcon">
    <iconset>
-    <normaloff>../PythonGecko/thermalResistor.jpg</normaloff>../PythonGecko/thermalResistor.jpg</iconset>
+    <normaloff>thermalResistor.jpg</normaloff>thermalResistor.jpg</iconset>
   </property>
   <property name="windowOpacity">
    <double>1.000000000000000</double>
@@ -52,7 +52,7 @@
      <x>10</x>
      <y>10</y>
      <width>211</width>
-     <height>41</height>
+     <height>51</height>
     </rect>
    </property>
    <layout class="QHBoxLayout" name="horizontalLayout_3">
@@ -64,18 +64,15 @@
      </widget>
     </item>
     <item>
-     <widget class="QLabel" name="displayLabel">
-      <property name="toolTipDuration">
-       <number>-1</number>
+     <widget class="QTextEdit" name="displayEdit">
+      <property name="autoFormatting">
+       <set>QTextEdit::AutoAll</set>
       </property>
-      <property name="lineWidth">
-       <number>1</number>
+      <property name="readOnly">
+       <bool>true</bool>
       </property>
-      <property name="text">
-       <string>number</string>
-      </property>
-      <property name="indent">
-       <number>-1</number>
+      <property name="overwriteMode">
+       <bool>true</bool>
       </property>
      </widget>
     </item>
@@ -85,7 +82,7 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>60</y>
+     <y>70</y>
      <width>211</width>
      <height>111</height>
     </rect>
