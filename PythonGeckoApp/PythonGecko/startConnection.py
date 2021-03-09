@@ -17,6 +17,7 @@ from PyQt5.QtWidgets import QMessageBox
 class startConnection(QObject):
     gismsUpdate = pyqtSignal([dict])
     progressUpdate = pyqtSignal(int,str)
+    tabsDFUpdate = pyqtSignal(str)
     thermal_file_path = r'calc\Thermal\params.csv'
     datasheetpath = r'calc\Thermal\DatasheetDB.csv'
     def __init__(self,dataimport,saveData,isAfeSelected,topology):
@@ -135,6 +136,7 @@ class startConnection(QObject):
         R_S_Transformer = 10.88e-3 * Kt_Transformer;
         L_par = 20e-3;
         count = 0
+        self.progressUpdate.emit(-1,'Running')
         #-----------------------------Function to setup and start NPC topology based simulations-----------------------#
         def startSimNPC(pset): 
             # Defining loss keys: order is important!
@@ -498,8 +500,9 @@ class startConnection(QObject):
         else :
             df = ps.run(startSim, paramsList)
         self.progressUpdate.emit(-1,'Done')
+        self.tabsDFUpdate.emit('Simulation Done')
         ginst.shutdown()
-        print(df)
+        #print(df)
                 
             
         

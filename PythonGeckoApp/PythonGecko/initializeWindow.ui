@@ -98,7 +98,7 @@
         <x>10</x>
         <y>10</y>
         <width>281</width>
-        <height>241</height>
+        <height>231</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="inputParamsLayout">
@@ -1249,7 +1249,7 @@
    <property name="minimumSize">
     <size>
      <width>210</width>
-     <height>451</height>
+     <height>479</height>
     </size>
    </property>
    <property name="maximumSize">
@@ -1293,6 +1293,20 @@
      <enum>Qt::LeftToRight</enum>
     </property>
     <layout class="QVBoxLayout" name="verticalLayout_2">
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_7">
+       <item>
+        <widget class="QLabel" name="topologySelect">
+         <property name="text">
+          <string>Topology :</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="topologyCombo"/>
+       </item>
+      </layout>
+     </item>
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_26">
        <item>
@@ -1501,7 +1515,7 @@
        <widget class="QWidget" name="layoutWidget">
         <property name="geometry">
          <rect>
-          <x>0</x>
+          <x>10</x>
           <y>30</y>
           <width>171</width>
           <height>181</height>
@@ -1595,11 +1609,11 @@
  <connections/>
  <buttongroups>
   <buttongroup name="buttonGroupScatterData"/>
-  <buttongroup name="buttonGroupRangeType"/>
-  <buttongroup name="buttonGroupOptMode"/>
-  <buttongroup name="buttonGroupPlotType"/>
+  <buttongroup name="buttonGroupTopology"/>
   <buttongroup name="buttonGroupPlotMode"/>
   <buttongroup name="buttonGroupMode"/>
-  <buttongroup name="buttonGroupTopology"/>
+  <buttongroup name="buttonGroupRangeType"/>
+  <buttongroup name="buttonGroupPlotType"/>
+  <buttongroup name="buttonGroupOptMode"/>
  </buttongroups>
 </ui>
