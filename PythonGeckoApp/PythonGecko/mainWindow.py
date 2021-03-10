@@ -49,7 +49,7 @@ class MainWindow(QMainWindow):
     igbtList = {'B6':['IG1','IG2'],'NPC':['IG1','IG2','IG3','IG4'],'TNPC':['IG1','IG2','IG3','IG4'],'MULTI':['IG1','IG2','IG3','IG4']}
     diodeList = {'B6':['D1','D2'],'NPC':['D1','D2','D3','D4','D13','TNPC'],'TNPC':['D1','D2','D3','D4'],'MULTI':['D1','D2','D3','D4','D13','D14']}
     filterList = {'Inverter':['Load_S','f_s','Load_phi'],'AFE':['Mains_S','f_s','Load_phi']}
-        
+    topologyList = ['B6','NPC','TNPC','MULTI']       
     lastClicked = []
     data2plot ={}
     filter = {}
@@ -71,6 +71,7 @@ class MainWindow(QMainWindow):
         self.toolButtonThermal.clicked.connect(self.loadThermalBox)
         self.toolButtonThermal.setAutoRaise(True)
         self.plotControls.hide()
+        self.optRangeControls.hide()
         self.cid = self.MplWidget.canvas.mpl_connect('motion_notify_event', self.hover) 
         self.buttonGroupScatterData.setId(self.invTotalRadio,1)
         self.buttonGroupScatterData.setId(self.invIgbtRadio,2)
@@ -95,7 +96,7 @@ class MainWindow(QMainWindow):
         self.buttonGroupOptMode.buttonClicked.connect(self.optChangeDb)
         self.opClearBtn.clicked.connect(self.clear)
         self.searchOptBtn.clicked.connect(self.findOptimum)
-        self.topologyCombo.insertItems(0,['B6','NPC','TNPC','MULTI'])
+        self.topologyCombo.insertItems(0,self.topologyList)
         self.topologyCombo.textActivated.connect(self.resetControls)
         self.sc = {}
         self.PinRangeSelector.hide()
@@ -271,72 +272,117 @@ class MainWindow(QMainWindow):
    
     def findOptimum(self):
         searchSeries = {}
+        plotDFCollection = {}
+        refinedDFs = {}
         searchValue = []
+        errorMsg = ''
         self.optStatusLabel.setStyleSheet("")  #check the position
         self.optStatusLabel.clear()
+        self.OptimalChartArea.canvas.figure.clf()
+        self.OptimalChartArea.canvas.draw_idle()
         if not 'PWatts' in self.opt_df.columns:
             if self.buttonGroupOptMode.checkedButton().text() == 'AFE':
                 self.opt_df['PWatts'] = round(self.opt_df['Mains_S']* self.opt_df['Mains_phi'].apply(math.cos))
             else :
                 self.opt_df['PWatts'] = round(self.opt_df['Load_S']* self.opt_df['Load_phi'].apply(math.cos))
-        try:
-            def searchOptBtn(rangeBtn,column,inputBtn,normalizeValue =1):
-                if rangeBtn.isVisible(): 
-                    range = rangeBtn.getRange()
-                    actual_range = tuple([normalizeValue*x for x in range])
-                    searchValue = list(actual_range)
-                    filterSeries = self.opt_df[column].between(*actual_range)
-                else:
-                    searchValue = float(inputBtn.text())
-                    filterSeries = self.opt_df[column]==float(inputBtn.text())
-                isAValidSeries = filterSeries.sum()                                
-                if not isAValidSeries:
-                    raise Exception("{} = {} not found".format(''.join(column),''.join(str(searchValue))))
-                else : 
-                    return filterSeries
-            
-            searchSeries['pSearchSeries'] = searchOptBtn(self.PinRangeSelector,'PWatts',self.optPinInput,1000)
-            searchSeries['vDcSearchSeries'] = searchOptBtn(self.VdcRangeSelector,'V_DC',self.optVdcInput)
-            searchSeries['sWSearchSeries'] = searchOptBtn(self.SwRangeSelector,'f_s',self.optSwInput,1000)
-            conditionsBoolReturns = list(searchSeries.values())
-            resultDataFrame = self.opt_df[self.conjunction(*conditionsBoolReturns)]
-            if resultDataFrame.empty :
-                raise Exception("Not in DBase")
+        def searchOptBtn(topology, rangeBtn,column, df,buttonInput,normalizeValue =1):
+            if rangeBtn.isVisible(): 
+                range = rangeBtn.getRange()
+                actual_range = tuple([normalizeValue*x for x in range])
+                searchValue = list(actual_range)
+                filterSeries = df[column].between(*actual_range)
+            else:
+                searchValue = float(buttonInput.text())
+                filterSeries = df[column]==searchValue
+            isAValidSeries = filterSeries.sum()                                
+            if not isAValidSeries:
+                raise Exception("{} :{} = {} not found\n".format(''.join(topology),''.join(column),''.join(str(searchValue))))
+            else : 
+                return filterSeries
+       
+        for topology in self.topologyList:
+            try :
+                topology_df = self.opt_df[self.opt_df['Topology']== topology]
+                searchSeries['pSearchSeries'] = searchOptBtn(topology,self.PinRangeSelector,'PWatts',topology_df, self.optPinInput,1000)
+                searchSeries['vDcSearchSeries'] = searchOptBtn(topology,self.VdcRangeSelector,'V_DC',topology_df,self.optVdcInput)
+                searchSeries['sWSearchSeries'] = searchOptBtn(topology,self.SwRangeSelector,'f_s',topology_df,self.optSwInput,1000)
+            except ValueError:
+                self.optStatusLabel.setStyleSheet("QLabel { background-color : yellow; color : red; }")
+                self.optStatusLabel.setText("Please check the inputs provided")
+                self.optStatusLabel.adjustSize()
+                break
+            except Exception as e:
+                errorMsg = errorMsg + str(e.args[0])
+                self.optStatusLabel.setStyleSheet("QLabel { background-color : yellow; color : red; }")
+                self.optStatusLabel.setText(errorMsg)
+                self.optStatusLabel.adjustSize()
+                print(str(e.args[0]))
             else :
-                self.processAndMaptoFigure(resultDataFrame)
-        except ValueError:
-            self.optStatusLabel.setStyleSheet("QLabel { background-color : yellow; color : red; }")
-            self.optStatusLabel.setText("Please check the inputs provided")
-        except Exception as e:
-            self.optStatusLabel.setStyleSheet("QLabel { background-color : yellow; color : red; }")
-            self.optStatusLabel.setText(str(e.args[0]))
-            print(str(e.args[0]))
+                seriesBoolReturns = list(searchSeries.values())
+                plotDFCollection[topology] = topology_df[self.conjunction(*seriesBoolReturns)]
+        if len(plotDFCollection) >0:
+            refinedDFs =  plotDFCollection
+            for topology in list(plotDFCollection):  #to avoid runtime error 
+                try :
+                    if refinedDFs[topology].empty :
+                        del refinedDFs[topology]
+                        raise Exception(topology+": Range not in DBase \n")
+                except Exception as e:   
+                    errorMsg = errorMsg + str(e.args[0])
+                    self.optStatusLabel.setStyleSheet("QLabel { background-color : yellow; color : red; }")
+                    self.optStatusLabel.setText(errorMsg)
+                    self.optStatusLabel.adjustSize()
+        if len(refinedDFs) >0:
+            self.processAndMaptoFigure(refinedDFs)
+            
+
+    def processAndMaptoFigure(self,dfsCollected):
+        dfToBar = {}
+        opPoint = {}
+        for topology in dfsCollected:
+            df = dfsCollected[topology]
+            finalRow = df[df['InvTotalLoss']==df['InvTotalLoss'].min()].to_dict('records')[0]
+            opPoint[topology] = finalRow
+            if topology == 'NPC':
+                conductionLoss = [finalRow['IG1_con'],finalRow['D1_con'],finalRow['IG2_con'],finalRow['D2_con'],finalRow['D13_con']]
+                switchLoss = [finalRow['IG1_sw'],finalRow['D1_sw'],finalRow['IG2_sw'],finalRow['D2_sw'],finalRow['D13_sw']]
+                index  = ['T1/T4','D1/D4','T2/T3','D2/D3','D5/D6']
+                dfToBar[topology] = pd.DataFrame({'Cond Loss': conductionLoss,'SW Loss': switchLoss}, index=index)
+            if topology == 'TNPC':
+                conductionLoss = [finalRow['IG1_con'],finalRow['D1_con'],finalRow['IG2_con'],finalRow['D2_con']]
+                switchLoss = [finalRow['IG1_sw'],finalRow['D1_sw'],finalRow['IG2_sw'],finalRow['D2_sw']]
+                index  = ['T1/T4','D1/D4','T2/T3','D2/D3']
+                dfToBar[topology] = pd.DataFrame({'Cond Loss': conductionLoss,'SW Loss': switchLoss}, index=index)
+            if topology == 'B6':
+                conductionLoss = [finalRow['IG1_con'],finalRow['D1_con'],finalRow['IG2_con'],finalRow['D2_con']]
+                switchLoss = [finalRow['IG1_sw'],finalRow['D1_sw'],finalRow['IG2_sw'],finalRow['D2_sw']]
+                index  = ['T1','D1','T2','D2']
+                dfToBar[topology] = pd.DataFrame({'Cond Loss': conductionLoss,'SW Loss': switchLoss}, index=index)
+            if topology == 'MULTI':###dummy
+                conductionLoss = [finalRow['IG1_con'],finalRow['D1_con'],finalRow['IG2_con'],finalRow['D2_con']]
+                switchLoss = [finalRow['IG1_sw'],finalRow['D1_sw'],finalRow['IG2_sw'],finalRow['D2_sw']]
+                index  = ['T1','D1','T2','D2']
+                dfToBar[topology] = pd.DataFrame({'Cond Loss': conductionLoss,'SW Loss': switchLoss}, index=index)
+
+        plotNum = len(dfToBar)
+        if plotNum == 1:
+           self.OptimalChartArea.plotOne(dfToBar,opPoint)
+           self.optStatusLabel.setStyleSheet("QLabel { background-color : green; color : black; }")
+           self.optStatusLabel.setText('Only '+ str(list(dfToBar.keys())[0]) + ' exists in Range')
+        if plotNum == 2:
+           self.OptimalChartArea.plotTwo(dfToBar,opPoint)
+           self.optStatusLabel.setStyleSheet("QLabel { background-color : green; color : black; }")
+           self.optStatusLabel.setText('Only '+ list(dfToBar.keys())[0]+', '+list(dfToBar.keys())[1] + ' exists in Range')
+        if plotNum == 3:
+           self.OptimalChartArea.plotThree(dfToBar,opPoint)
+           self.optStatusLabel.setStyleSheet("QLabel { background-color : green; color : black; }")
+           self.optStatusLabel.setText('Only '+ str(list(dfToBar.keys())[0]) + ' exists in Range')
+        if plotNum == 4:
+           self.OptimalChartArea.plotFour(dfToBar,opPoint)
         
-    def processAndMaptoFigure(self,df):
-        finalRow = df[df['InvTotalLoss']==df['InvTotalLoss'].min()].to_dict('records')[0]
-        conductionLoss = [finalRow['IG1_con'],finalRow['D1_con'],finalRow['IG2_con'],finalRow['D2_con'],finalRow['D13_con']]
-        switchLoss = [finalRow['IG1_sw'],finalRow['D1_sw'],finalRow['IG2_sw'],finalRow['D2_sw'],finalRow['D13_sw']]
-        index  = ['T1/T4','D1/D4','T2/T3','D2/D3','D5/D6']
-        df = pd.DataFrame({'Cond Loss': conductionLoss,'SW Loss': switchLoss}, index=index)
-        self.OptimalChartArea.canvas.axes.clear()
-        ax= df.plot(kind='bar',ax=self.OptimalChartArea.canvas.axes,rot=0)
-        rects = ax.patches
-        for rect in rects:
-            height = rect.get_height()
-            ax.text(rect.get_x() + rect.get_width() / 2, height, round(height,2),
-                    ha='center', va='bottom')
-        ax.set_title('Operating Losses')
-        ax.set_xlabel('Switches')
-        ax.set_ylabel('Loss In Watts')
-        textstr = "V_DC :{},\nTLoss:{},\nPdel :{},\nFsw   :{}".format("".join(str(finalRow['V_DC'])),"".join(str(round(finalRow['InvTotalLoss'],2))),
-                                       "".join(str(finalRow['PWatts'])),"".join(str(finalRow['f_s'])))
-        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
-        ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=6,
-                verticalalignment='top',horizontalalignment='left', bbox=props)
-        #self.OptimalChartArea.canvas.draw()
-        #self.OptimalChartArea.toolbar.hide()
-        self.OptimalChartArea.canvas.figure.set_visible(True)
-        self.OptimalChartArea.canvas.draw_idle()
+        #self.OptimalChartArea.canvas.axes.clear()
+        #self.OptimalChartArea.canvas.figure.set_visible(True)
+        #self.OptimalChartArea.canvas.draw_idle()
 
 
     def toggleInput(self,rangeBtn,inputBtn,Max,Min,rangeMin,rangeMax,normValue=1,decimalValue=0):
@@ -630,9 +676,14 @@ class MainWindow(QMainWindow):
     def onChange(self, ord):
         if ord ==1:
             self.plotControls.show()
+            self.optRangeControls.hide()
             #self.initializeControls()
+        elif ord == 2:
+            self.optRangeControls.show()
+            self.plotControls.hide()
         else :
             self.plotControls.hide()
+            self.optRangeControls.hide()
             #self.MplWidget.canvas.toolbar_visible = False
             #self.OptimalChartArea.toolbar.hide()
 
