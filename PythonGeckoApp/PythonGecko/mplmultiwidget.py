@@ -54,9 +54,33 @@ class  MplMultiWidget(QWidget):
         self.canvas.figure.set_visible(True)
         self.canvas.draw_idle()
 
-    def plotThree(self, df, opPointRow):
+    def plotThree(self, dfContainer, opPointRow):
         self.canvas.figure.clf()
-        self.canvas.axes  =  self.canvas.figure.add_subplot(221) 
+        self.canvas.figure.suptitle('Operating Losses')
+        dfList = list(dfContainer.values())
+        opPointList = list(opPointRow.values())
+        topologyList = list(dfContainer.keys())
+
+        df = dfList[0]
+        self.canvas.axesOne  =  self.canvas.figure.add_subplot(221) 
+        self.canvas.axesOne.clear()
+        ax= df.plot(kind='bar',ax=self.canvas.axesOne,rot=0)
+        self.createPatches(ax, opPointList[0], topologyList[0])
+
+        df = dfList[1]
+        self.canvas.axesTwo  =  self.canvas.figure.add_subplot(222, sharey = self.canvas.axesOne) 
+        self.canvas.axesTwo.clear()
+        ax= df.plot(kind='bar',ax=self.canvas.axesTwo,rot=0)
+        self.createPatches(ax, opPointList[1],topologyList[1])
+
+        df = dfList[2]
+        self.canvas.axesThree  =  self.canvas.figure.add_subplot(223, sharey = self.canvas.axesOne) 
+        self.canvas.axesThree.clear()
+        ax= df.plot(kind='bar',ax=self.canvas.axesThree,rot=0)
+        self.createPatches(ax, opPointList[2],topologyList[2])
+
+        self.canvas.figure.set_visible(True)
+        self.canvas.draw_idle()
     def plotFour(self, df, opPointRow):
         self.canvas.figure.clf()
         self.canvas.axes  =  self.canvas.figure.add_subplot(221) 

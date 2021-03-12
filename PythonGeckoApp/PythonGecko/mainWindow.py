@@ -376,7 +376,7 @@ class MainWindow(QMainWindow):
         if plotNum == 3:
            self.OptimalChartArea.plotThree(dfToBar,opPoint)
            self.optStatusLabel.setStyleSheet("QLabel { background-color : green; color : black; }")
-           self.optStatusLabel.setText('Only '+ str(list(dfToBar.keys())[0]) + ' exists in Range')
+           self.optStatusLabel.setText(str(list(dfToBar.keys())[0])+', '+ list(dfToBar.keys())[1]+', '+list(dfToBar.keys())[2]  + ' exists in Range')
         if plotNum == 4:
            self.OptimalChartArea.plotFour(dfToBar,opPoint)
         
