@@ -187,7 +187,6 @@ class MainWindow(QMainWindow):
         self.opErrorLabel.setStyleSheet("")
         self.opErrorLabel.clear()
     
-
     def updateAfeLabels(self,button):
         if button.text()=='AFE':
             self.loadWLabel.setText("Mains in VA       :")
@@ -823,18 +822,11 @@ class MainWindow(QMainWindow):
     
 
     def openDataBase(self):
-         if os.path.exists(self.invfilepath) :
-            self.dataBaseWindow = dataBaseClass()
-            self.dataBaseWindow.loadData()
-            self.dataBaseWindow.show()
-         else : 
-            msgBox = QMessageBox()
-            msgBox.setIcon(QMessageBox.Information)
-            msgBox.setText('Could not find data base!')
-            msgBox.exec()
+        self.dataBaseWindow = dataBaseClass()
+        self.dataBaseWindow.show()
+         
 
     def loadPrevParams(self,filepath):
-       
         df = pd.read_pickle(filepath)
         self.model = pandasModel(df)
         lastSweepParams = self.model.returnLastSweep()

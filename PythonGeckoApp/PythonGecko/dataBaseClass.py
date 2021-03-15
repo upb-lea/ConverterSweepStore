@@ -3,23 +3,49 @@ from PyQt5 import QtCore,uic
 from PyQt5.QtGui import QIcon
 from pandasModel import pandasModel
 import pandas as pd
+import os
 
 class dataBaseClass(QWidget):
-    filepath = r'calc\\results.pk'
+    invfilepath = r'calc\results.pk'
+    afefilepath = r'calc_AFE\results.pk'
+    
     def __init__(self): 
         super().__init__()
         uic.loadUi('dataBaseWindow.ui',self)
         _translate = QtCore.QCoreApplication.translate
         self.setWindowIcon(QIcon('dataIcon.png'))
         self.setWindowTitle(_translate("Form", "Simulated Data"))
-        self.refreshBtn.clicked.connect(self.loadData)
+        self.refreshBtn.clicked.connect(self.refreshTableView)
         self.exitBtn.clicked.connect(self.close)
-        self.loadData()
+        self.refreshBtn.clicked.connect(self.refreshTableView)
+        self.refreshTableView()
+
+    def refreshTableView(self):
+        simCount = 0
+        filepath = None
+        topology = self.buttonGroupDbType.checkedButton().text()
+        mode = self.buttonGroupDbMode.checkedButton().text()
+        if mode == 'Inverter':
+           filepath =self.invfilepath
+        elif mode == 'AFE' :
+           filepath = self.afefilepath
+        if os.path.exists(filepath) :
+            df = pd.read_pickle(filepath)
+            if topology == 'Explore All':
+                self.model = pandasModel(df)
+            else:
+                self.model = pandasModel(df[df['Topology']==topology])
+            simCount= self.model.rowCount()  
+            self.rowCountLabel.setStyleSheet("QLabel { background-color : green; color : black; }")
+            self.rowCountLabel.setText(str(simCount)+ ' simulations exists!')
+            self.dataBaseTableView.setModel(self.model)
+        else :
+            self.rowCountLabel.setStyleSheet("QLabel { background-color :yellow ; color : red; }")
+            self.rowCountLabel.setText('No database found!')
         
-    def loadData(self) :
-        df = pd.read_pickle(self.filepath)
-        self.model = pandasModel(df)
-        self.dataBaseTableView.setModel(self.model)
+        
+        
+            
 
     
     
