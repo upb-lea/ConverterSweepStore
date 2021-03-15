@@ -28,8 +28,13 @@ class  MplMultiWidget(QWidget):
         df = dfList[0]
         self.canvas.axes  =  self.canvas.figure.add_subplot(111) 
         self.canvas.axes.clear()
-        ax= df.plot(kind='bar',ax=self.canvas.axes,rot=0)
+        ax= df.plot(kind='bar',ax=self.canvas.axes,rot=0, legend=False)
         self.createPatches(ax, opPointList[0], topologyList[0])
+        lines, labels = self.canvas.figure.axes[-1].get_legend_handles_labels()
+        self.canvas.figure.tight_layout()
+        self.canvas.figure.legend(lines, labels, loc = 'upper left')
+        self.canvas.figure.text(0.5, 0, 'Switches', ha='center')
+        self.canvas.figure.text(0, 0.5, 'Loss In Watts', va='center', rotation='vertical')   
         self.canvas.figure.set_visible(True)
         self.canvas.draw_idle()
 
@@ -42,15 +47,20 @@ class  MplMultiWidget(QWidget):
         df = dfList[0]
         self.canvas.axesOne  =  self.canvas.figure.add_subplot(121) 
         self.canvas.axesOne.clear()
-        ax= df.plot(kind='bar',ax=self.canvas.axesOne,rot=0)
+        ax= df.plot(kind='bar',ax=self.canvas.axesOne,rot=0,legend=False)
         self.createPatches(ax, opPointList[0], topologyList[0])
 
         df = dfList[1]
         self.canvas.axesTwo  =  self.canvas.figure.add_subplot(122, sharey = self.canvas.axesOne) 
         self.canvas.axesTwo.clear()
-        ax= df.plot(kind='bar',ax=self.canvas.axesTwo,rot=0)
+        ax= df.plot(kind='bar',ax=self.canvas.axesTwo,rot=0, legend=False)
         self.createPatches(ax, opPointList[1],topologyList[1])
-
+        lines, labels = self.canvas.figure.axes[-1].get_legend_handles_labels()
+        self.canvas.figure.tight_layout()
+        self.canvas.figure.legend(lines, labels, loc = 'upper left')
+        self.canvas.figure.text(0.5, 0, 'Switches', ha='center')
+        self.canvas.figure.text(0, 0.5, 'Loss In Watts', va='center', rotation='vertical')   
+        
         self.canvas.figure.set_visible(True)
         self.canvas.draw_idle()
 
@@ -64,21 +74,26 @@ class  MplMultiWidget(QWidget):
         df = dfList[0]
         self.canvas.axesOne  =  self.canvas.figure.add_subplot(221) 
         self.canvas.axesOne.clear()
-        ax= df.plot(kind='bar',ax=self.canvas.axesOne,rot=0)
+        ax= df.plot(kind='bar',ax=self.canvas.axesOne,rot=0, legend=False)
         self.createPatches(ax, opPointList[0], topologyList[0])
 
         df = dfList[1]
         self.canvas.axesTwo  =  self.canvas.figure.add_subplot(222, sharey = self.canvas.axesOne) 
         self.canvas.axesTwo.clear()
-        ax= df.plot(kind='bar',ax=self.canvas.axesTwo,rot=0)
+        ax= df.plot(kind='bar',ax=self.canvas.axesTwo,rot=0, legend=False)
         self.createPatches(ax, opPointList[1],topologyList[1])
 
         df = dfList[2]
         self.canvas.axesThree  =  self.canvas.figure.add_subplot(223, sharey = self.canvas.axesOne) 
         self.canvas.axesThree.clear()
-        ax= df.plot(kind='bar',ax=self.canvas.axesThree,rot=0)
+        ax= df.plot(kind='bar',ax=self.canvas.axesThree,rot=0, legend=False)
         self.createPatches(ax, opPointList[2],topologyList[2])
 
+        lines, labels = self.canvas.figure.axes[-1].get_legend_handles_labels()
+        self.canvas.figure.tight_layout()
+        self.canvas.figure.legend(lines, labels, loc = 'upper left')
+        self.canvas.figure.text(0.5, 0, 'Switches', ha='center')
+        self.canvas.figure.text(0, 0.5, 'Loss In Watts', va='center', rotation='vertical')   
         self.canvas.figure.set_visible(True)
         self.canvas.draw_idle()
     def plotFour(self, df, opPointRow):
@@ -89,16 +104,14 @@ class  MplMultiWidget(QWidget):
         rects = ax.patches
         for rect in rects:
             height = rect.get_height()
-            ax.text(rect.get_x() + rect.get_width() / 2, height, round(height,2),
+            ax.text(rect.get_x() + rect.get_width() / 2, height, round(height,1),
                     ha='center', va='bottom')
         ax.set_title(topology)
-        ax.set_xlabel('Switches')
-        ax.set_ylabel('Loss In Watts')
         textstr = "V_DC :{},\nTLoss:{},\nPdel :{},\nFsw   :{}".format("".join(str(opPointRow['V_DC'])),"".join(str(round(opPointRow['InvTotalLoss'],2))),
                                         "".join(str(opPointRow['PWatts'])),"".join(str(opPointRow['f_s'])))
         props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
-        ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=6,
-                verticalalignment='top',horizontalalignment='left', bbox=props)
+        ax.text(0.98, 0.98, textstr, transform=ax.transAxes, fontsize=6,
+                va='top',ha='right', bbox=props)
         #self.OptimalChartArea.canvas.draw()
         #self.OptimalChartArea.toolbar.hide()
             
