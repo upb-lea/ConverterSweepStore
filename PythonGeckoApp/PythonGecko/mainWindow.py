@@ -144,9 +144,12 @@ class MainWindow(QMainWindow):
             background: #ca5;
         }
         """)
-        self.initializeTabControls()
         if os.path.exists(self.invfilepath) :
             self.loadPrevParams(self.invfilepath)
+            self.initializeTabControls()
+        else :
+            self.tabWidget.setTabEnabled(1, False);
+            self.tabWidget.setTabEnabled(2, False);
         self.loadDataSheets()
         
     def loadDataSheets(self):
@@ -541,9 +544,9 @@ class MainWindow(QMainWindow):
     def initializeTabControls(self):
         self.optInvBtn.setChecked(True)
         self.plotInvBtn.setChecked(True)
+        plotTopology = self.topologyCombo.currentText()
         self.opt_df = pd.read_pickle(self.invfilepath)
         df_all = pd.read_pickle(self.invfilepath)
-        plotTopology = self.topologyCombo.currentText()
         self.plot_df =  df_all[df_all['Topology']==plotTopology]
         self.opt_df['PWatts'] = round(self.opt_df['Load_S']* self.opt_df['Load_phi'].apply(math.cos))
         self.scIgbtCombo.addItems(self.igbtList[plotTopology])
@@ -806,6 +809,10 @@ class MainWindow(QMainWindow):
             
     @QtCore.pyqtSlot(str)
     def updateTabsDF(self,text) :  
+        if not (self.tabWidget.isTabEnabled(1) and self.tabWidget.isTabEnabled(2)):
+            self.tabWidget.setTabEnabled(1,True)
+            self.tabWidget.setTabEnabled(2,True)
+            self.initializeTabControls()  ## need to recheck the inplementation
         optModeBtn =  self.buttonGroupOptMode.checkedButton()
         plotModeBtn = self.buttonGroupPlotMode.checkedButton()
         self.optChangeDb(optModeBtn)
@@ -827,9 +834,14 @@ class MainWindow(QMainWindow):
          
 
     def loadPrevParams(self,filepath):
-        df = pd.read_pickle(filepath)
+        if os.path.exists(filepath):
+            df = pd.read_pickle(filepath)
+        else :
+            columns_list = ['V_DC','Mains_S','Mains_phi','Load_S','Load_phi','f_s','T_HS','f_out']
+            row_list = [['','','','','','','','']]
+            df = pd.DataFrame(row_list, columns=columns_list)
         self.model = pandasModel(df)
-        lastSweepParams = self.model.returnLastSweep()
+        lastSweepParams = self.model.returnLastSweep()    #creates and empty dataframe with columns_list columns
         self.dcVltgIn.setPlainText(str(lastSweepParams.V_DC))
         if self.AFEModeBtn.isChecked():
             self.loadWIn.setPlainText(str(lastSweepParams.Mains_S))
@@ -840,6 +852,8 @@ class MainWindow(QMainWindow):
         self.switchFreqIn.setPlainText(str(lastSweepParams.f_s))
         self.tempIn.setPlainText(str(lastSweepParams.T_HS))
         self.fOutIn.setPlainText(str(lastSweepParams.f_out))
+        
+
         #self.igbtDataIn.setPlainText(str(lastSweepParams.Transistor))  !! need to think  ??
             #self.revDataIn.setPlainText(str(lastSweepParams.Transistor_revD))
             #self.fwDataIn.setPlainText(str(lastSweepParams.Transistor_fwD))

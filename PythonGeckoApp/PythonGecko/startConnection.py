@@ -142,7 +142,7 @@ class startConnection(QObject):
             # Defining loss keys: order is important!
             loss_keys = ['IG1_con','IG1_sw','IG3_con','IG3_sw','IG2_con','IG2_sw','IG4_con','IG4_sw','D1_con','D1_sw','D3_con','D3_sw','D2_con','D2_sw','D4_con','D4_sw',
                           'D13_con','D13_sw','D14_con','D14_sw']
-            temp_keys = ['Igbt1Temp','Igbt2Temp','D1Temp','D2Temp']
+            temp_keys = ['Igbt1Temp','Igbt2Temp','D1Temp','D2Temp', 'DcTemp']
             #ginst.connectToGecko()
             params = {}
             thermalSet = {}
@@ -248,10 +248,6 @@ class startConnection(QObject):
             parname = JString("$Udc")
             ginst.setGlobalParameterValue(parname,(params["V_DC"]) / 2)
             parname = JString("$uDC_t")
-            ginst.setGlobalParameterValue(parname,params["T_HS"])
-            parname = JString("$uDC_rd")
-            ginst.setGlobalParameterValue(parname,params["T_HS"])
-            parname = JString("$uDC_fd")
             ginst.setGlobalParameterValue(parname,params["T_HS"])
             parname = JString("$m")
             ginst.setGlobalParameterValue(parname,out["m"])

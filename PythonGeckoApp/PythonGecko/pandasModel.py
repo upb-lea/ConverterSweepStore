@@ -29,5 +29,10 @@ class pandasModel(QAbstractTableModel):
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
             return self._data.columns[col]
         return None
+    def clear(self):
+        self.beginResetModel()
+        self._data = pd.DataFrame(None)
+        self.endResetModel()
+      
 
 

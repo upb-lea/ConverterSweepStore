@@ -17,7 +17,6 @@ class dataBaseClass(QWidget):
         self.setWindowTitle(_translate("Form", "Simulated Data"))
         self.refreshBtn.clicked.connect(self.refreshTableView)
         self.exitBtn.clicked.connect(self.close)
-        self.refreshBtn.clicked.connect(self.refreshTableView)
         self.refreshTableView()
 
     def refreshTableView(self):
@@ -40,6 +39,7 @@ class dataBaseClass(QWidget):
             self.rowCountLabel.setText(str(simCount)+ ' simulations exists!')
             self.dataBaseTableView.setModel(self.model)
         else :
+            self.model.clear()
             self.rowCountLabel.setStyleSheet("QLabel { background-color :yellow ; color : red; }")
             self.rowCountLabel.setText('No database found!')
         
