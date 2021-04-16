@@ -62,7 +62,7 @@ class startConnection(QObject):
         SIM_B6_FILE_PATH = "2level_B6_therm.ipes"
         SIM_NPC_FILE_PATH = "3level_npc_therm.ipes"
         SIM_TNPC_FILE_PATH = "3level_tnpc_therm.ipes"
-        SIM_MULTI_FILE_PATH = "multi_therm.ipes"
+        SIM_MULTI_FILE_PATH = "5level_anpc_therm.ipes"
         # Gecko communicates using sockets.  Provide a port:
         GECKOPORT = 43036
 

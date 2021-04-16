@@ -16,36 +16,63 @@ bypassDiode = {}
 clampingDiode = {}
 isvalid = False
 
-topology = 'B6'
-datasheet = 'FF300R06KE3'
-transistor['T1']  = 'FF300R06KE3_T1T2'
-transistor['T2']  = 'FF300R06KE3_T1T2'
-transistor['T3']  = 'FF300R06KE3_T1T2'                #not required for B6 topology
-transistor['T4']  = 'FF300R06KE3_T1T2'                #not required for B6 topology
+topology = 'FC-ANPC'
+datasheet = 'F3L300R07PE4'
+circuitLevel = 'single-switch'
 
-bypassDiode['D1']  = 'FF300R06KE3_D1D2'
-bypassDiode['D2']  = 'FF300R06KE3_D1D2'
-bypassDiode['D3']  = 'FF300R06KE3_D1D2'            #not required for B6 topology
-bypassDiode['D4']  = 'FF300R06KE3_D1D2'            #not required for B6 topology
-
-#only required for NPC topology
-clampingDiode['D5'] = 'F3L300R07PE4_RD'
-clampingDiode['D6'] = 'F3L300R07PE4_RD'
-
-if topology == 'TNPC':
-    clampingDiode['D5'] = float('NaN')
-    clampingDiode['D6'] = float('NaN')
 if topology == 'B6':
-    transistor['T3']  = float('NaN')                       
-    transistor['T4']  = float('NaN')
-    bypassDiode['D3']  = float('NaN')            #T1T2 and D1D2 info sufficient for B6 topology
-    bypassDiode['D4']  = float('NaN') 
-    clampingDiode['D5'] = float('NaN')
-    clampingDiode['D6'] = float('NaN')
+    transistor['T1']  = 'FF300R06KE3_T1T2'
+    transistor['T2']  = 'FF300R06KE3_T1T2'
+    bypassDiode['D1']  = 'FF300R06KE3_D1D2'
+    bypassDiode['D2']  = 'FF300R06KE3_D1D2'
+if topology == 'NPC':
+    transistor['T1']  = 'FF300R06KE3_T1T2'
+    transistor['T2']  = 'FF300R06KE3_T1T2'
+    transistor['T3']  = 'FF300R06KE3_T1T2'                
+    transistor['T4']  = 'FF300R06KE3_T1T2' 
+    bypassDiode['D1']  = 'FF300R06KE3_D1D2'
+    bypassDiode['D2']  = 'FF300R06KE3_D1D2'
+    bypassDiode['D3']  = 'FF300R06KE3_D1D2'            
+    bypassDiode['D4']  = 'FF300R06KE3_D1D2'            
+    clampingDiode['D5'] = 'F3L300R07PE4_RD'                 #not required for B6 topology
+    clampingDiode['D6'] = 'F3L300R07PE4_RD'                 #not required for B6 topology
+if topology == 'TNPC':
+    #outerswitches
+    transistor['T1']  = 'FF300R06KE3_T1T2'                  
+    transistor['T4']  = 'FF300R06KE3_T1T2'
+    bypassDiode['D1']  = 'FF300R06KE3_D1D2'
+    bypassDiode['D2']  = 'FF300R06KE3_D1D2'
+    #inner switches
+    transistor['T2']  = 'FF300R06KE3_T1T2'
+    transistor['T3']  = 'FF300R06KE3_T1T2'                 
+    bypassDiode['D3']  = 'FF300R06KE3_D1D2'            
+    bypassDiode['D4']  = 'FF300R06KE3_D1D2'
+if topology == 'FC-ANPC':
+    #only required for FC-ANPC topology
+    #outer switches
+    transistor['T1']  = 'F3L300R07PE4_T'
+    transistor['T2']  = 'F3L300R07PE4_T'
+    transistor['T3']  = 'F3L300R07PE4_T'                
+    transistor['T4']  = 'F3L300R07PE4_T'
+    bypassDiode['D1']  = 'F3L300R07PE4_RD'
+    bypassDiode['D2']  = 'F3L300R07PE4_RD'                    
+    bypassDiode['D3']  = 'F3L300R07PE4_RD'            
+    bypassDiode['D4']  = 'F3L300R07PE4_RD'  
+    #inner switches
+    transistor['T5']  = 'F3L300R07PE4_T'
+    transistor['T6']  = 'F3L300R07PE4_T'
+    transistor['T7']  = 'F3L300R07PE4_T'                
+    transistor['T8']  = 'F3L300R07PE4_T'
+    bypassDiode['D5']  = 'F3L300R07PE4_RD'
+    bypassDiode['D6']  = 'F3L300R07PE4_RD'                    
+    bypassDiode['D7']  = 'F3L300R07PE4_RD'            
+    bypassDiode['D8']  = 'F3L300R07PE4_RD'            
+    
 
 datasheetInfo = {**transistor , **bypassDiode, **clampingDiode}
 datasheetInfo['Datasheet']=datasheet
 datasheetInfo['Topology']=topology
+datasheetInfo['Circuit-Level'] =circuitLevel
 if os.path.exists(transistor_db_path):
     df = pd.read_csv(transistor_db_path)
     indx = df.index[(df['Topology'] == topology) & (df['Datasheet'] == datasheet)].tolist()

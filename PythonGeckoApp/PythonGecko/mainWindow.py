@@ -18,7 +18,7 @@ import  random
 import math
 import itertools
 from PyQt5 import QtCore,uic
-from PyQt5.QtGui import QIcon
+from PyQt5.QtGui import QIcon, QPixmap
 from pandasModel import pandasModel
 from thermalParamClass import thermalParamClass
 from checkablecombobox import CheckableComboBox
@@ -46,10 +46,10 @@ class MainWindow(QMainWindow):
     datasheetpath = r'calc\Thermal\DatasheetDB.csv'
     ## Make all plots clickable
     clickedPen = pg.mkPen('b', width=2)
-    igbtList = {'B6':['IG1','IG2'],'NPC':['IG1','IG2','IG3','IG4'],'TNPC':['IG1','IG2','IG3','IG4'],'MULTI':['IG1','IG2','IG3','IG4']}
-    diodeList = {'B6':['D1','D2'],'NPC':['D1','D2','D3','D4','D13','TNPC'],'TNPC':['D1','D2','D3','D4'],'MULTI':['D1','D2','D3','D4','D13','D14']}
+    igbtList = {'B6':['IG1','IG2'],'NPC':['IG1','IG2','IG3','IG4'],'TNPC':['IG1','IG2','IG3','IG4'],'FC-ANPC':['IG1','IG2','IG3','IG4']}
+    diodeList = {'B6':['D1','D2'],'NPC':['D1','D2','D3','D4','D13','TNPC'],'TNPC':['D1','D2','D3','D4'],'FC-ANPC':['D1','D2','D3','D4','D13','D14']}
     filterList = {'Inverter':['Load_S','f_s','Load_phi'],'AFE':['Mains_S','f_s','Load_phi']}
-    topologyList = ['B6','NPC','TNPC','MULTI']       
+    topologyList = ['B6','NPC','TNPC','FC-ANPC']       
     lastClicked = []
     data2plot ={}
     filter = {}
@@ -59,8 +59,7 @@ class MainWindow(QMainWindow):
         uic.loadUi('initializeWindow.ui',self)
         _translate = QtCore.QCoreApplication.translate
         self.setWindowIcon(QIcon('clienticon.png'))
-        self.setWindowTitle(_translate("MainWindow", "Inverter Sweep Store"))
-        self.dateTimeLabel.setText(_translate("MainWindow", "12:02:59 Jan 12 2021"))
+        self.setWindowTitle(_translate("MainWindow", "Converter Sweep Store"))
         self.simulateBtn.clicked.connect(self.simulate)
         self.showGSIMS.stateChanged.connect(self.showGSIMSData)
         self.tabWidget.currentChanged.connect(self.onChange)
@@ -102,6 +101,7 @@ class MainWindow(QMainWindow):
         self.PinRangeSelector.hide()
         self.VdcRangeSelector.hide()
         self.SwRangeSelector.hide()
+        self.gridLayoutWidget.hide()
         self.VdcRangeSelector.setBackgroundStyle('background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #222, stop:1 #333);')
         self.VdcRangeSelector.setSpanStyle('background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #282, stop:1 #393);')
         self.VdcRangeSelector.setStyleSheet("""
@@ -151,11 +151,17 @@ class MainWindow(QMainWindow):
             self.tabWidget.setTabEnabled(1, False);
             self.tabWidget.setTabEnabled(2, False);
         self.loadDataSheets()
+        timer = QtCore.QTimer(self, interval=1000, timeout=self.showTime)
+        timer.start()
+        self.showTime()
         
     def loadDataSheets(self):
+        topology = self.buttonGroupTopology.checkedButton().text()
+        pixmap = QPixmap(topology+'.png')
+        self.topologyPicture.setPixmap(pixmap)
+        self.topologyPicture.setScaledContents(True)
         self.dataSheetComboBox.clear()
         df = pd.read_csv(self.datasheetpath)
-        topology = self.buttonGroupTopology.checkedButton().text()
         datasheets = df[df['Topology'] == topology]['Datasheet'].tolist()
         self.dataSheetComboBox.insertItems(0,datasheets)
     
@@ -238,6 +244,12 @@ class MainWindow(QMainWindow):
             self.opAddBtn.setText('Update')
         else:
             self.opAddBtn.setText('Add')
+
+    @QtCore.pyqtSlot()
+    def showTime(self):
+        CurrTime = QtCore.QTime.currentTime()
+        text = CurrTime.toString("HH mm ss" if CurrTime.second() % 2 == 0 else "HH:mm:ss")
+        self.lcdDateTime.display(text)
 
     def rangeAndUpdate(self,id=None):
         vdcMinReq =  185
@@ -775,11 +787,11 @@ class MainWindow(QMainWindow):
 
     def showGSIMSData(self):
         if(self.showGSIMS.isChecked()):
-            self.gridLayoutWidget.hide()
-            self.GSIMSLabel.hide()
-        else:
             self.gridLayoutWidget.show()
-            self.GSIMSLabel.show()
+            self.topologyPicture.hide()
+        else:
+            self.gridLayoutWidget.hide()
+            self.topologyPicture.show()
     
             
     @QtCore.pyqtSlot(dict)
