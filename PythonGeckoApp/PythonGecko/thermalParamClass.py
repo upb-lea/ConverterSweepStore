@@ -1,7 +1,6 @@
 from PyQt5.QtWidgets import QApplication,QWidget,QMainWindow,QMessageBox
 from PyQt5 import QtCore,uic
 from PyQt5.QtGui import QIcon
-from pandasModel import pandasModel
 import pandas as pd
 import re
 import os

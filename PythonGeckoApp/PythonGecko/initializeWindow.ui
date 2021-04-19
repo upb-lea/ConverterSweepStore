@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>760</width>
-    <height>529</height>
+    <height>527</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -1123,7 +1123,7 @@
     <number>2</number>
    </attribute>
    <widget class="QWidget" name="dockWidgetContents">
-    <widget class="QGroupBox" name="groupBox">
+    <widget class="QGroupBox" name="sliderBox">
      <property name="geometry">
       <rect>
        <x>10</x>
@@ -1694,12 +1694,12 @@
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="buttonGroupTopology"/>
+  <buttongroup name="buttonGroupRangeType"/>
   <buttongroup name="buttonGroupMode"/>
-  <buttongroup name="buttonGroupPlotMode"/>
-  <buttongroup name="buttonGroupScatterData"/>
   <buttongroup name="buttonGroupOptMode"/>
   <buttongroup name="buttonGroupPlotType"/>
-  <buttongroup name="buttonGroupRangeType"/>
+  <buttongroup name="buttonGroupPlotMode"/>
+  <buttongroup name="buttonGroupTopology"/>
+  <buttongroup name="buttonGroupScatterData"/>
  </buttongroups>
 </ui>

@@ -26,31 +26,33 @@ class startConnection(QObject):
         self.saveData = saveData
         self.afeMode = isAfeSelected
         self.topology = {"Topology":topology}
+        self.prevDataSheet = None
     def eventemit(self):
         print('we are inside')
         print(self.params)
         self.gismsUpdate.emit()
 
     def getComponentSCLs(self, datasheet) :
-            igbtDatasheets = []
-            diodeDatasheets = []
-            clampDatasheets = []
-            df = pd.read_csv(self.datasheetpath)
-            topology = self.topology["Topology"]
-            deviceSheetInfo = df[(df['Topology'] == topology)&(df['Datasheet']==datasheet)]
-            if topology == 'NPC':
-                igbtDatasheets = deviceSheetInfo[['T1','T2','T3','T4']].to_dict(orient='records')[0]
-                diodeDatasheets = deviceSheetInfo[['D1','D2','D3','D4']].to_dict(orient='records')[0]
-                clampDatasheets = deviceSheetInfo[['D5','D6']].to_dict(orient='records')[0]
-                return igbtDatasheets,diodeDatasheets,clampDatasheets
-            if topology == 'TNPC':
-                igbtDatasheets = deviceSheetInfo[['T1','T2','T3','T4']].to_dict(orient='records')[0]
-                diodeDatasheets = deviceSheetInfo[['D1','D2','D3','D4']].to_dict(orient='records')[0]
-                return igbtDatasheets,diodeDatasheets
-            if topology == 'B6':
-                igbtDatasheets = deviceSheetInfo[['T1','T2']].to_dict(orient='records')[0]
-                diodeDatasheets = deviceSheetInfo[['D1','D2']].to_dict(orient='records')[0]
-                return igbtDatasheets,diodeDatasheets
+        igbtDatasheets = []
+        diodeDatasheets = []
+        clampDatasheets = []
+        df = pd.read_csv(self.datasheetpath)
+        topology = self.topology["Topology"]
+        deviceSheetInfo = df[(df['Topology'] == topology)&(df['Datasheet']==datasheet)]
+        if topology == 'NPC':
+            igbtDatasheets = deviceSheetInfo[['T1','T2','T3','T4']].to_dict(orient='records')[0]
+            diodeDatasheets = deviceSheetInfo[['D1','D2','D3','D4']].to_dict(orient='records')[0]
+            clampDatasheets = deviceSheetInfo[['D5','D6']].to_dict(orient='records')[0]
+        if topology == 'TNPC':
+            igbtDatasheets = deviceSheetInfo[['T1','T2','T3','T4']].to_dict(orient='records')[0]
+            diodeDatasheets = deviceSheetInfo[['D1','D2','D3','D4']].to_dict(orient='records')[0]
+        if topology == 'B6':
+            igbtDatasheets = deviceSheetInfo[['T1','T2']].to_dict(orient='records')[0]
+            diodeDatasheets = deviceSheetInfo[['D1','D2']].to_dict(orient='records')[0]
+        if topology == 'FC-ANPC':
+            igbtDatasheets = deviceSheetInfo[['T1','T2','T3','T4','T5','T6','T7','T8']].to_dict(orient='records')[0]
+            diodeDatasheets = deviceSheetInfo[['D1','D2','D3','D4','D5','D6','D7','D8']].to_dict(orient='records')[0]
+        return igbtDatasheets,diodeDatasheets,clampDatasheets
 
     def initiateConnection(self):
         
@@ -137,18 +139,10 @@ class startConnection(QObject):
         L_par = 20e-3;
         count = 0
         self.progressUpdate.emit(-1,'Running')
-        #-----------------------------Function to setup and start NPC topology based simulations-----------------------#
-        def startSimNPC(pset): 
-            # Defining loss keys: order is important!
-            loss_keys = ['IG1_con','IG1_sw','IG3_con','IG3_sw','IG2_con','IG2_sw','IG4_con','IG4_sw','D1_con','D1_sw','D3_con','D3_sw','D2_con','D2_sw','D4_con','D4_sw',
-                          'D13_con','D13_sw','D14_con','D14_sw']
-            temp_keys = ['Igbt1Temp','Igbt2Temp','D1Temp','D2Temp', 'DcTemp']
-            #ginst.connectToGecko()
+        #----------------------------Modular function to handle one parameter set and gets and--------------------------#
+        #--------------------------- sets the simulation parameters before starting simulation--------------------------#
+        def loadSClandThermals(pset, factor, isANPC=False):
             params = {}
-            thermalSet = {}
-            nonlocal  count
-            count+=1;
-            
             # Getting required paramters for either AFE or Inverter mode simulation
             params["Datasheet"] = pset["Datasheet"]
             params["V_DC"] = float(pset["V_DC"])
@@ -182,80 +176,99 @@ class startConnection(QObject):
             Rfw_jc = {}
             Rfw_cs = {}
             Cth_fwd = {}
-            df = pd.read_csv(self.thermal_file_path,index_col =['Datasheet'])
-            igbtDatasheets,diodeDatasheets,clampDatasheets = self.getComponentSCLs(params["Datasheet"])
-            for sheet in igbtDatasheets:
-                thermalTransData[sheet] = df.loc[df.index == igbtDatasheets[sheet]].to_dict(orient = 'records')[0]
-            for sheet in diodeDatasheets:
-                thermalRevDiodeData[sheet] = df.loc[df.index ==diodeDatasheets[sheet]].to_dict(orient = 'records')[0]
-            for sheet in clampDatasheets:
-                thermalFWDiodeData[sheet] = df.loc[df.index ==clampDatasheets[sheet]].to_dict(orient = 'records')[0]
-            for sheet in igbtDatasheets:
-                Rt_jc[sheet] = thermalTransData[sheet]['Rjc']
-                Rt_cs[sheet] = thermalTransData[sheet]['Rcs']
-                Cth_ig[sheet] = thermalTransData[sheet]['Cth']
-            for sheet in diodeDatasheets:
-                Rev_jc[sheet] = thermalRevDiodeData[sheet]['Rjc']
-                Rev_cs[sheet] = thermalRevDiodeData[sheet]['Rcs']
-                Cth_rev[sheet] = thermalRevDiodeData[sheet]['Cth']
-            for sheet in clampDatasheets:
-                Rfw_jc[sheet] = thermalFWDiodeData[sheet]['Rjc']
-                Rfw_cs[sheet] = thermalFWDiodeData[sheet]['Rcs']
-                Cth_fwd[sheet] = thermalFWDiodeData[sheet]['Cth']
+            if self.prevDataSheet is not params["Datasheet"]:
+                self.prevDataSheet = params["Datasheet"]
+                df = pd.read_csv(self.thermal_file_path,index_col =['Datasheet'])
+                igbtDatasheets,diodeDatasheets,clampDatasheets = self.getComponentSCLs(params["Datasheet"])
+                for sheet in igbtDatasheets:
+                    thermalTransData[sheet] = df.loc[df.index == igbtDatasheets[sheet]].to_dict(orient = 'records')[0]
+                    Rt_jc[sheet] = thermalTransData[sheet]['Rjc']
+                    Rt_cs[sheet] = thermalTransData[sheet]['Rcs']
+                    Cth_ig[sheet] = thermalTransData[sheet]['Cth']
+                for sheet in diodeDatasheets:
+                    thermalRevDiodeData[sheet] = df.loc[df.index ==diodeDatasheets[sheet]].to_dict(orient = 'records')[0]
+                    Rev_jc[sheet] = thermalRevDiodeData[sheet]['Rjc']
+                    Rev_cs[sheet] = thermalRevDiodeData[sheet]['Rcs']
+                    Cth_rev[sheet] = thermalRevDiodeData[sheet]['Cth']
+                for sheet in clampDatasheets:
+                    thermalFWDiodeData[sheet] = df.loc[df.index ==clampDatasheets[sheet]].to_dict(orient = 'records')[0]
+                    Rfw_jc[sheet] = thermalFWDiodeData[sheet]['Rjc']
+                    Rfw_cs[sheet] = thermalFWDiodeData[sheet]['Rcs']
+                    Cth_fwd[sheet] = thermalFWDiodeData[sheet]['Cth']
+                # Setting up the IGBT, diode, loss models names
+                for leg in range(3):
+                    for igI,igSheet,dSheet in zip(list(range(len(igbtDatasheets))),list(igbtDatasheets.keys()),list(diodeDatasheets.keys())):
+                        ginst.doOperation(JString("IGBT."+ str((igI+1)+factor*leg)),JString("setLossFile"),JString(lossfilepath+"\\"+ igbtDatasheets[igSheet]+".scl"))
+                        ginst.doOperation(JString("D."+str((igI+1)+factor*leg)),JString("setLossFile"),JString(lossfilepath+"\\"+diodeDatasheets[dSheet]+".scl"))
+                    for fdI,cSheet in zip(list(range(len(clampDatasheets))),list(clampDatasheets)):
+                        ginst.doOperation(JString("D."+str((fdI+13)+2*leg)),JString("setLossFile"),JString(lossfilepath+"\\"+clampDatasheets[cSheet]+".scl"))
+           
             
-            # Setting up the IGBT, diode, loss models names
-            for leg in range(3):
+                # Set the global parameters in the simulation file: These parameters must be
+                # defined in Tools->Set Parameters in
+                # the GUI.
+                # This is how the simulation file can be adapted/scripted.
+                # Setting the thermal network parameters
+                if isANPC:
+                    for e in ['T2','T3','T4','T6','T7','T8']:
+                        igbtDatasheets.pop(e)  #outer (T1-T4)and inner(T5-T8) switches must have same datasheet 
+                    for e in ['D2','D3','D4','D6','D7','D8']:
+                        diodeDatasheets.pop(e) #to avoid adding 48 parameters in ipes file of ANPC
+                
                 for igI,igSheet,dSheet in zip(list(range(len(igbtDatasheets))),list(igbtDatasheets.keys()),list(diodeDatasheets.keys())):
-                    ginst.doOperation(JString("IGBT."+ str((igI+1)+4*leg)),JString("setLossFile"),JString(lossfilepath+"\\"+ igbtDatasheets[igSheet]+".scl"))
-                    ginst.doOperation(JString("D."+str((igI+1)+4*leg)),JString("setLossFile"),JString(lossfilepath+"\\"+diodeDatasheets[dSheet]+".scl"))
+                    igI = igI+1
+                    parname = JString("$R_JC_"+str(igI))
+                    ginst.setGlobalParameterValue(parname,Rt_jc[igSheet])
+                    parname = JString("$R_CS_"+str(igI))
+                    ginst.setGlobalParameterValue(parname,Rt_cs[igSheet])
+                    parname = JString("$Cth_ig_"+str(igI))
+                    ginst.setGlobalParameterValue(parname,Cth_ig[igSheet])
+                    parname = JString("$Rev_JC_"+str(igI))
+                    ginst.setGlobalParameterValue(parname,Rev_jc[dSheet])
+                    parname = JString("$Rev_CS_"+str(igI))
+                    ginst.setGlobalParameterValue(parname,Rev_cs[dSheet])
+                    parname = JString("$Cth_rev_"+str(igI))
+                    ginst.setGlobalParameterValue(parname,Cth_rev[dSheet])
                 for fdI,cSheet in zip(list(range(len(clampDatasheets))),list(clampDatasheets)):
-                    ginst.doOperation(JString("D."+str((fdI+13)+2*leg)),JString("setLossFile"),JString(lossfilepath+"\\"+clampDatasheets[cSheet]+".scl"))
-            # Setting up the current sources and their phase informations
+                    fdI = fdI+1
+                    parname = JString("$Rfw_JC_"+str(fdI))
+                    ginst.setGlobalParameterValue(parname,Rfw_jc[cSheet])
+                    parname = JString("$Rfw_CS_"+str(fdI))
+                    ginst.setGlobalParameterValue(parname,Rfw_cs[cSheet])
+                    parname = JString("$Cth_fwd_"+str(fdI))
+                    ginst.setGlobalParameterValue(parname,Cth_fwd[cSheet])
+
+             # Setting up the current sources and their phase informations
             for i in range (3):
                 ginst.setParameter(JString("Iout."+ str(i+1)),"phase",out["phi_degree_inv"]+(i)*120)
-            
-            # Set the global parameters in the simulation file: These parameters must be
-            # defined in Tools->Set Parameters in
-            # the GUI.
-            # This is how the simulation file can be adapted/scripted.
-            # Setting the thermal network parameters
-            for igI,igSheet,dSheet in zip(list(range(len(igbtDatasheets))),list(igbtDatasheets.keys()),list(diodeDatasheets.keys())):
-                igI = igI+1
-                parname = JString("$R_JC_"+str(igI))
-                ginst.setGlobalParameterValue(parname,Rt_jc[igSheet])
-                parname = JString("$R_CS_"+str(igI))
-                ginst.setGlobalParameterValue(parname,Rt_cs[igSheet])
-                parname = JString("$Cth_ig_"+str(igI))
-                ginst.setGlobalParameterValue(parname,Cth_ig[igSheet])
-                parname = JString("$Rev_JC_"+str(igI))
-                ginst.setGlobalParameterValue(parname,Rev_jc[dSheet])
-                parname = JString("$Rev_CS_"+str(igI))
-                ginst.setGlobalParameterValue(parname,Rev_cs[dSheet])
-                parname = JString("$Cth_rev_"+str(igI))
-                ginst.setGlobalParameterValue(parname,Cth_rev[dSheet])
-            for fdI,cSheet in zip(list(range(len(clampDatasheets))),list(clampDatasheets)):
-                fdI = fdI+1
-                parname = JString("$Rfw_JC_"+str(fdI))
-                ginst.setGlobalParameterValue(parname,Rfw_jc[cSheet])
-                parname = JString("$Rfw_CS_"+str(fdI))
-                ginst.setGlobalParameterValue(parname,Rfw_cs[cSheet])
-                parname = JString("$Cth_fwd_"+str(fdI))
-                ginst.setGlobalParameterValue(parname,Cth_fwd[cSheet])
             parname = JString("$fout")
             ginst.setGlobalParameterValue(parname,params["f_out"])
             parname = JString("$fsw")
             ginst.setGlobalParameterValue(parname,params["f_s"])
             parname = JString("$Udc")
             ginst.setGlobalParameterValue(parname,(params["V_DC"]) / 2)
+            if isANPC:
+                parname = JString("$Ufc")
+                ginst.setGlobalParameterValue(parname,(params["V_DC"]) / 4)
             parname = JString("$uDC_t")
             ginst.setGlobalParameterValue(parname,params["T_HS"])
             parname = JString("$m")
             ginst.setGlobalParameterValue(parname,out["m"])
             parname = JString("$Ipeak_inv")
             ginst.setGlobalParameterValue(parname,out["I_Peak_inv"])
-            self.gismsUpdate.emit(out)
-
-            
+            return out
+        #-----------------------------Function to setup and start NPC topology based simulations-----------------------#
+        def startSimNPC(pset): 
+            # Defining loss keys: order is important!
+            loss_keys = ['IG1_con','IG1_sw','IG3_con','IG3_sw','IG2_con','IG2_sw','IG4_con','IG4_sw','D1_con','D1_sw','D3_con','D3_sw','D2_con','D2_sw','D4_con','D4_sw',
+                          'D5_con','D5_sw','D6_con','D6_sw']
+            temp_keys = ['Igbt1Temp','Igbt2Temp','D1Temp','D2Temp', 'D5Temp']
+            #ginst.connectToGecko()
+            switchCount = 4
+            nonlocal  count
+            count+=1;
+            out = loadSClandThermals(pset,switchCount)   #set the simulation parameters
+            self.gismsUpdate.emit(out)         #emit the gsims parameters
             # If required to save this sweep file
             #ginst.saveFileAs(JString("D:\\thesis-research\\VS_code\\PythonGecko\\IPESFolder\\3NPC_sweep_"+pset['_pset_id']+".ipes"))
             ginst.set_dt(dt_step)  # Simulation time step
@@ -320,101 +333,11 @@ class startConnection(QObject):
             # Defining loss keys: order is important!
             loss_keys = ['IG1_con','IG1_sw','IG3_con','IG3_sw','IG2_con','IG2_sw','IG4_con','IG4_sw','D1_con','D1_sw','D3_con','D3_sw','D2_con','D2_sw','D4_con','D4_sw']
             temp_keys = ['Igbt1Temp','Igbt2Temp','D1Temp','D2Temp']
-            #ginst.connectToGecko()
-            params = {}
-            thermalSet = {}
+            switchCount = 4
             nonlocal  count
             count+=1;
-            
-            # Getting required paramters for either AFE or Inverter mode simulation
-            params["Datasheet"] = pset["Datasheet"]
-            params["V_DC"] = float(pset["V_DC"])
-            params["f_s"] = float(pset["f_s"])
-            params["T_HS"] = int(pset["T_HS"])
-            params["f_out"] = int(pset["f_out"])
-            if self.afeMode:
-                params["Mains_S"] = float(pset["Mains_S"])
-                params["Mains_phi"] = float(pset["Mains_phi"])
-                out = AFE_Parameters(params["V_DC"], U_Mains_LL, params["f_out"], Filter_L, Filter_C, params["Mains_S"], params["Mains_phi"],R_Fe_Transformer,R_S_Transformer,L_par , 1)
-                out['U_Mains_LL'] = U_Mains_LL
-                out["phi_degree_inv"] = 180+out["phi_degree_inv"]
-            else:
-                params["Load_S"] = float(pset["Load_S"])
-                params["Load_phi"] = float(pset["Load_phi"])
-                out = GISMSParameters_phi(params["V_DC"], U_Load_LL, params["f_out"], Filter_L, Filter_C, params["Load_S"], params["Load_phi"],R_Fe_Transformer,R_S_Transformer,L_par , 1)
-                out['U_Load_LL'] = U_Load_LL
-            
-            
-            # Setting up simulation parameters
-            # Getting the IGBT, diode, loss table names
-            thermalTransData = {}
-            thermalRevDiodeData = {}
-            Rt_jc = {}
-            Rt_cs = {}
-            Cth_ig = {}
-            Rev_jc = {}
-            Rev_cs = {}
-            Cth_rev = {}
-            Rfw_jc = {}
-            Rfw_cs = {}
-            Cth_fwd = {}
-            df = pd.read_csv(self.thermal_file_path,index_col =['Datasheet'])
-            igbtDatasheets,diodeDatasheets = self.getComponentSCLs(params["Datasheet"])
-            for sheet in igbtDatasheets:
-                thermalTransData[sheet] = df.loc[df.index == igbtDatasheets[sheet]].to_dict(orient = 'records')[0]
-            for sheet in diodeDatasheets:
-                thermalRevDiodeData[sheet] = df.loc[df.index ==diodeDatasheets[sheet]].to_dict(orient = 'records')[0]
-            for sheet in igbtDatasheets:
-                Rt_jc[sheet] = thermalTransData[sheet]['Rjc']
-                Rt_cs[sheet] = thermalTransData[sheet]['Rcs']
-                Cth_ig[sheet] = thermalTransData[sheet]['Cth']
-            for sheet in diodeDatasheets:
-                Rev_jc[sheet] = thermalRevDiodeData[sheet]['Rjc']
-                Rev_cs[sheet] = thermalRevDiodeData[sheet]['Rcs']
-                Cth_rev[sheet] = thermalRevDiodeData[sheet]['Cth']
-            # Setting up the IGBT, diode, loss models names
-            for leg in range(3):
-                for igI,igSheet,dSheet in zip(list(range(len(igbtDatasheets))),list(igbtDatasheets.keys()),list(diodeDatasheets.keys())):
-                    ginst.doOperation(JString("IGBT."+ str((igI+1)+4*leg)),JString("setLossFile"),JString(lossfilepath+"\\"+ igbtDatasheets[igSheet]+".scl"))
-                    ginst.doOperation(JString("D."+str((igI+1)+4*leg)),JString("setLossFile"),JString(lossfilepath+"\\"+diodeDatasheets[dSheet]+".scl"))
-            # Setting up the current sources and their phase informations
-            for i in range (3):
-                ginst.setParameter(JString("Iout."+ str(i+1)),"phase",out["phi_degree_inv"]+(i)*120)
-            
-            # Set the global parameters in the simulation file: These parameters must be
-            # defined in Tools->Set Parameters in
-            # the GUI.
-            # This is how the simulation file can be adapted/scripted.
-            # Setting the thermal network parameters
-            for igI,igSheet,dSheet in zip(list(range(len(igbtDatasheets))),list(igbtDatasheets.keys()),list(diodeDatasheets.keys())):
-                igI = igI+1
-                parname = JString("$R_JC_"+str(igI))
-                ginst.setGlobalParameterValue(parname,Rt_jc[igSheet])
-                parname = JString("$R_CS_"+str(igI))
-                ginst.setGlobalParameterValue(parname,Rt_cs[igSheet])
-                parname = JString("$Cth_ig_"+str(igI))
-                ginst.setGlobalParameterValue(parname,Cth_ig[igSheet])
-                parname = JString("$Rev_JC_"+str(igI))
-                ginst.setGlobalParameterValue(parname,Rev_jc[dSheet])
-                parname = JString("$Rev_CS_"+str(igI))
-                ginst.setGlobalParameterValue(parname,Rev_cs[dSheet])
-                parname = JString("$Cth_rev_"+str(igI))
-                ginst.setGlobalParameterValue(parname,Cth_rev[dSheet])
-            parname = JString("$fout")
-            ginst.setGlobalParameterValue(parname,params["f_out"])
-            parname = JString("$fsw")
-            ginst.setGlobalParameterValue(parname,params["f_s"])
-            parname = JString("$Udc")
-            ginst.setGlobalParameterValue(parname,(params["V_DC"]) / 2)
-            parname = JString("$uDC_t")
-            ginst.setGlobalParameterValue(parname,params["T_HS"])
-            parname = JString("$m")
-            ginst.setGlobalParameterValue(parname,out["m"])
-            parname = JString("$Ipeak_inv")
-            ginst.setGlobalParameterValue(parname,out["I_Peak_inv"])
-            self.gismsUpdate.emit(out)
-
-            
+            out = loadSClandThermals(pset,switchCount)   #set the simulation parameters
+            self.gismsUpdate.emit(out)         #emit the gsims parameters
             # If required to save this sweep file
             #ginst.saveFileAs(JString("D:\\thesis-research\\VS_code\\PythonGecko\\IPESFolder\\3NPC_sweep_"+pset['_pset_id']+".ipes"))
             ginst.set_dt(dt_step)  # Simulation time step
@@ -479,101 +402,11 @@ class startConnection(QObject):
             # Defining loss keys: order is important!
             loss_keys = ['IG1_con','IG1_sw','IG2_con','IG2_sw','D1_con','D1_sw','D2_con','D2_sw']
             temp_keys = ['Igbt1Temp','Igbt2Temp','D1Temp','D2Temp']
-            #ginst.connectToGecko()
-            params = {}
-            thermalSet = {}
+            switchCount = 2
             nonlocal  count
-            count+=1;
-            
-            # Getting required paramters for either AFE or Inverter mode simulation
-            params["Datasheet"] = pset["Datasheet"]
-            params["V_DC"] = float(pset["V_DC"])
-            params["f_s"] = float(pset["f_s"])
-            params["T_HS"] = int(pset["T_HS"])
-            params["f_out"] = int(pset["f_out"])
-            if self.afeMode:
-                params["Mains_S"] = float(pset["Mains_S"])
-                params["Mains_phi"] = float(pset["Mains_phi"])
-                out = AFE_Parameters(params["V_DC"], U_Mains_LL, params["f_out"], Filter_L, Filter_C, params["Mains_S"], params["Mains_phi"],R_Fe_Transformer,R_S_Transformer,L_par , 1)
-                out['U_Mains_LL'] = U_Mains_LL
-                out["phi_degree_inv"] = 180+out["phi_degree_inv"]
-            else:
-                params["Load_S"] = float(pset["Load_S"])
-                params["Load_phi"] = float(pset["Load_phi"])
-                out = GISMSParameters_phi(params["V_DC"], U_Load_LL, params["f_out"], Filter_L, Filter_C, params["Load_S"], params["Load_phi"],R_Fe_Transformer,R_S_Transformer,L_par , 1)
-                out['U_Load_LL'] = U_Load_LL
-            
-            
-            # Setting up simulation parameters
-            # Getting the IGBT, diode, loss table names
-            thermalTransData = {}
-            thermalRevDiodeData = {}
-            Rt_jc = {}
-            Rt_cs = {}
-            Cth_ig = {}
-            Rev_jc = {}
-            Rev_cs = {}
-            Cth_rev = {}
-            Rfw_jc = {}
-            Rfw_cs = {}
-            Cth_fwd = {}
-            df = pd.read_csv(self.thermal_file_path,index_col =['Datasheet'])
-            igbtDatasheets,diodeDatasheets = self.getComponentSCLs(params["Datasheet"])
-            for sheet in igbtDatasheets:
-                thermalTransData[sheet] = df.loc[df.index == igbtDatasheets[sheet]].to_dict(orient = 'records')[0]
-            for sheet in diodeDatasheets:
-                thermalRevDiodeData[sheet] = df.loc[df.index ==diodeDatasheets[sheet]].to_dict(orient = 'records')[0]
-            for sheet in igbtDatasheets:
-                Rt_jc[sheet] = thermalTransData[sheet]['Rjc']
-                Rt_cs[sheet] = thermalTransData[sheet]['Rcs']
-                Cth_ig[sheet] = thermalTransData[sheet]['Cth']
-            for sheet in diodeDatasheets:
-                Rev_jc[sheet] = thermalRevDiodeData[sheet]['Rjc']
-                Rev_cs[sheet] = thermalRevDiodeData[sheet]['Rcs']
-                Cth_rev[sheet] = thermalRevDiodeData[sheet]['Cth']
-            # Setting up the IGBT, diode, loss models names
-            for leg in range(3):
-                for igI,igSheet,dSheet in zip(list(range(len(igbtDatasheets))),list(igbtDatasheets.keys()),list(diodeDatasheets.keys())):
-                    ginst.doOperation(JString("IGBT."+ str((igI+1)+2*leg)),JString("setLossFile"),JString(lossfilepath+"\\"+ igbtDatasheets[igSheet]+".scl"))
-                    ginst.doOperation(JString("D."+str((igI+1)+2*leg)),JString("setLossFile"),JString(lossfilepath+"\\"+diodeDatasheets[dSheet]+".scl"))
-            # Setting up the current sources and their phase informations
-            for i in range (3):
-                ginst.setParameter(JString("Iout."+ str(i+1)),"phase",out["phi_degree_inv"]+(i)*120)
-            
-            # Set the global parameters in the simulation file: These parameters must be
-            # defined in Tools->Set Parameters in
-            # the GUI.
-            # This is how the simulation file can be adapted/scripted.
-            # Setting the thermal network parameters
-            for igI,igSheet,dSheet in zip(list(range(len(igbtDatasheets))),list(igbtDatasheets.keys()),list(diodeDatasheets.keys())):
-                igI = igI+1
-                parname = JString("$R_JC_"+str(igI))
-                ginst.setGlobalParameterValue(parname,Rt_jc[igSheet])
-                parname = JString("$R_CS_"+str(igI))
-                ginst.setGlobalParameterValue(parname,Rt_cs[igSheet])
-                parname = JString("$Cth_ig_"+str(igI))
-                ginst.setGlobalParameterValue(parname,Cth_ig[igSheet])
-                parname = JString("$Rev_JC_"+str(igI))
-                ginst.setGlobalParameterValue(parname,Rev_jc[dSheet])
-                parname = JString("$Rev_CS_"+str(igI))
-                ginst.setGlobalParameterValue(parname,Rev_cs[dSheet])
-                parname = JString("$Cth_rev_"+str(igI))
-                ginst.setGlobalParameterValue(parname,Cth_rev[dSheet])
-            parname = JString("$fout")
-            ginst.setGlobalParameterValue(parname,params["f_out"])
-            parname = JString("$fsw")
-            ginst.setGlobalParameterValue(parname,params["f_s"])
-            parname = JString("$Udc")
-            ginst.setGlobalParameterValue(parname,(params["V_DC"]))
-            parname = JString("$uDC_t")
-            ginst.setGlobalParameterValue(parname,params["T_HS"])
-            parname = JString("$m")
-            ginst.setGlobalParameterValue(parname,out["m"])
-            parname = JString("$Ipeak_inv")
-            ginst.setGlobalParameterValue(parname,out["I_Peak_inv"])
-            self.gismsUpdate.emit(out)
-
-            
+            count+=1
+            out = loadSClandThermals(pset,switchCount)   #set the simulation parameters
+            self.gismsUpdate.emit(out)         #emit the gsims parameters
             # If required to save this sweep file
             #ginst.saveFileAs(JString("D:\\thesis-research\\VS_code\\PythonGecko\\IPESFolder\\3NPC_sweep_"+pset['_pset_id']+".ipes"))
             ginst.set_dt(dt_step)  # Simulation time step
@@ -633,6 +466,76 @@ class startConnection(QObject):
                 meanLosses['file'] = "NA"
             self.progressUpdate.emit(incrementor*count,'running')
             return {**meanLosses, **meanTemp}
+        #-----------------------------Function to setup and start NPC topology based simulations-----------------------#
+        def startSimANPC(pset): 
+            # Defining loss keys: order is important!
+            loss_keys = ['IG1_con','IG1_sw','IG2_con','IG2_sw','IG3_con','IG3_sw','IG4_con','IG4_sw','IG5_con','IG5_sw','IG7_con','IG7_sw','IG6_con','IG6_sw','IG8_con','IG8_sw',
+                         'D1_con','D1_sw','D2_con','D2_sw','D3_con','D3_sw','D4_con','D4_sw','D5_con','D5_sw','D7_con','D7_sw','D6_con','D6_sw','D8_con','D8_sw']
+            temp_keys = ['Igbt1Temp','Igbt2Temp','Igbt5Temp','Igbt7Temp','D1Temp','D2Temp','D5Temp','D7Temp' ]
+            switchCount = 8
+            nonlocal  count
+            count+=1;
+            out = loadSClandThermals(pset,switchCount,True)   #set the simulation parameters
+            self.gismsUpdate.emit(out)         #emit the gsims parameters
+            # If required to save this sweep file
+            #ginst.saveFileAs(JString("D:\\thesis-research\\VS_code\\PythonGecko\\IPESFolder\\3NPC_sweep_"+pset['_pset_id']+".ipes"))
+            ginst.set_dt(dt_step)  # Simulation time step
+            ginst.set_Tend(t_end)  # Simulation time
+            ginst.runSimulation()  # Run the simulation
+         
+            ##########------------------------------------------------------------------------#########
+            ##########---------------------------------Loss Recordings------------------------#########
+            ##########------------------------------------------------------------------------#########
+            # Intialization
+            meanLosses = {}
+            meanTemp = {}
+            t_end_new = ginst.get_Tend()
+            t_start = t_end_new-20e-3
+            saveLossData = {}
+            saveTempData = {}
+            totalLoss = 0
+            meanLosses['TransformerLoss'] = out['P_Transformer'] #transformer losses
+            for x in loss_keys:
+                 losses = ginst.getSignalData(x,t_start,t_end_new,0)
+                 lossesArray = np.array(losses)
+                 if self.saveData :
+                    saveLossData[x] = losses                
+                 meanLosses[x] = np.mean(lossesArray)
+                 totalLoss = totalLoss + meanLosses[x]
+            meanLosses['IG3_sw'] 
+            meanLosses['InvTotalLoss'] = totalLoss*3  #total losses
+            length = len(loss_keys)
+            i=0
+            while i < length:
+                key = loss_keys[i+1]
+                key = key[:-3] #remove _sw from key
+                meanLosses[key] = meanLosses[loss_keys[i]] + meanLosses[loss_keys[i+1]]  #adding sw and con losses
+                i+=2
+            # Recording device temparatures of only one leg
+            for x in temp_keys:
+                 temp = ginst.getSignalData(x,t_start,t_end_new,0)
+                 tempArray = np.array(temp)
+                 if self.saveData :
+                    saveTempData[x] = temp                
+                 meanTemp[x] = np.mean(tempArray)
+            time = ginst.getTimeArray('IG1_con',t_start,t_end_new,0); #get last cycle time stamp ???
+            #ginst.disconnectFromGecko()
+            # Set saveData to True if required to save the simulated loss data over the time range in CSV format
+            if self.saveData:
+                fn = os.path.join(pset['_calc_dir'],
+                          pset['_pset_id'])
+                cmd = "mkdir {fn}".format(fn=fn)
+                subprocess.run(cmd, shell=True)
+                with open(fn+"\\losses.csv", 'w') as csvfile: 
+                    writer = csv.writer(csvfile) 
+                    writer.writerow(loss_keys+temp_keys)
+                    comboData = {**saveLossData, **saveTempData}
+                    writer.writerows(zip(*comboData.values())) 
+                meanLosses['file'] = fn+"\\losses.csv"
+            else :
+                meanLosses['file'] = "NA"
+            self.progressUpdate.emit(incrementor*count,'running')
+            return {**meanLosses, **meanTemp}
         
         # Select topology file and operating function
         if topology == 'NPC' :
@@ -644,18 +547,21 @@ class startConnection(QObject):
         elif topology == 'B6' :
             simfilepath = simfilepath + SIM_B6_FILE_PATH
             startSim = startSimB6
-        elif topology == 'MULTI' :
+        elif topology == 'FC-ANPC' :
             simfilepath = simfilepath + SIM_MULTI_FILE_PATH
-            startSim = startSimMULTI
+            startSim = startSimANPC
         fname = JString(simfilepath)
         ginst.openFile(fname) 
+        mode = ''
         # Check if to start the simulation in AFE mode or Inverter mode
         if self.afeMode:
+            mode = 'AFE'
             df = ps.run(startSim, paramsList, calc_dir='calc_AFE')
         else :
+            mode = 'Inverter'
             df = ps.run(startSim, paramsList)
         self.progressUpdate.emit(-1,'Done')
-        self.tabsDFUpdate.emit('Simulation Done')
+        self.tabsDFUpdate.emit(mode)
         ginst.shutdown()
         #print(df)
                 

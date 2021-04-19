@@ -46,8 +46,8 @@ class MainWindow(QMainWindow):
     datasheetpath = r'calc\Thermal\DatasheetDB.csv'
     ## Make all plots clickable
     clickedPen = pg.mkPen('b', width=2)
-    igbtList = {'B6':['IG1','IG2'],'NPC':['IG1','IG2','IG3','IG4'],'TNPC':['IG1','IG2','IG3','IG4'],'FC-ANPC':['IG1','IG2','IG3','IG4']}
-    diodeList = {'B6':['D1','D2'],'NPC':['D1','D2','D3','D4','D13','TNPC'],'TNPC':['D1','D2','D3','D4'],'FC-ANPC':['D1','D2','D3','D4','D13','D14']}
+    igbtList = {'B6':['IG1','IG2'],'NPC':['IG1','IG2','IG3','IG4'],'TNPC':['IG1','IG2','IG3','IG4'],'FC-ANPC':['IG1','IG2','IG3','IG4','IG5','IG6','IG7','IG8']}
+    diodeList = {'B6':['D1','D2'],'NPC':['D1','D2','D3','D4','D5','D6'],'TNPC':['D1','D2','D3','D4'],'FC-ANPC':['D1','D2','D3','D4','D5','D6','D7','D8']}
     filterList = {'Inverter':['Load_S','f_s','Load_phi'],'AFE':['Mains_S','f_s','Load_phi']}
     topologyList = ['B6','NPC','TNPC','FC-ANPC']       
     lastClicked = []
@@ -144,17 +144,47 @@ class MainWindow(QMainWindow):
             background: #ca5;
         }
         """)
-        if os.path.exists(self.invfilepath) :
-            self.loadPrevParams(self.invfilepath)
-            self.initializeTabControls()
-        else :
-            self.tabWidget.setTabEnabled(1, False);
-            self.tabWidget.setTabEnabled(2, False);
+        self.checkDatabase()
         self.loadDataSheets()
         timer = QtCore.QTimer(self, interval=1000, timeout=self.showTime)
         timer.start()
         self.showTime()
-        
+
+    def checkDatabase(self):
+        mode =''
+        fileInv = os.path.exists(self.invfilepath)
+        fileAfe = os.path.exists(self.afefilepath)
+        if not (fileInv and fileAfe):
+            IGBTColumnList = ['IG1_con','IG1_sw','IG2_con','IG2_sw','IG3_con','IG3_sw','IG4_con','IG4_sw','IG5_con','IG5_sw','IG6_con','IG6_sw','IG7_con','IG7_sw','IG8_con','IG8_sw']
+            DiodeColumnList = ['D1_con','D1_sw','D2_con','D2_sw','D3_con','D3_sw','D4_con','D4_sw','D5_con','D5_sw','D6_con','D6_sw','D7_con','D7_sw','D8_con','D8_sw']
+            TotalColumnList = ['file','InvTotalLoss','IG1','IG2','IG3','IG4','IG5','IG6','IG7','IG8','D1','D2','D3','D4','D5','D6','D7','D8']
+            TempColumnList = ['Igbt1Temp','Igbt2Temp','Igbt5Temp','Igbt7Temp','D1Temp','D2Temp','D5Temp','D7Temp']  
+            if not fileInv:
+                InvOperatingList = ['Topology','Datasheet','V_DC','Load_S','Load_phi','f_s','T_HS','f_out','_run_id','_pset_id','_calc_dir','_time_utc','TransformerLoss']#13
+                columns_list = InvOperatingList+TotalColumnList+TempColumnList+IGBTColumnList+DiodeColumnList
+                df = pd.DataFrame(columns=columns_list)
+                df.to_pickle(self.invfilepath)
+            if not fileAfe :
+                AfeOperatingList = ['Topology','Datasheet','V_DC','Mains_S','Mains_phi','f_s','T_HS','f_out','_run_id','_pset_id','_calc_dir','_time_utc','TransformerLoss']
+                columns_list = AfeOperatingList+TotalColumnList+TempColumnList+IGBTColumnList+DiodeColumnList
+                df = pd.DataFrame(columns=columns_list)
+                df.to_pickle(self.afefilepath)
+        df_inv = pd.read_pickle(self.invfilepath)
+        df_afe = pd.read_pickle(self.afefilepath)
+        if (df_inv.empty and df_afe.empty) :
+            self.tabWidget.setTabEnabled(1, False)
+            self.tabWidget.setTabEnabled(2, False)
+        elif(not df_inv.empty) :
+            mode = 'Inverter'
+            self.InverterModeBtn.setChecked(True)
+            self.loadPrevParams(self.invfilepath,mode)
+            self.initializeTabControls(mode)
+        elif(not df_afe.empty):
+            mode = 'AFE'
+            self.AFEModeBtn.setChecked(True)
+            self.loadPrevParams(self.afefilepath, mode)
+            self.initializeTabControls(mode)
+
     def loadDataSheets(self):
         topology = self.buttonGroupTopology.checkedButton().text()
         pixmap = QPixmap(topology+'.png')
@@ -164,24 +194,7 @@ class MainWindow(QMainWindow):
         df = pd.read_csv(self.datasheetpath)
         datasheets = df[df['Topology'] == topology]['Datasheet'].tolist()
         self.dataSheetComboBox.insertItems(0,datasheets)
-    
-    def loadTopologyData(self, plotTopology):      #notused as of now
-        buttonMode = self.buttonGroupPlotMode.checkedButton() 
-        if buttonMode.text()=='AFE':
-           df_all = pd.read_pickle(self.afefilepath)
-        else:
-            df_all = pd.read_pickle(self.invfilepath)
-        self.plot_df = df_all[df_all['Topology']==plotTopology]
-        self.replotFunction()
-    
-    def replotFunction(self):
-        self.clear()
-        if len(self.rePlotInfo) == 3:
-            plotType = self.rePlotInfo['plotType']
-            if plotType == 'Scatter':
-                self.updateScatterRadios( self.rePlotInfo[plotType], self.rePlotInfo[plotType].text())
-        
-
+   
     def openPandasGUI(self) :
         df = pd.read_pickle(self.invfilepath)
         #show(df)
@@ -201,13 +214,13 @@ class MainWindow(QMainWindow):
             self.loadWLabel.setText("Mains in VA       :")
             self.loadVltg.setText("Mains Voltage       :")
             self.loadZ.setText("Load Inv(Z_inv) :")
-            self.loadPrevParams(self.afefilepath)
+            self.loadPrevParams(self.afefilepath,'AFE')
             self.updateGSIMS(False)
         else :
             self.loadWLabel.setText("Load in VA        :")
             self.loadVltg.setText("Load Voltage       :")
             self.loadZ.setText("Load Imp(Z_L)  :")
-            self.loadPrevParams(self.invfilepath)
+            self.loadPrevParams(self.invfilepath,'Inverter')
             self.updateGSIMS(False)
 
     def plotChangeDb(self,button):
@@ -216,11 +229,18 @@ class MainWindow(QMainWindow):
         if plotMode =='AFE':
            df_all = pd.read_pickle(self.afefilepath)
         else:
-            df_all = pd.read_pickle(self.invfilepath)
+           df_all = pd.read_pickle(self.invfilepath)
         self.plot_df = df_all[df_all['Topology']==plotTopology]
         self.opComboType.clear()
         self.opComboType.addItems(self.filterList[plotMode])
-        self.replotFunction()
+        self.replotScatter()
+    def replotScatter(self):
+        self.clear()
+        if len(self.rePlotInfo) == 3:
+            plotType = self.rePlotInfo['plotType']
+            if plotType == 'Scatter':
+                self.updateScatterRadios(self.rePlotInfo['LossTypeBtn'])
+        
         
     def optChangeDb(self,button):
         self.optStatusLabel.setStyleSheet("")  #check the position
@@ -233,10 +253,11 @@ class MainWindow(QMainWindow):
         else:
             self.opt_df = pd.read_pickle(self.invfilepath)
             self.opt_df['PWatts'] = round(self.opt_df['Load_S']* self.opt_df['Load_phi'].apply(math.cos))
-        self.rangeAndUpdate() #UPDATES all sliders irrespective of visibility of each slider everytime db gets changed
         self.OptimalChartArea.canvas.figure.set_visible(False)
         self.OptimalChartArea.toolbar.hide()
         self.OptimalChartArea.canvas.draw()
+        self.rangeAndUpdate() #UPDATES all sliders irrespective of visibility of each slider everytime db gets changed
+        
 
     def updateOpBtnLabel(self):
         key = self.opComboType.currentText()
@@ -251,38 +272,55 @@ class MainWindow(QMainWindow):
         text = CurrTime.toString("HH mm ss" if CurrTime.second() % 2 == 0 else "HH:mm:ss")
         self.lcdDateTime.display(text)
 
-    def rangeAndUpdate(self,id=None):
-        vdcMinReq =  185
-        vdcMaxReq = 260
-        vdcNominal = 216
-        fsMaxReq = 14400
-        fsMinReq = 7200
-        fsNominal = 10800
-        pWNomial = 32000
-        def findRange(Min,Max,MinReq,MaxReq):
-            if(MinReq > Min):
-                Min = MinReq
-            if(MaxReq < Max):
-                Max = MaxReq
-            return Max,Min
-        vDcMax = self.opt_df['V_DC'].max()
-        vDcMin = self.opt_df['V_DC'].min()
-        fsMax = self.opt_df['f_s'].max()    
-        fsMin = self.opt_df['f_s'].min()
-        pWMax = self.opt_df['PWatts'].max()
-        pWMin = self.opt_df['PWatts'].min()
-        setVDcMax,setVDcMin = findRange(vDcMin,vDcMax,vdcMinReq,vdcMaxReq)
-        setFsMax,setFsMin = findRange(fsMin,fsMax,fsMinReq,fsMaxReq)
-        setPWMax,setPWMin = findRange(pWMin,pWMax,10000,pWNomial)
-        btnOptions = { 1:{'rangeBtn':self.PinRangeSelector,'inputBtn':self.optPinInput,'Max':pWMax,'Min':pWMin,'rangeMin':setPWMin,'rangeMax':setPWMax,'normValue':1000,'decimalValue':1},
-                       2:{'rangeBtn':self.VdcRangeSelector,'inputBtn':self.optVdcInput,'Max':vDcMax,'Min':vDcMin,'rangeMin':setVDcMin,'rangeMax':setVDcMax},
-                       3:{'rangeBtn':self.SwRangeSelector,'inputBtn':self.optSwInput,'Max':fsMax,'Min':fsMin,'rangeMin':setFsMin,'rangeMax':setFsMax,'normValue':1000,'decimalValue':1}
-                      }
-        if id is None :
-            for slider in btnOptions:
-                self.updateSlider(**btnOptions[slider])
-        else :
-            self.toggleInput(**btnOptions[id])
+    def rangeAndUpdate(self,id=None): 
+        if not self.opt_df.empty:
+            vdcMinReq =  185
+            vdcMaxReq = 260
+            vdcNominal = 216
+            fsMaxReq = 14400
+            fsMinReq = 7200
+            fsNominal = 10800
+            pWNomial = 32000
+            def findRange(Min,Max,MinReq,MaxReq):
+                if(MinReq > Min):
+                    Min = MinReq
+                if(MaxReq < Max):
+                    Max = MaxReq
+                return Max,Min
+            vDcMax = self.opt_df['V_DC'].max()
+            vDcMin = self.opt_df['V_DC'].min()
+            fsMax = self.opt_df['f_s'].max()    
+            fsMin = self.opt_df['f_s'].min()
+            pWMax = self.opt_df['PWatts'].max()
+            pWMin = self.opt_df['PWatts'].min()
+            setVDcMax,setVDcMin = findRange(vDcMin,vDcMax,vdcMinReq,vdcMaxReq)
+            setFsMax,setFsMin = findRange(fsMin,fsMax,fsMinReq,fsMaxReq)
+            setPWMax,setPWMin = findRange(pWMin,pWMax,10000,pWNomial)
+            btnOptions = { 1:{'rangeBtn':self.PinRangeSelector,'inputBtn':self.optPinInput,'Max':pWMax,'Min':pWMin,'rangeMin':setPWMin,'rangeMax':setPWMax,'normValue':1000,'decimalValue':1},
+                           2:{'rangeBtn':self.VdcRangeSelector,'inputBtn':self.optVdcInput,'Max':vDcMax,'Min':vDcMin,'rangeMin':setVDcMin,'rangeMax':setVDcMax},
+                           3:{'rangeBtn':self.SwRangeSelector,'inputBtn':self.optSwInput,'Max':fsMax,'Min':fsMin,'rangeMin':setFsMin,'rangeMax':setFsMax,'normValue':1000,'decimalValue':1}
+                          }
+            if id is None :
+                for slider in btnOptions:
+                    self.updateSlider(**btnOptions[slider])
+            else :
+                self.toggleInput(**btnOptions[id])
+            self.searchOptBtn.setEnabled(True)
+        else:
+            self.searchOptBtn.setEnabled(False)
+            self.PinRangeSelector.hide()
+            self.VdcRangeSelector.hide()
+            self.SwRangeSelector.hide()
+            self.optPinInput.clear()
+            self.optPinInput.show()
+            self.optVdcInput.clear()
+            self.optVdcInput.show()
+            self.optSwInput.clear()
+            self.optSwInput.show()
+            msgBox = QMessageBox()
+            msgBox.setIcon(QMessageBox.Information)
+            msgBox.setText('Database is Empty!')
+            msgBox.exec() 
    
     def findOptimum(self):
         searchSeries = {}
@@ -358,8 +396,8 @@ class MainWindow(QMainWindow):
             finalRow = df[df['InvTotalLoss']==df['InvTotalLoss'].min()].to_dict('records')[0]
             opPoint[topology] = finalRow
             if topology == 'NPC':
-                conductionLoss = [finalRow['IG1_con'],finalRow['D1_con'],finalRow['IG2_con'],finalRow['D2_con'],finalRow['D13_con']]
-                switchLoss = [finalRow['IG1_sw'],finalRow['D1_sw'],finalRow['IG2_sw'],finalRow['D2_sw'],finalRow['D13_sw']]
+                conductionLoss = [finalRow['IG1_con'],finalRow['D1_con'],finalRow['IG2_con'],finalRow['D2_con'],finalRow['D5_con']]
+                switchLoss = [finalRow['IG1_sw'],finalRow['D1_sw'],finalRow['IG2_sw'],finalRow['D2_sw'],finalRow['D5_sw']]
                 index  = ['T1/T4','D1/D4','T2/T3','D2/D3','D5/D6']
                 dfToBar[topology] = pd.DataFrame({'Cond Loss': conductionLoss,'SW Loss': switchLoss}, index=index)
             if topology == 'TNPC':
@@ -372,10 +410,10 @@ class MainWindow(QMainWindow):
                 switchLoss = [finalRow['IG1_sw'],finalRow['D1_sw'],finalRow['IG2_sw'],finalRow['D2_sw']]
                 index  = ['T1','D1','T2','D2']
                 dfToBar[topology] = pd.DataFrame({'Cond Loss': conductionLoss,'SW Loss': switchLoss}, index=index)
-            if topology == 'MULTI':###dummy
-                conductionLoss = [finalRow['IG1_con'],finalRow['D1_con'],finalRow['IG2_con'],finalRow['D2_con']]
-                switchLoss = [finalRow['IG1_sw'],finalRow['D1_sw'],finalRow['IG2_sw'],finalRow['D2_sw']]
-                index  = ['T1','D1','T2','D2']
+            if topology == 'FC-ANPC':
+                conductionLoss = [finalRow['IG1_con'],finalRow['D1_con'],finalRow['IG2_con'],finalRow['D2_con'],finalRow['IG5_con'],finalRow['D5_con'],finalRow['IG7_con'],finalRow['D7_con']]
+                switchLoss = [finalRow['IG1_sw'],finalRow['D1_sw'],finalRow['IG2_sw'],finalRow['D2_sw'],finalRow['IG5_sw'],finalRow['D5_sw'],finalRow['IG7_sw'],finalRow['D7_sw']]
+                index  = ['T1/T4','D1/D4','T2/T3','D2/D3','T5/T6','D5/D6','T7/T8','D7/D8']
                 dfToBar[topology] = pd.DataFrame({'Cond Loss': conductionLoss,'SW Loss': switchLoss}, index=index)
 
         plotNum = len(dfToBar)
@@ -420,24 +458,16 @@ class MainWindow(QMainWindow):
                 rangeBtn.setRange(round(rangeMin/normValue,decimalValue),round(rangeMax/normValue,decimalValue))
                 
     def validateFilter(self) :
-        filtString = {}
-        selected = None
         try :
-            button = self.buttonGroupScatterData.checkedButton()
+            selected = self.rePlotInfo['LossType']
+        except KeyError:
+            selected = None
+            pass
+        try :
+            filtString = {}
             plotMode = self.buttonGroupPlotMode.checkedButton().text()
-            if button and button.text() =='Total Inverter Loss' :
-                self.scIgbtCombo.setCurrentIndex(-1) 
-                self.scDiodeCombo.setCurrentIndex(-1) 
-                selected = 'InvTotalLoss'
-            elif button and button.text() == 'IGBT ':
-                selected =  self.scIgbtCombo.currentText()
-                self.scDiodeCombo.setCurrentIndex(-1)
-            elif button and button.text() == 'Diode':
-                selected =  self.scDiodeCombo.currentText()
-                self.scIgbtCombo.setCurrentIndex(-1) 
             if not selected:
                 raise Exception("select the loss type")
-            self.rePlotInfo.update({'Linear':button, button.text():selected})
             if len(self.filter) < 2 :
                 raise Exception("min 2 filters required")
             elif len(self.filter) == 2 or len(self.filter) == 3:
@@ -459,28 +489,40 @@ class MainWindow(QMainWindow):
 
     def selectPlotType(self,button) :
         self.scatterDataBox.setEnabled(True)
-        buttonBox = self.buttonGroupScatterData.checkedButton()
-        self.rePlotInfo= {}
-        self.rePlotInfo = {'plotType':button.text()}
-        if buttonBox :
-            self.buttonGroupScatterData.setExclusive(False)
-            buttonBox.setChecked(False)
-            self.buttonGroupScatterData.setExclusive(True)
+        #self.rePlotInfo= {}
+        self.rePlotInfo.update({'plotType':button.text()})
+        #self.buttonGroupScatterData.setExclusive(False)
+        #buttonBox.checkedButton().setChecked(False)
+        #self.buttonGroupScatterData.setExclusive(True)
         if button.text() == 'Linear':
             self.opPointBox.setEnabled(True)
-            self.buttonGroupScatterData.buttonClicked.disconnect()
             self.scatterDataBox.setTitle('Linear Data')
-            self.scDiodeCombo.textActivated.disconnect()
-            self.scIgbtCombo.textActivated.disconnect()
+            self.reconnect(self.buttonGroupScatterData.buttonClicked) #disconnecting slots
+            self.reconnect(self.invTotalRadio.clicked, self.linComboboxChanged)
+            self.reconnect(self.scDiodeCombo.textActivated, self.linComboboxChanged) #changing slots
+            self.reconnect(self.scIgbtCombo.textActivated, self.linComboboxChanged)  #changing slots
         else :
             self.opPointBox.setEnabled(False)
             self.clear()
             self.scatterDataBox.setTitle('Scatter Data')
-            self.buttonGroupScatterData.buttonClicked.connect(self.updateScatterRadios)
-            self.scDiodeCombo.textActivated.connect(self.scComboboxChanged)
-            self.scIgbtCombo.textActivated.connect(self.scComboboxChanged)
-        
-    
+            self.reconnect(self.buttonGroupScatterData.buttonClicked,self.updateScatterRadios) #reconnecting slots
+            self.reconnect(self.scDiodeCombo.textActivated,self.scComboboxChanged) #reconnecting slots
+            self.reconnect(self.scIgbtCombo.textActivated,self.scComboboxChanged) #reconnecting slots
+            self.reconnect(self.invTotalRadio.clicked) #disconnecting slot
+            self.replotScatter()
+
+           
+    def reconnect(self, signal, newhandler=None, oldhandler=None):        
+        try:
+            if oldhandler is not None:
+                while True:
+                    signal.disconnect(oldhandler)
+            else:
+                signal.disconnect()
+        except TypeError:
+            pass
+        if newhandler is not None:
+            signal.connect(newhandler)
     
     def makeLinearPlot(self,df,ykey,key) :
         self.MplWidget.canvas.axes.clear()
@@ -499,22 +541,25 @@ class MainWindow(QMainWindow):
         print(df)
 
 
-    def updateScatterRadios(self,button,selected=None) :         
+    def updateScatterRadios(self, button) :         
         yLabel = ''
         xLabel = ''
         xData = []
         yData = []
+        selected = ''
         if button.text() =='Total Inverter Loss' : 
             self.scIgbtCombo.setCurrentIndex(-1) 
             self.scDiodeCombo.setCurrentIndex(-1) 
             selected = 'InvTotalLoss'
         elif button.text() == 'IGBT ':
+            selected = self.scIgbtCombo.currentText()
             self.scDiodeCombo.setCurrentIndex(-1)
         elif button.text() == 'Diode':
+            selected = self.scDiodeCombo.currentText()
             self.scIgbtCombo.setCurrentIndex(-1) 
            
         if selected :
-            self.rePlotInfo.update({'Scatter':button, button.text():selected})
+            self.rePlotInfo.update({'LossTypeBtn':button, 'LossType':selected}) 
             self.data2plot['xData']= {'V_DC': list(self.plot_df['V_DC'])}                
             self.data2plot['yData']= {selected: list(self.plot_df[selected].fillna(0))}
             length = len(self.data2plot['yData'][selected])
@@ -523,19 +568,34 @@ class MainWindow(QMainWindow):
             self.data2plot['Dataset'] = self.plot_df
             self.plotScatter(self.data2plot['xData'],self.data2plot['yData'],xLabel,yLabel,length)
 
-
     def scComboboxChanged(self):
         sender = self.sender()
-        selection = str(sender.currentText())
         if sender.objectName() == 'scDiodeCombo':
             self.invDiodeRadio.setChecked(True)
-            self.updateScatterRadios(self.invDiodeRadio,selection)
+            self.updateScatterRadios(self.invDiodeRadio)
         elif sender.objectName() == 'scIgbtCombo':
             self.invIgbtRadio.setChecked(True)
-            self.updateScatterRadios(self.invIgbtRadio,selection)
-        print(selection)
-        
-    
+            self.updateScatterRadios(self.invIgbtRadio)
+
+    def linComboboxChanged(self):
+        sender = self.sender()
+        if sender.objectName() == 'invTotalRadio':
+            selected = 'InvTotalLoss'
+            button = self.invTotalRadio
+            self.scIgbtCombo.setCurrentIndex(-1) 
+            self.scDiodeCombo.setCurrentIndex(-1) 
+        elif sender.objectName() == 'scDiodeCombo':
+            selected = self.scDiodeCombo.currentText()
+            button = self.invDiodeRadio
+            self.invDiodeRadio.setChecked(True)
+            self.scIgbtCombo.setCurrentIndex(-1)
+        elif sender.objectName() == 'scIgbtCombo':
+            selected = self.scIgbtCombo.currentText()
+            button = self.invIgbtRadio
+            self.invIgbtRadio.setChecked(True)
+            self.scDiodeCombo.setCurrentIndex(-1)
+        self.rePlotInfo.update({'LossType':selected,'LossTypeBtn':button})
+
     def addFilterCriteria(self):
         try :
             item = str(self.opComboType.currentText())
@@ -553,17 +613,26 @@ class MainWindow(QMainWindow):
             self.opErrorLabel.setStyleSheet("QLabel { background-color : yellow; color : red; }")
             self.opErrorLabel.setText("Invalid {} input".format("".join(str(self.opComboType.currentText()))))
 
-    def initializeTabControls(self):
-        self.optInvBtn.setChecked(True)
-        self.plotInvBtn.setChecked(True)
+    def initializeTabControls(self, DBmode):
         plotTopology = self.topologyCombo.currentText()
-        self.opt_df = pd.read_pickle(self.invfilepath)
-        df_all = pd.read_pickle(self.invfilepath)
-        self.plot_df =  df_all[df_all['Topology']==plotTopology]
-        self.opt_df['PWatts'] = round(self.opt_df['Load_S']* self.opt_df['Load_phi'].apply(math.cos))
+        if DBmode == 'Inverter':
+            self.optInvBtn.setChecked(True)
+            self.plotInvBtn.setChecked(True)
+            df_all = pd.read_pickle(self.invfilepath)
+            self.opt_df = df_all
+            self.plot_df =  df_all[df_all['Topology']==plotTopology]
+            self.opt_df['PWatts'] = round(self.opt_df['Load_S']*self.opt_df['Load_phi'].apply(math.cos))
+            self.opComboType.addItems(self.filterList[DBmode])
+        elif DBmode == 'AFE':
+            self.optAfeBtn.setChecked(True)
+            self.plotAFEBtn.setChecked(True)
+            df_all = pd.read_pickle(self.afefilepath)
+            self.opt_df = df_all
+            self.plot_df =  df_all[df_all['Topology']==plotTopology]
+            self.opt_df['PWatts'] = round(self.opt_df['Mains_S']* self.opt_df['Mains_phi'].apply(math.cos))
+            self.opComboType.addItems(self.filterList[DBmode])
         self.scIgbtCombo.addItems(self.igbtList[plotTopology])
         self.scDiodeCombo.addItems(self.diodeList[plotTopology])
-        self.opComboType.addItems(self.filterList['Inverter'])
         self.scIgbtCombo.setCurrentIndex(-1) 
         self.scDiodeCombo.setCurrentIndex(-1)
         self.plotScRadio.setChecked(False)  
@@ -588,6 +657,7 @@ class MainWindow(QMainWindow):
         self.scIgbtCombo.clear()
         self.scDiodeCombo.clear()
         self.opComboType.clear()
+        self.rePlotInfo={}
         self.scIgbtCombo.addItems(self.igbtList[plotTopology])
         self.scDiodeCombo.addItems(self.diodeList[plotTopology])
         self.opComboType.addItems(self.filterList['Inverter'])
@@ -640,7 +710,7 @@ class MainWindow(QMainWindow):
             msgBox = QMessageBox()
             msgBox.setIcon(QMessageBox.Information)
             msgBox.setText(str(e.args[0]))
-            msgBox.exec() 
+            msgBox.exec()
         
     def update_scatter_annot(self,sc,ind):
         pos = sc.get_offsets()[ind]
@@ -719,7 +789,7 @@ class MainWindow(QMainWindow):
             dcVltgListNew = [int(i) for i in dcVltgList]
             loadWInList = self.loadWIn.toPlainText()
             loadWInList = re.split(',|\s+|;|\n',loadWInList)
-            loadWInListNew = [int(i) for i in loadWInList]
+            loadWInListNew = [float(i) for i in loadWInList]
             pfDegreeInList = self.pfDegreeIn.toPlainText()
             pfDegreeInList = re.split(',|\s+|;|\n',pfDegreeInList)
             pfDegreeInListNew = [float(i) for i in pfDegreeInList]
@@ -820,16 +890,15 @@ class MainWindow(QMainWindow):
             self.loadZOut.setText('')
             
     @QtCore.pyqtSlot(str)
-    def updateTabsDF(self,text) :  
+    def updateTabsDF(self,mode) :  
         if not (self.tabWidget.isTabEnabled(1) and self.tabWidget.isTabEnabled(2)):
             self.tabWidget.setTabEnabled(1,True)
             self.tabWidget.setTabEnabled(2,True)
-            self.initializeTabControls()  ## need to recheck the inplementation
+            self.initializeTabControls(mode)  ## need to recheck the inplementation
         optModeBtn =  self.buttonGroupOptMode.checkedButton()
         plotModeBtn = self.buttonGroupPlotMode.checkedButton()
         self.optChangeDb(optModeBtn)
         self.plotChangeDb(plotModeBtn)
-        print(text)
 
     @QtCore.pyqtSlot(int,str)
     def updateProgressBar(self,value,text) :
@@ -845,31 +914,28 @@ class MainWindow(QMainWindow):
         self.dataBaseWindow.show()
          
 
-    def loadPrevParams(self,filepath):
-        if os.path.exists(filepath):
-            df = pd.read_pickle(filepath)
+    def loadPrevParams(self, filepath, checkedMode):
+        df = pd.read_pickle(filepath)
+        if not df.empty:
+            lastSweepParams = df.iloc[-1]
+            self.dcVltgIn.setPlainText(str(lastSweepParams['V_DC']))
+            if checkedMode == 'AFE':
+                self.loadWIn.setPlainText(str(lastSweepParams['Mains_S']))
+                self.pfDegreeIn.setPlainText(str(lastSweepParams['Mains_phi']))
+            elif checkedMode == 'Inverter':
+                self.loadWIn.setPlainText(str(lastSweepParams['Load_S']))
+                self.pfDegreeIn.setPlainText(str(lastSweepParams['Load_phi']))
+            self.switchFreqIn.setPlainText(str(lastSweepParams['f_s']))
+            self.tempIn.setPlainText(str(lastSweepParams['T_HS']))
+            self.fOutIn.setPlainText(str(lastSweepParams['f_out']))
         else :
-            columns_list = ['V_DC','Mains_S','Mains_phi','Load_S','Load_phi','f_s','T_HS','f_out']
-            row_list = [['','','','','','','','']]
-            df = pd.DataFrame(row_list, columns=columns_list)
-        self.model = pandasModel(df)
-        lastSweepParams = self.model.returnLastSweep()    #creates and empty dataframe with columns_list columns
-        self.dcVltgIn.setPlainText(str(lastSweepParams.V_DC))
-        if self.AFEModeBtn.isChecked():
-            self.loadWIn.setPlainText(str(lastSweepParams.Mains_S))
-            self.pfDegreeIn.setPlainText(str(lastSweepParams.Mains_phi))
-        else:
-            self.loadWIn.setPlainText(str(lastSweepParams.Load_S))
-            self.pfDegreeIn.setPlainText(str(lastSweepParams.Load_phi))
-        self.switchFreqIn.setPlainText(str(lastSweepParams.f_s))
-        self.tempIn.setPlainText(str(lastSweepParams.T_HS))
-        self.fOutIn.setPlainText(str(lastSweepParams.f_out))
-        
-
-        #self.igbtDataIn.setPlainText(str(lastSweepParams.Transistor))  !! need to think  ??
-            #self.revDataIn.setPlainText(str(lastSweepParams.Transistor_revD))
-            #self.fwDataIn.setPlainText(str(lastSweepParams.Transistor_fwD))
-        
+            self.dcVltgIn.clear()
+            self.loadWIn.clear()
+            self.pfDegreeIn.clear()
+            self.switchFreqIn.clear()
+            self.tempIn.clear()
+            self.fOutIn.clear()
+       
 
     #def switchCase(self,x):
     #        return {
