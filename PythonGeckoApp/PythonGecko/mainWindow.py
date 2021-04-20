@@ -48,8 +48,11 @@ class MainWindow(QMainWindow):
     clickedPen = pg.mkPen('b', width=2)
     igbtList = {'B6':['IG1','IG2'],'NPC':['IG1','IG2','IG3','IG4'],'TNPC':['IG1','IG2','IG3','IG4'],'FC-ANPC':['IG1','IG2','IG3','IG4','IG5','IG6','IG7','IG8']}
     diodeList = {'B6':['D1','D2'],'NPC':['D1','D2','D3','D4','D5','D6'],'TNPC':['D1','D2','D3','D4'],'FC-ANPC':['D1','D2','D3','D4','D5','D6','D7','D8']}
-    filterList = {'Inverter':['Load_S','f_s','Load_phi'],'AFE':['Mains_S','f_s','Load_phi']}
-    topologyList = ['B6','NPC','TNPC','FC-ANPC']       
+    xDataInvList = {'V_DC':['Load_S','f_s','Load_phi'],'Load_S':['V_DC','f_s','Load_phi'],'f_s':['V_DC','Load_S','Load_phi'],'Load_phi':['V_DC','Load_S','f_s']}
+    xDataAFEList = {'V_DC':['Mains_S','f_s','Mains_phi'],'Mains_S':['V_DC','f_s','Mains_phi'],'f_s':['V_DC','Mains_S','Mains_phi'],'Mains_phi':['V_DC','Mains_S','f_s']}
+    filterListOld = {'Inverter':['Load_S','f_s','Load_phi'],'AFE':['Mains_S','f_s','Mains_phi']}
+    filterList = []
+    topologyList = ['B6','NPC','TNPC','FC-ANPC']        
     lastClicked = []
     data2plot ={}
     filter = {}
@@ -97,6 +100,8 @@ class MainWindow(QMainWindow):
         self.searchOptBtn.clicked.connect(self.findOptimum)
         self.topologyCombo.insertItems(0,self.topologyList)
         self.topologyCombo.textActivated.connect(self.resetControls)
+        #self.xDatacomboBox.insertItems(0, self.xDataList.keys())
+        self.xDatacomboBox.textActivated.connect(self.replotScatter)
         self.sc = {}
         self.PinRangeSelector.hide()
         self.VdcRangeSelector.hide()
@@ -228,20 +233,34 @@ class MainWindow(QMainWindow):
         plotMode = button.text()
         if plotMode =='AFE':
            df_all = pd.read_pickle(self.afefilepath)
-        else:
+           self.xDatacomboBox.clear()
+           self.xDatacomboBox.addItems(self.xDataAFEList.keys())
+        elif plotMode == 'Inverter':
            df_all = pd.read_pickle(self.invfilepath)
+           self.xDatacomboBox.clear()
+           self.xDatacomboBox.addItems(self.xDataInvList.keys())
         self.plot_df = df_all[df_all['Topology']==plotTopology]
-        self.opComboType.clear()
-        self.opComboType.addItems(self.filterList[plotMode])
+        self.xAxisChanged('V_DC')
         self.replotScatter()
+
     def replotScatter(self):
         self.clear()
-        if len(self.rePlotInfo) == 3:
-            plotType = self.rePlotInfo['plotType']
-            if plotType == 'Scatter':
-                self.updateScatterRadios(self.rePlotInfo['LossTypeBtn'])
+        plotType = self.rePlotInfo['plotType']
+        if len(self.rePlotInfo) == 3 and plotType == 'Scatter':
+          self.updateScatterRadios(self.rePlotInfo['LossTypeBtn'])
         
-        
+    def xAxisChanged(self,xAxisLabel=None):
+        self.clear()
+        plotMode = self.buttonGroupPlotMode.checkedButton().text()
+        self.filterList.clear()
+        if plotMode == 'Inverter':
+            self.filterList = self.xDataInvList[xAxisLabel][:]
+        elif plotMode == 'AFE':
+            self.filterList = self.xDataAFEList[xAxisLabel][:]
+        self.filter.clear()
+        self.opComboType.clear()
+        self.opComboType.insertItems(0,self.filterList)
+
     def optChangeDb(self,button):
         self.optStatusLabel.setStyleSheet("")  #check the position
         self.optStatusLabel.clear()
@@ -465,7 +484,6 @@ class MainWindow(QMainWindow):
             pass
         try :
             filtString = {}
-            plotMode = self.buttonGroupPlotMode.checkedButton().text()
             if not selected:
                 raise Exception("select the loss type")
             if len(self.filter) < 2 :
@@ -479,9 +497,10 @@ class MainWindow(QMainWindow):
             resultDF = self.plot_df[self.conjunction(*conditionsBoolReturns)]
             if resultDF.empty :
                 raise Exception("Not in DBase")
-            index = set(self.filterList[plotMode])-self.filter.keys()
-            key = 'Load_phi' if index == set() else index.pop()
-            self.makeLinearPlot(resultDF,selected, key)
+            index = set(self.filterList)- self.filter.keys()
+            key =  self.filterList[2] if index == set() else index.pop()
+            xLabel = self.xDatacomboBox.currentText()
+            self.makeLinearPlot(resultDF, selected, xLabel, key)
         except Exception as e:
             self.opErrorLabel.setStyleSheet("QLabel { background-color : yellow; color : red; }")
             self.opErrorLabel.setText(str(e.args[0]))
@@ -489,11 +508,9 @@ class MainWindow(QMainWindow):
 
     def selectPlotType(self,button) :
         self.scatterDataBox.setEnabled(True)
-        #self.rePlotInfo= {}
+        self.xDatacomboBox.setEnabled(True)
+        self.xDatacomboBox.setCurrentIndex(0)
         self.rePlotInfo.update({'plotType':button.text()})
-        #self.buttonGroupScatterData.setExclusive(False)
-        #buttonBox.checkedButton().setChecked(False)
-        #self.buttonGroupScatterData.setExclusive(True)
         if button.text() == 'Linear':
             self.opPointBox.setEnabled(True)
             self.scatterDataBox.setTitle('Linear Data')
@@ -501,6 +518,7 @@ class MainWindow(QMainWindow):
             self.reconnect(self.invTotalRadio.clicked, self.linComboboxChanged)
             self.reconnect(self.scDiodeCombo.textActivated, self.linComboboxChanged) #changing slots
             self.reconnect(self.scIgbtCombo.textActivated, self.linComboboxChanged)  #changing slots
+            self.reconnect(self.xDatacomboBox.textActivated, self.xAxisChanged)
         else :
             self.opPointBox.setEnabled(False)
             self.clear()
@@ -508,6 +526,7 @@ class MainWindow(QMainWindow):
             self.reconnect(self.buttonGroupScatterData.buttonClicked,self.updateScatterRadios) #reconnecting slots
             self.reconnect(self.scDiodeCombo.textActivated,self.scComboboxChanged) #reconnecting slots
             self.reconnect(self.scIgbtCombo.textActivated,self.scComboboxChanged) #reconnecting slots
+            self.reconnect(self.xDatacomboBox.textActivated, self.replotScatter)
             self.reconnect(self.invTotalRadio.clicked) #disconnecting slot
             self.replotScatter()
 
@@ -524,10 +543,10 @@ class MainWindow(QMainWindow):
         if newhandler is not None:
             signal.connect(newhandler)
     
-    def makeLinearPlot(self,df,ykey,key) :
+    def makeLinearPlot(self,df,ykey,xkey,key) :
         self.MplWidget.canvas.axes.clear()
         for key, grp in df.groupby([key]):
-            l= grp.plot(ax=self.MplWidget.canvas.axes, kind='line', x='V_DC', y=ykey, marker='o',grid =True, label=key)
+            l= grp.plot(ax=self.MplWidget.canvas.axes, kind='line', x=xkey, y=ykey, marker='o',grid =True, label=key)
         self.sc['linear'] = l.lines
         self.sc.pop('scatter',None)
         self.annot = self.MplWidget.canvas.axes.annotate("", xy=(0,0), xytext=(20,20),textcoords="offset points",
@@ -557,13 +576,13 @@ class MainWindow(QMainWindow):
         elif button.text() == 'Diode':
             selected = self.scDiodeCombo.currentText()
             self.scIgbtCombo.setCurrentIndex(-1) 
-           
+        xAxisPoint = self.xDatacomboBox.currentText()   
         if selected :
             self.rePlotInfo.update({'LossTypeBtn':button, 'LossType':selected}) 
-            self.data2plot['xData']= {'V_DC': list(self.plot_df['V_DC'])}                
+            self.data2plot['xData']= {xAxisPoint: list(self.plot_df[xAxisPoint])}                
             self.data2plot['yData']= {selected: list(self.plot_df[selected].fillna(0))}
             length = len(self.data2plot['yData'][selected])
-            xLabel = 'Dc Link Voltage'
+            xLabel = getXLabel(xAxisPoint)
             yLabel =  button.text() if 'Loss' in button.text() else button.text()+' Loss'
             self.data2plot['Dataset'] = self.plot_df
             self.plotScatter(self.data2plot['xData'],self.data2plot['yData'],xLabel,yLabel,length)
@@ -576,7 +595,7 @@ class MainWindow(QMainWindow):
         elif sender.objectName() == 'scIgbtCombo':
             self.invIgbtRadio.setChecked(True)
             self.updateScatterRadios(self.invIgbtRadio)
-
+    
     def linComboboxChanged(self):
         sender = self.sender()
         if sender.objectName() == 'invTotalRadio':
@@ -622,7 +641,9 @@ class MainWindow(QMainWindow):
             self.opt_df = df_all
             self.plot_df =  df_all[df_all['Topology']==plotTopology]
             self.opt_df['PWatts'] = round(self.opt_df['Load_S']*self.opt_df['Load_phi'].apply(math.cos))
-            self.opComboType.addItems(self.filterList[DBmode])
+            self.filterList = self.xDataInvList['V_DC'][:]
+            self.opComboType.insertItems(0,self.filterList)
+            self.xDatacomboBox.addItems(self.xDataInvList.keys())
         elif DBmode == 'AFE':
             self.optAfeBtn.setChecked(True)
             self.plotAFEBtn.setChecked(True)
@@ -630,7 +651,9 @@ class MainWindow(QMainWindow):
             self.opt_df = df_all
             self.plot_df =  df_all[df_all['Topology']==plotTopology]
             self.opt_df['PWatts'] = round(self.opt_df['Mains_S']* self.opt_df['Mains_phi'].apply(math.cos))
-            self.opComboType.addItems(self.filterList[DBmode])
+            self.filterList= self.xDataAFEList['V_DC'][:]
+            self.opComboType.insertItems(0,self.filterList)
+            self.xDatacomboBox.addItems(self.xDataAFEList.keys())
         self.scIgbtCombo.addItems(self.igbtList[plotTopology])
         self.scDiodeCombo.addItems(self.diodeList[plotTopology])
         self.scIgbtCombo.setCurrentIndex(-1) 
@@ -642,6 +665,8 @@ class MainWindow(QMainWindow):
         self.invIgbtRadio.setChecked(False) 
         self.opPointBox.setEnabled(False)  
         self.scatterDataBox.setEnabled(False)
+        self.xDatacomboBox.setCurrentIndex(-1)
+        self.xDatacomboBox.setEnabled(False)
         self.MplWidget.canvas.mpl_disconnect(self.cid)
         self.MplWidget.canvas.figure.set_visible(False)
         self.OptimalChartArea.canvas.figure.set_visible(False)
@@ -657,12 +682,17 @@ class MainWindow(QMainWindow):
         self.scIgbtCombo.clear()
         self.scDiodeCombo.clear()
         self.opComboType.clear()
+        self.xDatacomboBox.clear()
         self.rePlotInfo={}
         self.scIgbtCombo.addItems(self.igbtList[plotTopology])
         self.scDiodeCombo.addItems(self.diodeList[plotTopology])
-        self.opComboType.addItems(self.filterList['Inverter'])
+        self.filterList = self.xDataInvList['V_DC']
+        self.xDatacomboBox.addItems(self.xDataInvList.keys())
+        self.opComboType.insertItems(0,self.filterList)
         self.scIgbtCombo.setCurrentIndex(-1) 
-        self.scDiodeCombo.setCurrentIndex(-1) 
+        self.scDiodeCombo.setCurrentIndex(-1)
+        self.xDatacomboBox.setCurrentIndex(-1)
+        self.xDatacomboBox.setEnabled(False)
         button = self.buttonGroupPlotType.checkedButton()
         if button :
             self.buttonGroupPlotType.setExclusive(False)
@@ -731,7 +761,7 @@ class MainWindow(QMainWindow):
         ind = line.axes.get_lines().index(line)
         legPhi = leg.texts[ind].get_text()
         index = set(self.filterList)-self.filter.keys()
-        key = 'Phi' if index == set() else index.pop()
+        key = self.filterList[2] if index == set() else index.pop()
         text = f'{key} :{legPhi},\nV_DC :{posx:.2f},\nTLoss :{posy:.2f}'
         self.annot.set_text(text)
         # annot.get_bbox_patch().set_facecolor(cmap(norm(c[ind["ind"][0]])))
@@ -969,7 +999,16 @@ class MainWindow(QMainWindow):
             msgBox.setIcon(QMessageBox.Information)
             msgBox.setText(str(e.args[0]))
             msgBox.exec()
-                
+
+def getXLabel(x):
+    return {
+        'V_DC': 'Dc Link Voltage',
+        'f_s': 'Switching Frequency',
+        'Load_Phi': 'Load power factor',
+        'Load_S': 'Apparent Load Power(in W)',
+        'Mains_Phi': 'Mains power factor',
+        'Mains_S': 'Apparent Mains Power(in W)'
+    }.get(x, '')                
                  
 if __name__ == "__main__":
     app = QApplication(sys.argv)

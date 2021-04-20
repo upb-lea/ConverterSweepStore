@@ -564,8 +564,3 @@ class startConnection(QObject):
         self.tabsDFUpdate.emit(mode)
         ginst.shutdown()
         #print(df)
-                
-            
-        
-            
-    
