@@ -57,13 +57,15 @@ class MainWindow(QMainWindow):
     data2plot ={}
     filter = {}
     rePlotInfo = {}
-    def __init__(self): 
-        super().__init__()
+    def __init__(self,parent =None): 
+        super(MainWindow,self).__init__(parent)
         uic.loadUi('initializeWindow.ui',self)
         _translate = QtCore.QCoreApplication.translate
         self.setWindowIcon(QIcon('clienticon.png'))
         self.setWindowTitle(_translate("MainWindow", "Converter Sweep Store"))
+        app.aboutToQuit.connect(self.closeEvent)
         self.simulateBtn.clicked.connect(self.simulate)
+        self.dataBaseWindow = None
         self.showGSIMS.stateChanged.connect(self.showGSIMSData)
         self.tabWidget.currentChanged.connect(self.onChange)
         self.progressBar.hide()
@@ -154,6 +156,9 @@ class MainWindow(QMainWindow):
         timer = QtCore.QTimer(self, interval=1000, timeout=self.showTime)
         timer.start()
         self.showTime()
+
+    def closeEvent(self,val) :
+        sys.exit(0)
 
     def checkDatabase(self):
         mode =''
@@ -940,7 +945,8 @@ class MainWindow(QMainWindow):
     
 
     def openDataBase(self):
-        self.dataBaseWindow = dataBaseClass()
+        if self.dataBaseWindow is None:
+            self.dataBaseWindow = dataBaseClass()
         self.dataBaseWindow.show()
          
 

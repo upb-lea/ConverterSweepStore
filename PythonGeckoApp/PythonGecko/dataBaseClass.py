@@ -9,8 +9,8 @@ class dataBaseClass(QWidget):
     invfilepath = r'calc\results.pk'
     afefilepath = r'calc_AFE\results.pk'
     
-    def __init__(self): 
-        super().__init__()
+    def __init__(self, parent=None): 
+        super(dataBaseClass,self).__init__(parent)
         uic.loadUi('dataBaseWindow.ui',self)
         _translate = QtCore.QCoreApplication.translate
         self.setWindowIcon(QIcon('dataIcon.png'))
