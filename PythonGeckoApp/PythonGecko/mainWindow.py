@@ -234,7 +234,7 @@ class MainWindow(QMainWindow):
             self.loadPrevParams(self.invfilepath,'Inverter')
             self.updateGSIMS(False)
 
-    def plotChangeDb(self,button):
+    def plotChangeDb(self,button, isDFUpdated = None):
         plotTopology = self.topologyCombo.currentText()
         plotMode = button.text()
         if plotMode =='AFE':
@@ -247,7 +247,8 @@ class MainWindow(QMainWindow):
            self.xDatacomboBox.addItems(self.xDataInvList.keys())
         self.plot_df = df_all[df_all['Topology']==plotTopology]
         self.xAxisChanged('V_DC')
-        self.replotScatter()
+        if not isDFUpdated :
+            self.replotScatter() 
 
     def replotScatter(self):
         self.clear()
@@ -266,9 +267,7 @@ class MainWindow(QMainWindow):
         self.opComboType.clear()
         self.opComboType.insertItems(0,self.filterList)
 
-    def optChangeDb(self,button):
-        self.optStatusLabel.setStyleSheet("")  #check the position
-        self.optStatusLabel.clear()
+    def optChangeDb(self,button, isDFUpdated=None):
         optMode = button.text()
         self.opt_df = pd.DataFrame(None)
         if optMode =='AFE':
@@ -277,10 +276,13 @@ class MainWindow(QMainWindow):
         else:
             self.opt_df = pd.read_pickle(self.invfilepath)
             self.opt_df['PWatts'] = round(self.opt_df['Load_S']* self.opt_df['Load_phi'].apply(math.cos))
-        self.OptimalChartArea.canvas.figure.set_visible(False)
-        self.OptimalChartArea.toolbar.hide()
-        self.OptimalChartArea.canvas.draw()
-        self.rangeAndUpdate() #UPDATES all sliders irrespective of visibility of each slider everytime db gets changed
+        if not isDFUpdated:
+            self.optStatusLabel.setStyleSheet("")  #check the position
+            self.optStatusLabel.clear()
+            self.OptimalChartArea.canvas.figure.set_visible(False)
+            self.OptimalChartArea.toolbar.hide()
+            self.OptimalChartArea.canvas.draw()
+            self.rangeAndUpdate() #UPDATES all sliders irrespective of visibility of each slider everytime db gets changed
         
 
     def updateOpBtnLabel(self):
@@ -930,11 +932,16 @@ class MainWindow(QMainWindow):
         if not (self.tabWidget.isTabEnabled(1) or self.tabWidget.isTabEnabled(2)):
             self.tabWidget.setTabEnabled(1,True)
             self.tabWidget.setTabEnabled(2,True)
-            self.initializeTabControls(mode)  ## need to recheck the inplementation
+            self.initializeTabControls(mode) 
         optModeBtn =  self.buttonGroupOptMode.checkedButton()
         plotModeBtn = self.buttonGroupPlotMode.checkedButton()
-        self.optChangeDb(optModeBtn)
-        self.plotChangeDb(plotModeBtn)
+        self.optChangeDb(optModeBtn,True)
+        self.plotChangeDb(plotModeBtn, True)
+        if self.tabWidget.currentIndex() == 1 or self.tabWidget.currentIndex() == 2:
+            msgBox = QMessageBox()
+            msgBox.setIcon(QMessageBox.Information)
+            msgBox.setText("Database updated! Consider replotting")
+            msgBox.exec()
 
     @QtCore.pyqtSlot(int,str)
     def updateProgressBar(self,value,text) :
