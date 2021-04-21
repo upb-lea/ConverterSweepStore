@@ -17,7 +17,7 @@ import matplotlib as mpl
 import  random
 import math
 import itertools
-from PyQt5 import QtCore,uic
+from PyQt5 import QtCore,uic, QtGui
 from PyQt5.QtGui import QIcon, QPixmap
 from pandasModel import pandasModel
 from thermalParamClass import thermalParamClass
@@ -93,6 +93,7 @@ class MainWindow(QMainWindow):
         self.buttonGroupScatterData.buttonClicked.connect(self.updateScatterRadios)
         self.buttonGroupMode.buttonClicked.connect(self.updateAfeLabels)
         self.opAddBtn.clicked.connect(self.addFilterCriteria)
+        self.themeToggler.clicked.connect(self.changeTheme)
         self.plotBtn.clicked.connect(self.validateFilter)
         self.optInvBtn.setChecked(True)
         self.plotInvBtn.setChecked(True)
@@ -106,6 +107,7 @@ class MainWindow(QMainWindow):
         #self.xDatacomboBox.insertItems(0, self.xDataList.keys())
         self.xDatacomboBox.textActivated.connect(self.replotScatter)
         self.sc = {}
+        self.themeFlag = False
         self.PinRangeSelector.hide()
         self.VdcRangeSelector.hide()
         self.SwRangeSelector.hide()
@@ -157,6 +159,41 @@ class MainWindow(QMainWindow):
         timer = QtCore.QTimer(self, interval=1000, timeout=self.showTime)
         timer.start()
         self.showTime()
+
+    def changeTheme(self) :
+        if not self.themeFlag:
+            self.themeToggler.setText('Dark')
+            self.themeToggler.setStyleSheet("background-color: rgb(86,86,86);border: 2px solid rgb(3,194,252); color : rgb(3,194,252)")
+            self.databaseBtn.setStyleSheet("background-color: rgb(33, 133, 148);color:white")
+            self.pandasGUIBtn.setStyleSheet("background-color: rgb(33, 133, 148);color:white")
+            self.simulateBtn.setStyleSheet("background-color: rgb(33, 133, 148);color:white")
+            self.searchOptBtn.setStyleSheet("background-color: rgb(33, 133, 148);color:white")
+            self.plotBtn.setStyleSheet("background-color: rgb(33, 133, 148);color:white")
+            self.dataSheetComboBox.setStyleSheet("background-color: rgb(33, 133, 148);color:white")
+            palette = QtGui.QPalette()
+            palette.setColor(QtGui.QPalette.Window, QtGui.QColor(53,53,53))
+            palette.setColor(QtGui.QPalette.WindowText, QtCore.Qt.white)
+            palette.setColor(QtGui.QPalette.Base, QtGui.QColor(15,15,15))
+            palette.setColor(QtGui.QPalette.AlternateBase, QtGui.QColor(53,53,53))
+            palette.setColor(QtGui.QPalette.ToolTipBase, QtCore.Qt.white)
+            palette.setColor(QtGui.QPalette.ToolTipText, QtCore.Qt.white)
+            palette.setColor(QtGui.QPalette.Text, QtCore.Qt.white)
+            palette.setColor(QtGui.QPalette.Button, QtGui.QColor(53,53,53))
+            palette.setColor(QtGui.QPalette.ButtonText, QtCore.Qt.white)
+            palette.setColor(QtGui.QPalette.BrightText, QtCore.Qt.red)
+            palette.setColor(QtGui.QPalette.Highlight, QtGui.QColor(142,45,197).lighter())
+            palette.setColor(QtGui.QPalette.HighlightedText, QtCore.Qt.black) 
+        else :
+            self.themeToggler.setText('Light')
+            self.themeToggler.setStyleSheet("")
+            self.databaseBtn.setStyleSheet("")
+            self.pandasGUIBtn.setStyleSheet("")
+            self.simulateBtn.setStyleSheet("")
+            self.searchOptBtn.setStyleSheet("")
+            self.plotBtn.setStyleSheet("")
+            palette = QtGui.QPalette()
+        self.setPalette(palette)   
+        self.themeFlag = not self.themeFlag
 
     def closeEvent(self,val) :
         sys.exit(0)
@@ -908,7 +945,7 @@ class MainWindow(QMainWindow):
             self.peakRlcCurrentOut.setText(str(round(out['I_Peak_inv'],2)))
             self.cCurrentOut.setText(str(round(out['I_Filter_C'],2)))
             self.lVltgOut.setText(str(round(out['U_Filter_L'],2)))
-            self.invVtlgOut.setText(str(out['U_RMS_inv']))
+            self.invVtlgOut.setText(str(round(out['U_RMS_inv'],2)))
             if self.AFEModeBtn.isChecked():
                 self.loadVltgOut.setText(str(round(out['U_Mains_LL'],2)))
                 self.loadZOut.setText(str(complex(round(out['Z_Inv'].real,2),round(out['Z_Inv'].imag,2))))
@@ -1020,6 +1057,7 @@ def getXisLabel(x):
                  
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+    app.setStyle('Fusion')
     mainWindow = MainWindow()
     mainWindow.show()
     try:
