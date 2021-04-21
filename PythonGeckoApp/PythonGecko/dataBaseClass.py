@@ -18,6 +18,11 @@ class dataBaseClass(QWidget):
         self.refreshBtn.clicked.connect(self.refreshTableView)
         self.exitBtn.clicked.connect(self.close)
         self.refreshTableView()
+        #self.applyTheme()
+
+    def applyTheme(self):
+        self.setStyle('Fusion')
+        self.setPalette(palette)
 
     def refreshTableView(self):
         simCount = 0

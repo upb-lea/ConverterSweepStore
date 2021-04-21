@@ -104,6 +104,13 @@
         <height>13</height>
        </rect>
       </property>
+      <property name="font">
+       <font>
+        <family>Calibri</family>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
       <property name="text">
        <string>Status :</string>
       </property>
@@ -159,6 +166,12 @@
       <layout class="QHBoxLayout" name="horizontalLayout_19">
        <item>
         <widget class="QPushButton" name="databaseBtn">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>25</height>
+          </size>
+         </property>
          <property name="text">
           <string>Open Database</string>
          </property>
@@ -166,6 +179,12 @@
        </item>
        <item>
         <widget class="QPushButton" name="pandasGUIBtn">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>25</height>
+          </size>
+         </property>
          <property name="text">
           <string>Pandas GUI</string>
          </property>
@@ -222,6 +241,14 @@
        </item>
        <item row="0" column="0" colspan="2">
         <widget class="QLabel" name="modeLabel">
+         <property name="font">
+          <font>
+           <family>Calibri</family>
+           <pointsize>9</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
          <property name="layoutDirection">
           <enum>Qt::RightToLeft</enum>
          </property>
@@ -266,6 +293,15 @@
        </item>
        <item row="0" column="0" colspan="2">
         <widget class="QLabel" name="topologyLabel">
+         <property name="font">
+          <font>
+           <family>Calibri</family>
+           <pointsize>9</pointsize>
+           <weight>75</weight>
+           <italic>false</italic>
+           <bold>true</bold>
+          </font>
+         </property>
          <property name="layoutDirection">
           <enum>Qt::RightToLeft</enum>
          </property>
@@ -351,6 +387,14 @@
              <height>16777215</height>
             </size>
            </property>
+           <property name="font">
+            <font>
+             <family>Calibri</family>
+             <weight>75</weight>
+             <italic>true</italic>
+             <bold>true</bold>
+            </font>
+           </property>
            <property name="text">
             <string>Available DataSheets </string>
            </property>
@@ -376,7 +420,14 @@
         </layout>
        </item>
        <item>
-        <widget class="CheckableComboBox" name="dataSheetComboBox"/>
+        <widget class="CheckableComboBox" name="dataSheetComboBox">
+         <property name="autoFillBackground">
+          <bool>false</bool>
+         </property>
+         <property name="styleSheet">
+          <string notr="true"/>
+         </property>
+        </widget>
        </item>
       </layout>
      </widget>
@@ -495,6 +546,14 @@
        </item>
        <item row="0" column="0" colspan="2">
         <widget class="QLabel" name="GSIMSLabel">
+         <property name="font">
+          <font>
+           <family>Calibri</family>
+           <pointsize>9</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
          <property name="text">
           <string>GSIMS Parameters Output</string>
          </property>
@@ -665,13 +724,25 @@
             </size>
            </property>
            <property name="frameShape">
-            <enum>QFrame::Box</enum>
+            <enum>QFrame::StyledPanel</enum>
            </property>
            <property name="frameShadow">
             <enum>QFrame::Raised</enum>
            </property>
+           <property name="lineWidth">
+            <number>1</number>
+           </property>
+           <property name="tabChangesFocus">
+            <bool>false</bool>
+           </property>
+           <property name="plainText">
+            <string/>
+           </property>
            <property name="tabStopDistance">
             <double>1.000000000000000</double>
+           </property>
+           <property name="placeholderText">
+            <string/>
            </property>
           </widget>
          </item>
@@ -715,7 +786,7 @@
             </size>
            </property>
            <property name="frameShape">
-            <enum>QFrame::Box</enum>
+            <enum>QFrame::StyledPanel</enum>
            </property>
            <property name="frameShadow">
             <enum>QFrame::Raised</enum>
@@ -765,7 +836,7 @@
             </size>
            </property>
            <property name="frameShape">
-            <enum>QFrame::Box</enum>
+            <enum>QFrame::StyledPanel</enum>
            </property>
            <property name="frameShadow">
             <enum>QFrame::Raised</enum>
@@ -815,7 +886,7 @@
             </size>
            </property>
            <property name="frameShape">
-            <enum>QFrame::Box</enum>
+            <enum>QFrame::StyledPanel</enum>
            </property>
            <property name="frameShadow">
             <enum>QFrame::Raised</enum>
@@ -865,7 +936,7 @@
             </size>
            </property>
            <property name="frameShape">
-            <enum>QFrame::Box</enum>
+            <enum>QFrame::StyledPanel</enum>
            </property>
            <property name="frameShadow">
             <enum>QFrame::Raised</enum>
@@ -912,7 +983,7 @@
             <bool>true</bool>
            </property>
            <property name="frameShape">
-            <enum>QFrame::Box</enum>
+            <enum>QFrame::StyledPanel</enum>
            </property>
            <property name="frameShadow">
             <enum>QFrame::Raised</enum>
@@ -937,6 +1008,22 @@
         </layout>
        </item>
       </layout>
+     </widget>
+     <widget class="QPushButton" name="themeToggler">
+      <property name="geometry">
+       <rect>
+        <x>590</x>
+        <y>440</y>
+        <width>75</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Light</string>
+      </property>
+      <property name="checkable">
+       <bool>true</bool>
+      </property>
      </widget>
     </widget>
     <widget class="QWidget" name="Tab_Plots">
@@ -986,7 +1073,7 @@
    <property name="minimumSize">
     <size>
      <width>304</width>
-     <height>38</height>
+     <height>42</height>
     </size>
    </property>
    <property name="floating">
@@ -1047,8 +1134,15 @@
            <height>1677777</height>
           </size>
          </property>
+         <property name="font">
+          <font>
+           <pointsize>7</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
          <property name="text">
-          <string>Vdc :</string>
+          <string>DC Link   :</string>
          </property>
         </widget>
        </item>
@@ -1083,6 +1177,12 @@
           </sizepolicy>
          </property>
          <property name="minimumSize">
+          <size>
+           <width>185</width>
+           <height>26</height>
+          </size>
+         </property>
+         <property name="maximumSize">
           <size>
            <width>185</width>
            <height>26</height>
@@ -1139,8 +1239,15 @@
            <height>16777215</height>
           </size>
          </property>
+         <property name="font">
+          <font>
+           <pointsize>7</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
          <property name="text">
-          <string>P in (kW) :</string>
+          <string>P in (kW):</string>
          </property>
         </widget>
        </item>
@@ -1178,6 +1285,12 @@
           </sizepolicy>
          </property>
          <property name="minimumSize">
+          <size>
+           <width>185</width>
+           <height>26</height>
+          </size>
+         </property>
+         <property name="maximumSize">
           <size>
            <width>185</width>
            <height>26</height>
@@ -1258,6 +1371,13 @@
            <height>16777215</height>
           </size>
          </property>
+         <property name="font">
+          <font>
+           <pointsize>7</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
          <property name="text">
           <string>SW FreQ :</string>
          </property>
@@ -1301,8 +1421,8 @@
          </property>
          <property name="maximumSize">
           <size>
-           <width>164</width>
-           <height>16777215</height>
+           <width>185</width>
+           <height>26</height>
           </size>
          </property>
         </widget>
@@ -1347,8 +1467,15 @@
            <height>16777215</height>
           </size>
          </property>
+         <property name="font">
+          <font>
+           <pointsize>7</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
          <property name="text">
-          <string>FQ mains :</string>
+          <string>FQ mains:</string>
          </property>
         </widget>
        </item>
@@ -1418,8 +1545,15 @@
            <height>16777215</height>
           </size>
          </property>
+         <property name="font">
+          <font>
+           <pointsize>7</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
          <property name="text">
-          <string>U(L-L):</string>
+          <string>U(L-L)    :</string>
          </property>
         </widget>
        </item>
@@ -1690,6 +1824,12 @@
      <layout class="QHBoxLayout" name="horizontalLayout_8">
       <item>
        <widget class="QLabel" name="xDataLabel">
+        <property name="font">
+         <font>
+          <weight>75</weight>
+          <bold>true</bold>
+         </font>
+        </property>
         <property name="text">
          <string>X-axis Data :</string>
         </property>
@@ -1798,6 +1938,12 @@
      <layout class="QHBoxLayout" name="horizontalLayout_7">
       <item>
        <widget class="QLabel" name="topologySelect">
+        <property name="font">
+         <font>
+          <weight>75</weight>
+          <bold>true</bold>
+         </font>
+        </property>
         <property name="text">
          <string>Topology :</string>
         </property>
@@ -1846,7 +1992,7 @@
        <rect>
         <x>10</x>
         <y>20</y>
-        <width>127</width>
+        <width>133</width>
         <height>71</height>
        </rect>
       </property>
@@ -1934,12 +2080,12 @@
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="buttonGroupScatterData"/>
-  <buttongroup name="buttonGroupPlotMode"/>
   <buttongroup name="buttonGroupOptMode"/>
   <buttongroup name="buttonGroupTopology"/>
+  <buttongroup name="buttonGroupMode"/>
+  <buttongroup name="buttonGroupScatterData"/>
+  <buttongroup name="buttonGroupPlotMode"/>
   <buttongroup name="buttonGroupPlotType"/>
   <buttongroup name="buttonGroupRangeType"/>
-  <buttongroup name="buttonGroupMode"/>
  </buttongroups>
 </ui>
