@@ -563,4 +563,4 @@ class startConnection(QObject):
         self.progressUpdate.emit(-1,'Done')
         self.tabsDFUpdate.emit(mode)
         ginst.shutdown()
-        #print(df)
+        

@@ -54,6 +54,7 @@ class MainWindow(QMainWindow):
     filterList = []
     topologyList = ['B6','NPC','TNPC','FC-ANPC']        
     lastClicked = []
+    linAnnotKeys = []
     data2plot ={}
     filter = {}
     rePlotInfo = {}
@@ -250,8 +251,7 @@ class MainWindow(QMainWindow):
 
     def replotScatter(self):
         self.clear()
-        plotType = self.rePlotInfo['plotType']
-        if len(self.rePlotInfo) == 3 and plotType == 'Scatter':
+        if len(self.rePlotInfo) == 3 and self.rePlotInfo['plotType'] == 'Scatter':
           self.updateScatterRadios(self.rePlotInfo['LossTypeBtn'])
         
     def xAxisChanged(self,xAxisLabel=None):
@@ -424,22 +424,21 @@ class MainWindow(QMainWindow):
                 switchLoss = [finalRow['IG1_sw'],finalRow['D1_sw'],finalRow['IG2_sw'],finalRow['D2_sw'],finalRow['D5_sw']]
                 index  = ['T1/T4','D1/D4','T2/T3','D2/D3','D5/D6']
                 dfToBar[topology] = pd.DataFrame({'Cond Loss': conductionLoss,'SW Loss': switchLoss}, index=index)
-            if topology == 'TNPC':
+            elif topology == 'TNPC':
                 conductionLoss = [finalRow['IG1_con'],finalRow['D1_con'],finalRow['IG2_con'],finalRow['D2_con']]
                 switchLoss = [finalRow['IG1_sw'],finalRow['D1_sw'],finalRow['IG2_sw'],finalRow['D2_sw']]
                 index  = ['T1/T4','D1/D4','T2/T3','D2/D3']
                 dfToBar[topology] = pd.DataFrame({'Cond Loss': conductionLoss,'SW Loss': switchLoss}, index=index)
-            if topology == 'B6':
+            elif topology == 'B6':
                 conductionLoss = [finalRow['IG1_con'],finalRow['D1_con'],finalRow['IG2_con'],finalRow['D2_con']]
                 switchLoss = [finalRow['IG1_sw'],finalRow['D1_sw'],finalRow['IG2_sw'],finalRow['D2_sw']]
                 index  = ['T1','D1','T2','D2']
                 dfToBar[topology] = pd.DataFrame({'Cond Loss': conductionLoss,'SW Loss': switchLoss}, index=index)
-            if topology == 'FC-ANPC':
-                conductionLoss = [finalRow['IG1_con'],finalRow['D1_con'],finalRow['IG2_con'],finalRow['D2_con'],finalRow['IG5_con'],finalRow['D5_con'],finalRow['IG7_con'],finalRow['D7_con']]
-                switchLoss = [finalRow['IG1_sw'],finalRow['D1_sw'],finalRow['IG2_sw'],finalRow['D2_sw'],finalRow['IG5_sw'],finalRow['D5_sw'],finalRow['IG7_sw'],finalRow['D7_sw']]
-                index  = ['T1/T4','D1/D4','T2/T3','D2/D3','T5/T6','D5/D6','T7/T8','D7/D8']
+            elif topology == 'FC-ANPC':
+                conductionLoss = [finalRow['IG1_con'],finalRow['D1_con'],finalRow['IG6_con'],finalRow['D6_con'],finalRow['IG8_con'],finalRow['D8_con']]
+                switchLoss = [finalRow['IG1_sw'],finalRow['D1_sw'],finalRow['IG6_sw'],finalRow['D6_sw'],finalRow['IG8_sw'],finalRow['D8_sw']]
+                index  = ['T1/T4','D1/D4','T6','D6','T8','D8']
                 dfToBar[topology] = pd.DataFrame({'Cond Loss': conductionLoss,'SW Loss': switchLoss}, index=index)
-
         plotNum = len(dfToBar)
         if plotNum == 1:
            self.OptimalChartArea.plotOne(dfToBar,opPoint)
@@ -455,11 +454,9 @@ class MainWindow(QMainWindow):
            self.optStatusLabel.setText(str(list(dfToBar.keys())[0])+', '+ list(dfToBar.keys())[1]+', '+list(dfToBar.keys())[2]  + ' exists in Range')
         if plotNum == 4:
            self.OptimalChartArea.plotFour(dfToBar,opPoint)
+           self.optStatusLabel.setStyleSheet("QLabel { background-color : green; color : black; }")
+           self.optStatusLabel.setText(str(list(dfToBar.keys())[0])+', '+ list(dfToBar.keys())[1]+', '+list(dfToBar.keys())[2] +', '+list(dfToBar.keys())[3] + ' exists in Range')
         
-        #self.OptimalChartArea.canvas.axes.clear()
-        #self.OptimalChartArea.canvas.figure.set_visible(True)
-        #self.OptimalChartArea.canvas.draw_idle()
-
 
     def toggleInput(self,rangeBtn,inputBtn,Max,Min,rangeMin,rangeMax,normValue=1,decimalValue=0):
             if rangeBtn.isVisible():
@@ -550,6 +547,8 @@ class MainWindow(QMainWindow):
     
     def makeLinearPlot(self,df,ykey,xkey,key) :
         self.MplWidget.canvas.axes.clear()
+        self.linAnnotKeys.clear()
+        self.linAnnotKeys= [xkey, ykey]
         for key, grp in df.groupby([key]):
             l= grp.plot(ax=self.MplWidget.canvas.axes, kind='line', x=xkey, y=ykey, marker='o',grid =True, label=key)
         self.sc['linear'] = l.lines
@@ -559,6 +558,8 @@ class MainWindow(QMainWindow):
                             arrowprops=dict(arrowstyle="->"))
         self.annot.set_visible(False)
         self.cid = self.MplWidget.canvas.mpl_connect('motion_notify_event', self.hover)
+        self.MplWidget.canvas.axes.set_ylabel(getXisLabel(ykey))
+        self.MplWidget.canvas.axes.set_xlabel(getXisLabel(xkey))
         self.MplWidget.canvas.draw()
         self.MplWidget.canvas.figure.set_visible(True)
         self.MplWidget.toolbar.show()
@@ -587,7 +588,7 @@ class MainWindow(QMainWindow):
             self.data2plot['xData']= {xAxisPoint: list(self.plot_df[xAxisPoint])}                
             self.data2plot['yData']= {selected: list(self.plot_df[selected].fillna(0))}
             length = len(self.data2plot['yData'][selected])
-            xLabel = getXLabel(xAxisPoint)
+            xLabel = getXisLabel(xAxisPoint)
             yLabel =  button.text() if 'Loss' in button.text() else button.text()+' Loss'
             self.data2plot['Dataset'] = self.plot_df
             self.plotScatter(self.data2plot['xData'],self.data2plot['yData'],xLabel,yLabel,length)
@@ -733,7 +734,7 @@ class MainWindow(QMainWindow):
             self.sc.pop('linear', None)
             self.MplWidget.canvas.axes.set_xlabel(xLabel)
             self.MplWidget.canvas.axes.set_ylabel(yLabel)
-            self.annot = self.MplWidget.canvas.axes.annotate("", xy=(0,0), xytext=(20,20),textcoords="offset points",
+            self.annot = self.MplWidget.canvas.axes.annotate("", xy=(0,0), xytext=(15,15), va='top', textcoords="offset points",
                                 bbox=dict(boxstyle="round", fc="w"),
                                 arrowprops=dict(arrowstyle="->"))
             self.annot.set_visible(False)
@@ -764,10 +765,10 @@ class MainWindow(QMainWindow):
         self.annot.xy = (posx, posy)
         leg = line.axes.get_legend()
         ind = line.axes.get_lines().index(line)
-        legPhi = leg.texts[ind].get_text()
+        legendValue = leg.texts[ind].get_text()
         index = set(self.filterList)-self.filter.keys()
         key = self.filterList[2] if index == set() else index.pop()
-        text = f'{key} :{legPhi},\nV_DC :{posx:.2f},\nTLoss :{posy:.2f}'
+        text = f'{key} :{legendValue},\n{self.linAnnotKeys[0]} :{posx:.2f},\n{self.linAnnotKeys[1]} :{posy:.2f}'
         self.annot.set_text(text)
         # annot.get_bbox_patch().set_facecolor(cmap(norm(c[ind["ind"][0]])))
         self.annot.get_bbox_patch().set_alpha(0.4)
@@ -794,17 +795,17 @@ class MainWindow(QMainWindow):
 
     def onChange(self, ord):
         if ord ==1:
-            self.plotControls.show()
             self.optRangeControls.hide()
-            #self.initializeControls()
+            self.resize(970,525)
+            self.plotControls.show()
         elif ord == 2:
-            self.optRangeControls.show()
             self.plotControls.hide()
+            self.resize(1070,525)
+            self.optRangeControls.show()  
         else :
             self.plotControls.hide()
             self.optRangeControls.hide()
-            #self.MplWidget.canvas.toolbar_visible = False
-            #self.OptimalChartArea.toolbar.hide()
+            self.adjustSize()
 
 
     def checkThermalParams(self,df):
@@ -926,7 +927,7 @@ class MainWindow(QMainWindow):
             
     @QtCore.pyqtSlot(str)
     def updateTabsDF(self,mode) :  
-        if not (self.tabWidget.isTabEnabled(1) and self.tabWidget.isTabEnabled(2)):
+        if not (self.tabWidget.isTabEnabled(1) or self.tabWidget.isTabEnabled(2)):
             self.tabWidget.setTabEnabled(1,True)
             self.tabWidget.setTabEnabled(2,True)
             self.initializeTabControls(mode)  ## need to recheck the inplementation
@@ -1006,15 +1007,16 @@ class MainWindow(QMainWindow):
             msgBox.setText(str(e.args[0]))
             msgBox.exec()
 
-def getXLabel(x):
+def getXisLabel(x):
     return {
         'V_DC': 'Dc Link Voltage',
         'f_s': 'Switching Frequency',
-        'Load_Phi': 'Load power factor',
+        'Load_phi': 'Load power factor(in deg)',
         'Load_S': 'Apparent Load Power(in W)',
-        'Mains_Phi': 'Mains power factor',
-        'Mains_S': 'Apparent Mains Power(in W)'
-    }.get(x, '')                
+        'Mains_phi': 'Mains power factor(in deg)',
+        'Mains_S': 'Apparent Mains Power(in W)',
+        'InvTotalLoss' : 'Total Losses(in W)'
+    }.get(x, x+' Loss(in W)')                
                  
 if __name__ == "__main__":
     app = QApplication(sys.argv)
