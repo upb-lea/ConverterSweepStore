@@ -67,6 +67,7 @@ class MainWindow(QMainWindow):
         app.aboutToQuit.connect(self.closeEvent)
         self.simulateBtn.clicked.connect(self.simulate)
         self.dataBaseWindow = None
+        self.thermalWindow = None
         self.showGSIMS.stateChanged.connect(self.showGSIMSData)
         self.tabWidget.currentChanged.connect(self.onChange)
         self.progressBar.hide()
@@ -170,19 +171,7 @@ class MainWindow(QMainWindow):
             self.searchOptBtn.setStyleSheet("background-color: rgb(33, 133, 148);color:white")
             self.plotBtn.setStyleSheet("background-color: rgb(33, 133, 148);color:white")
             self.dataSheetComboBox.setStyleSheet("background-color: rgb(33, 133, 148);color:white")
-            palette = QtGui.QPalette()
-            palette.setColor(QtGui.QPalette.Window, QtGui.QColor(53,53,53))
-            palette.setColor(QtGui.QPalette.WindowText, QtCore.Qt.white)
-            palette.setColor(QtGui.QPalette.Base, QtGui.QColor(15,15,15))
-            palette.setColor(QtGui.QPalette.AlternateBase, QtGui.QColor(53,53,53))
-            palette.setColor(QtGui.QPalette.ToolTipBase, QtCore.Qt.white)
-            palette.setColor(QtGui.QPalette.ToolTipText, QtCore.Qt.white)
-            palette.setColor(QtGui.QPalette.Text, QtCore.Qt.white)
-            palette.setColor(QtGui.QPalette.Button, QtGui.QColor(53,53,53))
-            palette.setColor(QtGui.QPalette.ButtonText, QtCore.Qt.white)
-            palette.setColor(QtGui.QPalette.BrightText, QtCore.Qt.red)
-            palette.setColor(QtGui.QPalette.Highlight, QtGui.QColor(142,45,197).lighter())
-            palette.setColor(QtGui.QPalette.HighlightedText, QtCore.Qt.black) 
+            palette = getPalette()
         else :
             self.themeToggler.setText('Light')
             self.themeToggler.setStyleSheet("")
@@ -191,10 +180,16 @@ class MainWindow(QMainWindow):
             self.simulateBtn.setStyleSheet("")
             self.searchOptBtn.setStyleSheet("")
             self.plotBtn.setStyleSheet("")
+            self.dataSheetComboBox.setStyleSheet("")
             palette = QtGui.QPalette()
+        if self.dataBaseWindow is not None:
+            self.dataBaseWindow.setPalette(palette)
+        if self.thermalWindow is not None:
+            self.thermalWindow.setPalette(palette)
         self.setPalette(palette)   
         self.themeFlag = not self.themeFlag
-
+    
+    
     def closeEvent(self,val) :
         sys.exit(0)
 
@@ -992,6 +987,8 @@ class MainWindow(QMainWindow):
     def openDataBase(self):
         if self.dataBaseWindow is None:
             self.dataBaseWindow = dataBaseClass()
+            palette = getPalette() if self.themeFlag else QtGui.QPalette()
+            self.dataBaseWindow.setPalette(palette)
         self.dataBaseWindow.show()
          
 
@@ -1042,6 +1039,8 @@ class MainWindow(QMainWindow):
             datasheets = np.unique(array).tolist()
             if not isInnerCall:
                 self.thermalWindow = thermalParamClass(datasheets)  #always expects non emtpy datasheets else is [] is given then unchecked error type returns
+                palette = getPalette() if self.themeFlag else QtGui.QPalette()
+                self.thermalWindow.setPalette(palette)
                 self.thermalWindow.show()
             else :
                 return datasheets
@@ -1061,7 +1060,22 @@ def getXisLabel(x):
         'Mains_S': 'Apparent Mains Power(in W)',
         'InvTotalLoss' : 'Total Losses(in W)'
     }.get(x, x+' Loss(in W)')                
-                 
+def getPalette():
+    palette = QtGui.QPalette()
+    palette.setColor(QtGui.QPalette.Window, QtGui.QColor(53,53,53))
+    palette.setColor(QtGui.QPalette.WindowText, QtCore.Qt.white)
+    palette.setColor(QtGui.QPalette.Base, QtGui.QColor(15,15,15))
+    palette.setColor(QtGui.QPalette.AlternateBase, QtGui.QColor(53,53,53))
+    palette.setColor(QtGui.QPalette.ToolTipBase, QtCore.Qt.white)
+    palette.setColor(QtGui.QPalette.ToolTipText, QtCore.Qt.white)
+    palette.setColor(QtGui.QPalette.Text, QtCore.Qt.white)
+    palette.setColor(QtGui.QPalette.Button, QtGui.QColor(53,53,53))
+    palette.setColor(QtGui.QPalette.ButtonText, QtCore.Qt.white)
+    palette.setColor(QtGui.QPalette.BrightText, QtCore.Qt.red)
+    palette.setColor(QtGui.QPalette.Highlight, QtGui.QColor(142,45,197).lighter())
+    palette.setColor(QtGui.QPalette.HighlightedText, QtCore.Qt.black) 
+    return palette
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     app.setStyle('Fusion')

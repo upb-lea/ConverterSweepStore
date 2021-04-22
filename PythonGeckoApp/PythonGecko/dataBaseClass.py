@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QApplication,QWidget,QMainWindow
-from PyQt5 import QtCore,uic
+from PyQt5 import QtCore,uic,QtGui
 from PyQt5.QtGui import QIcon
 from pandasModel import pandasModel
 import pandas as pd
@@ -18,12 +18,7 @@ class dataBaseClass(QWidget):
         self.refreshBtn.clicked.connect(self.refreshTableView)
         self.exitBtn.clicked.connect(self.close)
         self.refreshTableView()
-        #self.applyTheme()
-
-    def applyTheme(self):
-        self.setStyle('Fusion')
-        self.setPalette(palette)
-
+        
     def refreshTableView(self):
         simCount = 0
         filepath = None
