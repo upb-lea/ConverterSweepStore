@@ -395,6 +395,7 @@ class MainWindow(QMainWindow):
                 self.opt_df['PWatts'] = round(self.opt_df['Mains_S']* self.opt_df['Mains_phi'].apply(math.cos))
             else :
                 self.opt_df['PWatts'] = round(self.opt_df['Load_S']* self.opt_df['Load_phi'].apply(math.cos))
+
         def searchOptBtn(topology, rangeBtn,column, df,buttonInput,normalizeValue =1):
             if rangeBtn.isVisible(): 
                 range = rangeBtn.getRange()
@@ -851,9 +852,20 @@ class MainWindow(QMainWindow):
             return isthere
         return checkIfExists
 
+    def validatedInputs(self,inputValues):
+        inputRange = {'DC Link':1200, 'Temp':150}
+        invalidCollection = {}
+        for input in inputValues:
+           inValids = [x for x in inputValues[input] if x>=inputRange[input]]
+           if len(inValids):
+               invalidCollection.update({input:inValids})
+        return invalidCollection
 
     def simulate(self):       
         try :
+            inputs ={}
+            self.statusWriteLabel.setStyleSheet("")
+            self.statusWriteLabel.clear()
             dcVltgList = self.dcVltgIn.toPlainText()
             dcVltgList = re.split(',|\s+|;|\n',dcVltgList)
             dcVltgListNew = [int(i) for i in dcVltgList]
@@ -873,15 +885,15 @@ class MainWindow(QMainWindow):
             fOutList = re.split(',|\s+|;|\n',fOutList)
             fOutListNew = [int(i) for i in fOutList]
             dataSheets = self.dataSheetComboBox.checkedItems()
+            inputs = {'DC Link':dcVltgListNew,'Temp':tempInListNew}
+            invalids = self.validatedInputs(inputs)
+            if len(invalids):
+                raise InvalidInputs(invalids)
             if dataSheets == []:
                 raise Exception('Please select atleast one Datasheet!\n(Hint : Check should appear)')
             paramsContainer = {'V_DC':dcVltgListNew,'Load_S':loadWInListNew,'Load_phi':pfDegreeInListNew,'Mains_S':loadWInListNew,'Mains_phi':pfDegreeInListNew,'f_s':switchFreqInListNew,'f_out':fOutListNew,
                                'T_HS':tempInListNew,'dataSheets':dataSheets}
             for x in paramsContainer:
-                #result = True
-                #if x=='Transistor' or x == 'Transistor_revD' or x== 'Transistor_fwD':
-                #    result = not(any([re.search("^\s*$", elem) for elem in paramsContainer[x]]))
-                #if paramsContainer[x] and result :
                 print(x + ' = '+ str(paramsContainer[x])+':Accepted')
             self.statusWriteLabel.setStyleSheet("QLabel { background-color : green; color : black; }")
             self.statusWriteLabel.setText('Inputs are good')
@@ -901,7 +913,6 @@ class MainWindow(QMainWindow):
             createobj.gismsUpdate.connect(self.updateGSIMS)
             createobj.progressUpdate.connect(self.updateProgressBar)
             createobj.tabsDFUpdate.connect(self.updateTabsDF)
-            #createobj.eventemit()
             self.progressBar.show()
             self.progressBar.setValue(1)
             self.progressBar.setMaximum(100)
@@ -912,6 +923,14 @@ class MainWindow(QMainWindow):
             msgBox.setIcon(QMessageBox.Information)
             msgBox.setText("Please check the inputs provided")
             msgBox.exec()
+        except InvalidInputs as e:
+            invalids = e.args[0]
+            errorString = ''
+            for invalid in invalids:
+                errorString =  errorString+ "{} = {} invalid\n".format(''.join(invalid),''.join(str(invalids[invalid])))
+            self.statusWriteLabel.setStyleSheet("QLabel { background-color : red; color : blue; }")
+            self.statusWriteLabel.setText(errorString)
+            self.statusWriteLabel.adjustSize()
         except Exception as e:
             msgBox = QMessageBox()
             msgBox.setIcon(QMessageBox.Information)
@@ -1049,6 +1068,10 @@ class MainWindow(QMainWindow):
             msgBox.setIcon(QMessageBox.Information)
             msgBox.setText(str(e.args[0]))
             msgBox.exec()
+
+#A custom defined exception to validate inputs and differentiate from base Exception
+class InvalidInputs(Exception):
+    pass
 
 def getXisLabel(x):
     return {
