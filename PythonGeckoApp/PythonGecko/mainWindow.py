@@ -105,8 +105,9 @@ class MainWindow(QMainWindow):
         self.searchOptBtn.clicked.connect(self.findOptimum)
         self.topologyCombo.insertItems(0,self.topologyList)
         self.topologyCombo.textActivated.connect(self.resetControls)
-        #self.xDatacomboBox.insertItems(0, self.xDataList.keys())
         self.xDatacomboBox.textActivated.connect(self.replotScatter)
+        self.tempSlider.valueChanged.connect(self.updateTempLabel)
+        self.tempDispBtn.clicked.connect(self.lockTemp)
         self.sc = {}
         self.themeFlag = False
         self.PinRangeSelector.hide()
@@ -189,7 +190,21 @@ class MainWindow(QMainWindow):
         self.setPalette(palette)   
         self.themeFlag = not self.themeFlag
     
-    
+    def updateTempLabel(self, value):
+        if value:
+            self.tempDispBtn.setText(str(value)+'° C')
+        else :
+            self.tempDispBtn.setText('All')
+
+    def lockTemp(self, state):
+        if state :
+            self.tempSlider.setEnabled(False)
+            self.controlFrame.setEnabled(True)
+            self.replotScatter()
+        elif not state :
+            self.tempSlider.setEnabled(True)
+            self.controlFrame.setEnabled(False)
+
     def closeEvent(self,val) :
         sys.exit(0)
 
@@ -521,6 +536,7 @@ class MainWindow(QMainWindow):
             pass
         try :
             filtString = {}
+            resultDF = pd.DataFrame(None)
             if not selected:
                 raise Exception("select the loss type")
             if len(self.filter) < 2 :
@@ -532,8 +548,10 @@ class MainWindow(QMainWindow):
                         raise Exception("{} = {} not found".format(''.join(key),''.join(str(self.filter[key]))))
             conditionsBoolReturns = list(filtString.values())
             resultDF = self.plot_df[self.conjunction(*conditionsBoolReturns)]
+            heatSinkTemp = self.tempSlider.value()
+            resultDF = resultDF[resultDF['T_HS']==heatSinkTemp]
             if resultDF.empty :
-                raise Exception("Not in DBase")
+                raise Exception("Not in DB, Check Temp° \ OPoint")
             index = set(self.filterList)- self.filter.keys()
             key =  self.filterList[2] if index == set() else index.pop()
             xLabel = self.xDatacomboBox.currentText()
@@ -606,6 +624,7 @@ class MainWindow(QMainWindow):
         xLabel = ''
         xData = []
         yData = []
+        tempFilteredDF = pd.DataFrame(None)
         selected = ''
         if button.text() =='Total Inverter Loss' : 
             self.scIgbtCombo.setCurrentIndex(-1) 
@@ -619,9 +638,11 @@ class MainWindow(QMainWindow):
             self.scIgbtCombo.setCurrentIndex(-1) 
         xAxisPoint = self.xDatacomboBox.currentText()   
         if selected :
+            heatSinkTemp = self.tempSlider.value()
+            tempFilteredDF = self.plot_df[self.plot_df['T_HS']==heatSinkTemp] if heatSinkTemp else self.plot_df
             self.rePlotInfo.update({'LossTypeBtn':button, 'LossType':selected}) 
-            self.data2plot['xData']= {xAxisPoint: list(self.plot_df[xAxisPoint])}                
-            self.data2plot['yData']= {selected: list(self.plot_df[selected].fillna(0))}
+            self.data2plot['xData']= {xAxisPoint: list(tempFilteredDF[xAxisPoint])}                
+            self.data2plot['yData']= {selected: list(tempFilteredDF[selected].fillna(0))}
             length = len(self.data2plot['yData'][selected])
             xLabel = getXisLabel(xAxisPoint)
             yLabel =  button.text() if 'Loss' in button.text() else button.text()+' Loss'
@@ -805,7 +826,6 @@ class MainWindow(QMainWindow):
         key = self.filterList[2] if index == set() else index.pop()
         text = f'{key} :{legendValue},\n{self.linAnnotKeys[0]} :{posx:.2f},\n{self.linAnnotKeys[1]} :{posy:.2f}'
         self.annot.set_text(text)
-        # annot.get_bbox_patch().set_facecolor(cmap(norm(c[ind["ind"][0]])))
         self.annot.get_bbox_patch().set_alpha(0.4)
 
     def hover(self,event):
