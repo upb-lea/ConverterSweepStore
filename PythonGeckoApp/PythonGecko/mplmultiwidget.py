@@ -146,7 +146,7 @@ class  MplMultiWidget(QWidget):
             ax.text(rect.get_x() + rect.get_width() / 2, height, round(height,1),
                     ha='center', va='bottom')
         ax.set_title(topology)
-        textstr = "DS: {},\nV_DC :{},\nTLoss:{},\nPdel :{},\nFsw   :{}".format("".join(str(opPointRow['Datasheet'])),"".join(str(opPointRow['V_DC'])),"".join(str(round(opPointRow['InvTotalLoss'],2))),
+        textstr = "DS: {},\nV_DC :{},\nTLoss:{},\nPdel :{},\nFsw   :{}".format("".join(str(opPointRow['Datasheet'])),"".join(str(opPointRow['V_DC'])),"".join(str(round(opPointRow['ConvTotalLoss'],2))),
                                         "".join(str(opPointRow['PWatts'])),"".join(str(opPointRow['f_s'])))
         props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
         ax.text(0.98, 0.98, textstr, transform=ax.transAxes, fontsize=6,

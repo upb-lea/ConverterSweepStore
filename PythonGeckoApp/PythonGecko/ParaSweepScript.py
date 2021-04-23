@@ -201,7 +201,7 @@ def startSIM(pset):
         meanLosses[x] = np.mean(lossesArray)
         totalLoss = totalLoss + meanLosses[x]
         
-    meanLosses['InvTotalLoss'] = totalLoss*3
+    meanLosses['ConvTotalLoss'] = totalLoss*3
     length = len(loss_keys)
     i=0
     while i < length:

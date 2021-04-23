@@ -215,7 +215,7 @@ class MainWindow(QMainWindow):
         if not (fileInv and fileAfe):
             IGBTColumnList = ['IG1_con','IG1_sw','IG2_con','IG2_sw','IG3_con','IG3_sw','IG4_con','IG4_sw','IG5_con','IG5_sw','IG6_con','IG6_sw','IG7_con','IG7_sw','IG8_con','IG8_sw']
             DiodeColumnList = ['D1_con','D1_sw','D2_con','D2_sw','D3_con','D3_sw','D4_con','D4_sw','D5_con','D5_sw','D6_con','D6_sw','D7_con','D7_sw','D8_con','D8_sw']
-            TotalColumnList = ['file','InvTotalLoss','IG1','IG2','IG3','IG4','IG5','IG6','IG7','IG8','D1','D2','D3','D4','D5','D6','D7','D8']
+            TotalColumnList = ['file','ConvTotalLoss','IG1','IG2','IG3','IG4','IG5','IG6','IG7','IG8','D1','D2','D3','D4','D5','D6','D7','D8']
             TempColumnList = ['Igbt1Temp','Igbt2Temp','Igbt5Temp','Igbt7Temp','D1Temp','D2Temp','D5Temp','D7Temp']  
             if not fileInv:
                 InvOperatingList = ['Topology','Datasheet','V_DC','Load_S','Load_phi','f_s','T_HS','f_out','_run_id','_pset_id','_calc_dir','_time_utc','TransformerLoss']#13
@@ -467,7 +467,7 @@ class MainWindow(QMainWindow):
         opPoint = {}
         for topology in dfsCollected:
             df = dfsCollected[topology]
-            finalRow = df[df['InvTotalLoss']==df['InvTotalLoss'].min()].to_dict('records')[0]
+            finalRow = df[df['ConvTotalLoss']==df['ConvTotalLoss'].min()].to_dict('records')[0]
             opPoint[topology] = finalRow
             if topology == 'NPC':
                 conductionLoss = [finalRow['IG1_con'],finalRow['D1_con'],finalRow['IG2_con'],finalRow['D2_con'],finalRow['D5_con']]
@@ -485,9 +485,9 @@ class MainWindow(QMainWindow):
                 index  = ['T1','D1','T2','D2']
                 dfToBar[topology] = pd.DataFrame({'Cond Loss': conductionLoss,'SW Loss': switchLoss}, index=index)
             elif topology == 'FC-ANPC':
-                conductionLoss = [finalRow['IG1_con'],finalRow['D1_con'],finalRow['IG6_con'],finalRow['D6_con'],finalRow['IG8_con'],finalRow['D8_con']]
-                switchLoss = [finalRow['IG1_sw'],finalRow['D1_sw'],finalRow['IG6_sw'],finalRow['D6_sw'],finalRow['IG8_sw'],finalRow['D8_sw']]
-                index  = ['T1/T4','D1/D4','T6','D6','T8','D8']
+                conductionLoss = [finalRow['IG1_con'],finalRow['D1_con'],finalRow['IG2_con'],finalRow['D2_con'],finalRow['IG6_con'],finalRow['D6_con'],finalRow['IG8_con'],finalRow['D8_con']]
+                switchLoss = [finalRow['IG1_sw'],finalRow['D1_sw'],finalRow['IG2_sw'],finalRow['D2_sw'],finalRow['IG6_sw'],finalRow['D6_sw'],finalRow['IG8_sw'],finalRow['D8_sw']]
+                index  = ['T1/T4','D1/D4','T2/T3','D2/D3','T5\T6','D5\D6','T7\T8','D7\D8']
                 dfToBar[topology] = pd.DataFrame({'Cond Loss': conductionLoss,'SW Loss': switchLoss}, index=index)
         plotNum = len(dfToBar)
         if plotNum == 1:
@@ -629,7 +629,7 @@ class MainWindow(QMainWindow):
         if button.text() =='Total Inverter Loss' : 
             self.scIgbtCombo.setCurrentIndex(-1) 
             self.scDiodeCombo.setCurrentIndex(-1) 
-            selected = 'InvTotalLoss'
+            selected = 'ConvTotalLoss'
         elif button.text() == 'IGBT ':
             selected = self.scIgbtCombo.currentText()
             self.scDiodeCombo.setCurrentIndex(-1)
@@ -661,7 +661,7 @@ class MainWindow(QMainWindow):
     def linComboboxChanged(self):
         sender = self.sender()
         if sender.objectName() == 'invTotalRadio':
-            selected = 'InvTotalLoss'
+            selected = 'ConvTotalLoss'
             button = self.invTotalRadio
             self.scIgbtCombo.setCurrentIndex(-1) 
             self.scDiodeCombo.setCurrentIndex(-1) 
@@ -809,7 +809,7 @@ class MainWindow(QMainWindow):
         self.annot.xy = pos 
         OpPoint = self.data2plot['Dataset'][(self.data2plot['Dataset'][[*self.data2plot['xData']][0]] == pos[0]) & (self.data2plot['Dataset'][[*self.data2plot['yData']][0]] == pos[1])]
 
-        text = "V_DC :{},\nTLoss:{},\nLoad :{},\nPhi    :{},\nFsw   :{}".format("".join(str(OpPoint.iloc[0]['V_DC'])),"".join(str(round(OpPoint.iloc[0]['InvTotalLoss'],2))),
+        text = "V_DC :{},\nTLoss:{},\nLoad :{},\nPhi    :{},\nFsw   :{}".format("".join(str(OpPoint.iloc[0]['V_DC'])),"".join(str(round(OpPoint.iloc[0]['ConvTotalLoss'],2))),
                                        "".join(str(OpPoint.iloc[0]['Load_S'])),"".join(str(OpPoint.iloc[0]['Load_phi'])),
                                        "".join(str(OpPoint.iloc[0]['f_s'])))
         self.annot.set_text(text)
@@ -1101,7 +1101,7 @@ def getXisLabel(x):
         'Load_S': 'Apparent Load Power(in W)',
         'Mains_phi': 'Mains power factor(in deg)',
         'Mains_S': 'Apparent Mains Power(in W)',
-        'InvTotalLoss' : 'Total Losses(in W)'
+        'ConvTotalLoss' : 'Total Losses(in W)'
     }.get(x, x+' Loss(in W)')                
 def getPalette():
     palette = QtGui.QPalette()

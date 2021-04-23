@@ -2149,12 +2149,12 @@
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="buttonGroupPlotType"/>
+  <buttongroup name="buttonGroupOptMode"/>
   <buttongroup name="buttonGroupPlotMode"/>
   <buttongroup name="buttonGroupScatterData"/>
-  <buttongroup name="buttonGroupMode"/>
   <buttongroup name="buttonGroupRangeType"/>
+  <buttongroup name="buttonGroupMode"/>
   <buttongroup name="buttonGroupTopology"/>
-  <buttongroup name="buttonGroupOptMode"/>
+  <buttongroup name="buttonGroupPlotType"/>
  </buttongroups>
 </ui>
