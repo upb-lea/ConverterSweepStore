@@ -246,7 +246,10 @@ class startConnection(QObject):
                 parname = JString("$fsw")
                 ginst.setGlobalParameterValue(parname,params["f_s"])
                 parname = JString("$Udc")
-                ginst.setGlobalParameterValue(parname,(params["V_DC"]) / 2)
+                if topology == 'B6':
+                    ginst.setGlobalParameterValue(parname, params["V_DC"])
+                else :
+                    ginst.setGlobalParameterValue(parname,(params["V_DC"]) / 2)
                 if isANPC:
                     parname = JString("$Ufc")
                     ginst.setGlobalParameterValue(parname,(params["V_DC"]) / 4)
