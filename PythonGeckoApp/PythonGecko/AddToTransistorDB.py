@@ -17,62 +17,64 @@ clampingDiode = {}
 isvalid = False
 
 topology = 'FC-ANPC'
-datasheet = 'F3L300R07PE4'
-circuitLevel = 'single-switch'
+datasheet = 'SEMiX453GB07E3p'
+circuitLevel = 'single-switch'    #Full-Level or single-switch
+manufacturer = 'Semikron'
 
 if topology == 'B6':
-    transistor['T1']  = 'FF300R06KE3_T1T2'
-    transistor['T2']  = 'FF300R06KE3_T1T2'
-    bypassDiode['D1']  = 'FF300R06KE3_D1D2'
-    bypassDiode['D2']  = 'FF300R06KE3_D1D2'
+    transistor['T1']  = 'SEMiX453GB07E3p_T1T2'
+    transistor['T2']  = 'SEMiX453GB07E3p_T1T2'
+    bypassDiode['D1']  = 'SEMiX453GB07E3p_D1D2'
+    bypassDiode['D2']  = 'SEMiX453GB07E3p_D1D2'
 if topology == 'NPC':
-    transistor['T1']  = 'FF300R06KE3_T1T2'
-    transistor['T2']  = 'FF300R06KE3_T1T2'
-    transistor['T3']  = 'FF300R06KE3_T1T2'                
-    transistor['T4']  = 'FF300R06KE3_T1T2' 
-    bypassDiode['D1']  = 'FF300R06KE3_D1D2'
-    bypassDiode['D2']  = 'FF300R06KE3_D1D2'
-    bypassDiode['D3']  = 'FF300R06KE3_D1D2'            
-    bypassDiode['D4']  = 'FF300R06KE3_D1D2'            
-    clampingDiode['D5'] = 'F3L300R07PE4_RD'                 #not required for B6 topology
-    clampingDiode['D6'] = 'F3L300R07PE4_RD'                 #not required for B6 topology
+    transistor['T1']  = 'SEMiX405MLI07E4_T1T4'
+    transistor['T2']  = 'SEMiX405MLI07E4_T2T3'
+    transistor['T3']  = 'SEMiX405MLI07E4_T2T3'                
+    transistor['T4']  = 'SEMiX405MLI07E4_T1T4' 
+    bypassDiode['D1']  = 'SEMiX405MLI07E4_D1D4'
+    bypassDiode['D2']  = 'SEMiX405MLI07E4_D2D3'
+    bypassDiode['D3']  = 'SEMiX405MLI07E4_D2D3'            
+    bypassDiode['D4']  = 'SEMiX405MLI07E4_D1D4'            
+    clampingDiode['D5'] = 'SEMiX405MLI07E4_D5D6'                 #not required for B6 topology
+    clampingDiode['D6'] = 'SEMiX405MLI07E4_D5D6'                 #not required for B6 topology
 if topology == 'TNPC':
     #outerswitches
-    transistor['T1']  = 'FF300R06KE3_T1T2'                  
-    transistor['T4']  = 'FF300R06KE3_T1T2'
-    bypassDiode['D1']  = 'FF300R06KE3_D1D2'
-    bypassDiode['D2']  = 'FF300R06KE3_D1D2'
+    transistor['T1']  = 'SEMiX405TMLI12E4B_T1T4'                  
+    transistor['T4']  = 'SEMiX405TMLI12E4B_T1T4'
+    bypassDiode['D1']  = 'SEMiX405TMLI12E4B_D1D4'
+    bypassDiode['D4']  = 'SEMiX405TMLI12E4B_D1D4'
     #inner switches
-    transistor['T2']  = 'FF300R06KE3_T1T2'
-    transistor['T3']  = 'FF300R06KE3_T1T2'                 
-    bypassDiode['D3']  = 'FF300R06KE3_D1D2'            
-    bypassDiode['D4']  = 'FF300R06KE3_D1D2'
+    transistor['T2']  = 'SEMiX405TMLI12E4B_T2T3'
+    transistor['T3']  = 'SEMiX405TMLI12E4B_T2T3'                 
+    bypassDiode['D2']  = 'SEMiX405TMLI12E4B_D2D3'            
+    bypassDiode['D3']  = 'SEMiX405TMLI12E4B_D2D3'
 if topology == 'FC-ANPC':
     #only required for FC-ANPC topology
     #outer switches
-    transistor['T1']  = 'F3L300R07PE4_T'
-    transistor['T2']  = 'F3L300R07PE4_T'
-    transistor['T3']  = 'F3L300R07PE4_T'                
-    transistor['T4']  = 'F3L300R07PE4_T'
-    bypassDiode['D1']  = 'F3L300R07PE4_RD'
-    bypassDiode['D2']  = 'F3L300R07PE4_RD'                    
-    bypassDiode['D3']  = 'F3L300R07PE4_RD'            
-    bypassDiode['D4']  = 'F3L300R07PE4_RD'  
+    transistor['T1']  = 'SEMiX453GB07E3p_T'
+    transistor['T2']  = 'SEMiX453GB07E3p_T'
+    transistor['T3']  = 'SEMiX453GB07E3p_T'                
+    transistor['T4']  = 'SEMiX453GB07E3p_T'
+    bypassDiode['D1']  = 'SEMiX453GB07E3p_RD'
+    bypassDiode['D2']  = 'SEMiX453GB07E3p_RD'                    
+    bypassDiode['D3']  = 'SEMiX453GB07E3p_RD'            
+    bypassDiode['D4']  = 'SEMiX453GB07E3p_RD'  
     #inner switches
-    transistor['T5']  = 'F3L300R07PE4_T'
-    transistor['T6']  = 'F3L300R07PE4_T'
-    transistor['T7']  = 'F3L300R07PE4_T'                
-    transistor['T8']  = 'F3L300R07PE4_T'
-    bypassDiode['D5']  = 'F3L300R07PE4_RD'
-    bypassDiode['D6']  = 'F3L300R07PE4_RD'                    
-    bypassDiode['D7']  = 'F3L300R07PE4_RD'            
-    bypassDiode['D8']  = 'F3L300R07PE4_RD'            
+    transistor['T5']  = 'SEMiX453GB07E3p_T'
+    transistor['T6']  = 'SEMiX453GB07E3p_T'
+    transistor['T7']  = 'SEMiX453GB07E3p_T'                
+    transistor['T8']  = 'SEMiX453GB07E3p_T'
+    bypassDiode['D5']  = 'SEMiX453GB07E3p_RD'
+    bypassDiode['D6']  = 'SEMiX453GB07E3p_RD'                    
+    bypassDiode['D7']  = 'SEMiX453GB07E3p_RD'            
+    bypassDiode['D8']  = 'SEMiX453GB07E3p_RD'            
     
 
 datasheetInfo = {**transistor , **bypassDiode, **clampingDiode}
 datasheetInfo['Datasheet']=datasheet
 datasheetInfo['Topology']=topology
 datasheetInfo['Circuit-Level'] =circuitLevel
+datasheetInfo['Manufacturer'] =manufacturer
 if os.path.exists(transistor_db_path):
     df = pd.read_csv(transistor_db_path)
     indx = df.index[(df['Topology'] == topology) & (df['Datasheet'] == datasheet)].tolist()
