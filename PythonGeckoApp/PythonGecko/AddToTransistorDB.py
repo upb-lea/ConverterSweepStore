@@ -17,15 +17,15 @@ clampingDiode = {}
 isvalid = False
 
 topology = 'FC-ANPC'
-datasheet = 'SEMiX453GB07E3p'
+datasheet = '2MBI200XAA065-50'
 circuitLevel = 'single-switch'    #Full-Level or single-switch
-manufacturer = 'Semikron'
+manufacturer = 'Fuji'
 
 if topology == 'B6':
-    transistor['T1']  = 'SEMiX453GB07E3p_T1T2'
-    transistor['T2']  = 'SEMiX453GB07E3p_T1T2'
-    bypassDiode['D1']  = 'SEMiX453GB07E3p_D1D2'
-    bypassDiode['D2']  = 'SEMiX453GB07E3p_D1D2'
+    transistor['T1']  = 'Fuji_2MBI400XBE065-50_T'
+    transistor['T2']  = 'Fuji_2MBI400XBE065-50_T'
+    bypassDiode['D1']  = 'Fuji_2MBI400XBE065-50_RD'
+    bypassDiode['D2']  = 'Fuji_2MBI400XBE065-50_RD'
 if topology == 'NPC':
     transistor['T1']  = 'SEMiX405MLI07E4_T1T4'
     transistor['T2']  = 'SEMiX405MLI07E4_T2T3'
@@ -51,23 +51,23 @@ if topology == 'TNPC':
 if topology == 'FC-ANPC':
     #only required for FC-ANPC topology
     #outer switches
-    transistor['T1']  = 'SEMiX453GB07E3p_T'
-    transistor['T2']  = 'SEMiX453GB07E3p_T'
-    transistor['T3']  = 'SEMiX453GB07E3p_T'                
-    transistor['T4']  = 'SEMiX453GB07E3p_T'
-    bypassDiode['D1']  = 'SEMiX453GB07E3p_RD'
-    bypassDiode['D2']  = 'SEMiX453GB07E3p_RD'                    
-    bypassDiode['D3']  = 'SEMiX453GB07E3p_RD'            
-    bypassDiode['D4']  = 'SEMiX453GB07E3p_RD'  
+    transistor['T1']  = '2MBI200XAA065-50_T'
+    transistor['T2']  = '2MBI200XAA065-50_T'
+    transistor['T3']  = '2MBI200XAA065-50_T'                
+    transistor['T4']  = '2MBI200XAA065-50_T'
+    bypassDiode['D1']  = '2MBI200XAA065-50_RD'
+    bypassDiode['D2']  = '2MBI200XAA065-50_RD'                    
+    bypassDiode['D3']  = '2MBI200XAA065-50_RD'            
+    bypassDiode['D4']  = '2MBI200XAA065-50_RD'  
     #inner switches
-    transistor['T5']  = 'SEMiX453GB07E3p_T'
-    transistor['T6']  = 'SEMiX453GB07E3p_T'
-    transistor['T7']  = 'SEMiX453GB07E3p_T'                
-    transistor['T8']  = 'SEMiX453GB07E3p_T'
-    bypassDiode['D5']  = 'SEMiX453GB07E3p_RD'
-    bypassDiode['D6']  = 'SEMiX453GB07E3p_RD'                    
-    bypassDiode['D7']  = 'SEMiX453GB07E3p_RD'            
-    bypassDiode['D8']  = 'SEMiX453GB07E3p_RD'            
+    transistor['T5']  = '2MBI200XAA065-50_T'
+    transistor['T6']  = '2MBI200XAA065-50_T'
+    transistor['T7']  = '2MBI200XAA065-50_T'                
+    transistor['T8']  = '2MBI200XAA065-50_T'
+    bypassDiode['D5']  = '2MBI200XAA065-50_RD'
+    bypassDiode['D6']  = '2MBI200XAA065-50_RD'                    
+    bypassDiode['D7']  = '2MBI200XAA065-50_RD'            
+    bypassDiode['D8']  = '2MBI200XAA065-50_RD'            
     
 
 datasheetInfo = {**transistor , **bypassDiode, **clampingDiode}

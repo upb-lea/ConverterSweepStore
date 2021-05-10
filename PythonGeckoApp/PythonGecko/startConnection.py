@@ -176,12 +176,14 @@ class startConnection(QObject):
                 Rfw_jc = {}
                 Rfw_cs = {}
                 Cth_fwd = {}
+                Rth_M = None
                 if self.prevDataSheet is not params["Datasheet"]:
                     self.prevDataSheet = params["Datasheet"]
                     df = pd.read_csv(self.thermal_file_path,index_col =['Datasheet'])
                     igbtDatasheets,diodeDatasheets,clampDatasheets = self.getComponentSCLs(params["Datasheet"])
                     for sheet in igbtDatasheets:
                         thermalTransData[sheet] = df.loc[df.index == igbtDatasheets[sheet]].to_dict(orient = 'records')[0]
+                        Rth_M = thermalTransData[sheet]['Rth']
                         Rt_jc[sheet] = thermalTransData[sheet]['Rjc']
                         Rt_cs[sheet] = thermalTransData[sheet]['Rcs']
                         Cth_ig[sheet] = thermalTransData[sheet]['Cth']
@@ -202,7 +204,7 @@ class startConnection(QObject):
                             ginst.doOperation(JString("D."+str((igI+1)+factor*leg)),JString("setLossFile"),JString(lossfilepath+"\\"+diodeDatasheets[dSheet]+".scl"))
                         for fdI,cSheet in zip(list(range(len(clampDatasheets))),list(clampDatasheets)):
                             ginst.doOperation(JString("D."+str((fdI+13)+2*leg)),JString("setLossFile"),JString(lossfilepath+"\\"+clampDatasheets[cSheet]+".scl"))
-           
+                        
             
                     # Set the global parameters in the simulation file: These parameters must be
                     # defined in Tools->Set Parameters in
@@ -237,6 +239,10 @@ class startConnection(QObject):
                         ginst.setGlobalParameterValue(parname,Rfw_cs[cSheet])
                         parname = JString("$Cth_fwd_"+str(fdI))
                         ginst.setGlobalParameterValue(parname,Cth_fwd[cSheet])
+                    parname = JString("$Rth_M")
+                    ginst.setGlobalParameterValue(parname,Rth_M)
+                    parname = JString("$Cth_M")
+                    ginst.setGlobalParameterValue(parname,min([min(Cth_ig.values()),min(Cth_fwd.values())]))
 
                  # Setting up the current sources and their phase informations
                 for i in range (3):
