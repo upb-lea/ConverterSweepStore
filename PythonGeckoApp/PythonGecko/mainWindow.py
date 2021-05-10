@@ -218,13 +218,13 @@ class MainWindow(QMainWindow):
             TotalColumnList = ['file','ConvTotalLoss','IG1','IG2','IG3','IG4','IG5','IG6','IG7','IG8','D1','D2','D3','D4','D5','D6','D7','D8']
             TempColumnList = ['Igbt1Temp','Igbt2Temp','Igbt5Temp','Igbt7Temp','D1Temp','D2Temp','D5Temp','D7Temp']  
             if not fileInv:
-                InvOperatingList = ['Topology','Datasheet','V_DC','Load_S','Load_phi','f_s','T_HS','f_out','_run_id','_pset_id','_calc_dir','_time_utc','TransformerLoss']#13
-                columns_list = InvOperatingList+TotalColumnList+TempColumnList+IGBTColumnList+DiodeColumnList
+                InvOperatingList = ['Topology','Datasheet','V_DC','Load_S','Load_phi','f_s','T_HS','f_out','Status','TransformerLoss']#13
+                columns_list = InvOperatingList+TotalColumnList+TempColumnList+IGBTColumnList+DiodeColumnList + ['_run_id','_pset_id','_calc_dir','_time_utc']
                 df = pd.DataFrame(columns=columns_list)
                 df.to_pickle(self.invfilepath)
             if not fileAfe :
-                AfeOperatingList = ['Topology','Datasheet','V_DC','Mains_S','Mains_phi','f_s','T_HS','f_out','_run_id','_pset_id','_calc_dir','_time_utc','TransformerLoss']
-                columns_list = AfeOperatingList+TotalColumnList+TempColumnList+IGBTColumnList+DiodeColumnList
+                AfeOperatingList = ['Topology','Datasheet','V_DC','Mains_S','Mains_phi','f_s','T_HS','f_out','Status','TransformerLoss']
+                columns_list = AfeOperatingList+TotalColumnList+TempColumnList+IGBTColumnList+DiodeColumnList+ ['_run_id','_pset_id','_calc_dir','_time_utc']
                 df = pd.DataFrame(columns=columns_list)
                 df.to_pickle(self.afefilepath)
         df_inv = pd.read_pickle(self.invfilepath)
@@ -292,7 +292,7 @@ class MainWindow(QMainWindow):
            df_all = pd.read_pickle(self.invfilepath)
            self.xDatacomboBox.clear()
            self.xDatacomboBox.addItems(self.xDataInvList.keys())
-        self.plot_df = df_all[df_all['Topology']==plotTopology]
+        self.plot_df = df_all[(df_all['Topology']==plotTopology) & (df_all['Status']=='Ok')]
         self.xAxisChanged('V_DC')
         if not isDFUpdated :
             self.replotScatter() 
@@ -323,6 +323,7 @@ class MainWindow(QMainWindow):
         else:
             self.opt_df = pd.read_pickle(self.invfilepath)
             self.opt_df['PWatts'] = round(self.opt_df['Load_S']* self.opt_df['Load_phi'].apply(math.cos))
+        self.opt_df = self.opt_df[self.opt_df['Status']=='Ok']
         if not isDFUpdated:
             self.optStatusLabel.setStyleSheet("")  #check the position
             self.optStatusLabel.clear()
@@ -700,8 +701,8 @@ class MainWindow(QMainWindow):
             self.optInvBtn.setChecked(True)
             self.plotInvBtn.setChecked(True)
             df_all = pd.read_pickle(self.invfilepath)
-            self.opt_df = df_all
-            self.plot_df =  df_all[df_all['Topology']==plotTopology]
+            self.opt_df = df_all[df_all['Status']=='Ok']
+            self.plot_df =  df_all[(df_all['Topology']==plotTopology) & (df_all['Status']=='Ok')]
             self.opt_df['PWatts'] = round(self.opt_df['Load_S']*self.opt_df['Load_phi'].apply(math.cos))
             self.filterList = self.xDataInvList['V_DC'][:]
             self.opComboType.insertItems(0,self.filterList)
@@ -710,8 +711,8 @@ class MainWindow(QMainWindow):
             self.optAfeBtn.setChecked(True)
             self.plotAFEBtn.setChecked(True)
             df_all = pd.read_pickle(self.afefilepath)
-            self.opt_df = df_all
-            self.plot_df =  df_all[df_all['Topology']==plotTopology]
+            self.opt_df = df_all[df_all['Status']=='Ok']
+            self.plot_df =  df_all[(df_all['Topology']==plotTopology) & (df_all['Status']=='Ok')]
             self.opt_df['PWatts'] = round(self.opt_df['Mains_S']* self.opt_df['Mains_phi'].apply(math.cos))
             self.filterList= self.xDataAFEList['V_DC'][:]
             self.opComboType.insertItems(0,self.filterList)
@@ -739,7 +740,7 @@ class MainWindow(QMainWindow):
         df_all = pd.read_pickle(self.invfilepath)
         self.plotInvBtn.setChecked(True)
         plotTopology = self.topologyCombo.currentText()
-        self.plot_df =  df_all[df_all['Topology']==plotTopology]
+        self.plot_df =  df_all[(df_all['Topology']==plotTopology)& (df_all['Status']=='Ok')]
         self.MplWidget.canvas.mpl_disconnect(self.cid)
         self.scIgbtCombo.clear()
         self.scDiodeCombo.clear()
@@ -1033,6 +1034,7 @@ class MainWindow(QMainWindow):
 
     def loadPrevParams(self, filepath, checkedMode):
         df = pd.read_pickle(filepath)
+        df = df[df['Status']=='Ok']
         if not df.empty:
             lastSweepParams = df.iloc[-1]
             self.dcVltgIn.setPlainText(str(lastSweepParams['V_DC']))

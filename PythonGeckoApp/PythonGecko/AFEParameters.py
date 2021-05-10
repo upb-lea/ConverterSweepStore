@@ -170,6 +170,7 @@ def AFE_Parameters(U_DC_inv, U_mains_LL, f, Filter_L, Filter_C, Mains_S, Mains_p
     out["U_RMS_inv"] = abs(U_inv)
     out["I_Filter_C"] = abs(I_Filter_C)
     out["U_Filter_L"] = abs(U_Filter_L)
+    out['U_dc'] = U_DC_inv
     if plotbit == 1:
         print(f"P_Transformer = {round(P_Transformer)} W")
         print(f"P_Mains = {round(P_Mains)} W")

@@ -36,9 +36,12 @@ class startConnection(QObject):
         igbtDatasheets = []
         diodeDatasheets = []
         clampDatasheets = []
+        ratings = {}
         df = pd.read_csv(self.datasheetpath)
         topology = self.topology["Topology"]
         deviceSheetInfo = df[(df['Topology'] == topology)&(df['Datasheet']==datasheet)]
+        ratings['Irated'] = int(deviceSheetInfo.iloc[0]['Icnom'])
+        ratings['Vrated'] = int(deviceSheetInfo.iloc[0]['Vces'])
         if topology == 'NPC':
             igbtDatasheets = deviceSheetInfo[['T1','T2','T3','T4']].to_dict(orient='records')[0]
             diodeDatasheets = deviceSheetInfo[['D1','D2','D3','D4']].to_dict(orient='records')[0]
@@ -52,7 +55,7 @@ class startConnection(QObject):
         if topology == 'FC-ANPC':
             igbtDatasheets = deviceSheetInfo[['T1','T2','T3','T4','T5','T6','T7','T8']].to_dict(orient='records')[0]
             diodeDatasheets = deviceSheetInfo[['D1','D2','D3','D4','D5','D6','D7','D8']].to_dict(orient='records')[0]
-        return igbtDatasheets,diodeDatasheets,clampDatasheets
+        return igbtDatasheets,diodeDatasheets,clampDatasheets,ratings
 
     def initiateConnection(self):
         try :
@@ -180,7 +183,8 @@ class startConnection(QObject):
                 if self.prevDataSheet is not params["Datasheet"]:
                     self.prevDataSheet = params["Datasheet"]
                     df = pd.read_csv(self.thermal_file_path,index_col =['Datasheet'])
-                    igbtDatasheets,diodeDatasheets,clampDatasheets = self.getComponentSCLs(params["Datasheet"])
+                    igbtDatasheets,diodeDatasheets,clampDatasheets,ratings = self.getComponentSCLs(params["Datasheet"])
+
                     for sheet in igbtDatasheets:
                         thermalTransData[sheet] = df.loc[df.index == igbtDatasheets[sheet]].to_dict(orient = 'records')[0]
                         Rth_M = thermalTransData[sheet]['Rth']
@@ -265,10 +269,11 @@ class startConnection(QObject):
                 ginst.setGlobalParameterValue(parname,out["m"])
                 parname = JString("$Ipeak_inv")
                 ginst.setGlobalParameterValue(parname,out["I_Peak_inv"])
-                return out
+                return out, ratings
             #-----------------------------Function to setup and start NPC topology based simulations-----------------------#
             def startSimNPC(pset): 
                 # Defining loss keys: order is important!
+                isValidSimulation = {}
                 loss_keys = ['IG1_con','IG1_sw','IG3_con','IG3_sw','IG2_con','IG2_sw','IG4_con','IG4_sw','D1_con','D1_sw','D3_con','D3_sw','D2_con','D2_sw','D4_con','D4_sw',
                               'D5_con','D5_sw','D6_con','D6_sw']
                 temp_keys = ['Igbt1Temp','Igbt2Temp','D1Temp','D2Temp', 'D5Temp']
@@ -276,7 +281,11 @@ class startConnection(QObject):
                 switchCount = 4
                 nonlocal  count
                 count+=1;
-                out = loadSClandThermals(pset,switchCount)   #set the simulation parameters
+                out, ratings = loadSClandThermals(pset,switchCount)   #set the simulation parameters
+                if (ratings['Vrated'] < out['U_dc']/2) or (ratings['Irated'] < out['I_Peak_inv']) :
+                    isValidSimulation['Status'] = 'aboveRt'
+                else: 
+                    isValidSimulation['Status'] = 'Ok'
                 self.gismsUpdate.emit(out)         #emit the gsims parameters
                 # If required to save this sweep file
                 #ginst.saveFileAs(JString("D:\\thesis-research\\VS_code\\PythonGecko\\IPESFolder\\3NPC_sweep_"+pset['_pset_id']+".ipes"))
@@ -303,7 +312,6 @@ class startConnection(QObject):
                         saveLossData[x] = losses                
                      meanLosses[x] = np.mean(lossesArray)
                      totalLoss = totalLoss + meanLosses[x]
-            
                 meanLosses['ConvTotalLoss'] = totalLoss*3  #total losses
                 length = len(loss_keys)
                 i=0
@@ -336,9 +344,10 @@ class startConnection(QObject):
                 else :
                     meanLosses['file'] = "NA"
                 self.progressUpdate.emit(incrementor*count,'running')
-                return {**meanLosses, **meanTemp}
+                return {**isValidSimulation, **meanLosses, **meanTemp}
             #-----------------------------Function to setup and start TNPC topology based simulations----------------------#
             def startSimTNPC(pset): 
+                isValidSimulation = {}
                 # Defining loss keys: order is important!
                 loss_keys = ['IG1_con','IG1_sw','IG3_con','IG3_sw','IG2_con','IG2_sw','IG4_con','IG4_sw','D1_con','D1_sw','D3_con','D3_sw','D2_con','D2_sw','D4_con','D4_sw']
                 temp_keys = ['Igbt1Temp','Igbt2Temp','D1Temp','D2Temp']
@@ -346,6 +355,10 @@ class startConnection(QObject):
                 nonlocal  count
                 count+=1;
                 out = loadSClandThermals(pset,switchCount)   #set the simulation parameters
+                if (ratings['Vrated'] < out['U_dc']) or (ratings['Irated'] < out['I_Peak_inv']) :
+                    isValidSimulation['Status'] = 'aboveRt'
+                else: 
+                    isValidSimulation['Status'] = 'Ok'
                 self.gismsUpdate.emit(out)         #emit the gsims parameters
                 # If required to save this sweep file
                 #ginst.saveFileAs(JString("D:\\thesis-research\\VS_code\\PythonGecko\\IPESFolder\\3NPC_sweep_"+pset['_pset_id']+".ipes"))
@@ -405,9 +418,10 @@ class startConnection(QObject):
                 else :
                     meanLosses['file'] = "NA"
                 self.progressUpdate.emit(incrementor*count,'running')
-                return {**meanLosses, **meanTemp}
+                return {**isValidSimulation, **meanLosses, **meanTemp}
             #-----------------------------Function to setup and start B6 topology based simulations----------------------#
             def startSimB6(pset): 
+                isValidSimulation = {}
                 # Defining loss keys: order is important!
                 loss_keys = ['IG1_con','IG1_sw','IG2_con','IG2_sw','D1_con','D1_sw','D2_con','D2_sw']
                 temp_keys = ['Igbt1Temp','Igbt2Temp','D1Temp','D2Temp']
@@ -415,6 +429,10 @@ class startConnection(QObject):
                 nonlocal  count
                 count+=1
                 out = loadSClandThermals(pset,switchCount)   #set the simulation parameters
+                if (ratings['Vrated'] < out['U_dc']) or (ratings['Irated'] < out['I_Peak_inv']) :
+                    isValidSimulation['Status'] = 'aboveRt'
+                else: 
+                    isValidSimulation['Status'] = 'Ok'
                 self.gismsUpdate.emit(out)         #emit the gsims parameters
                 # If required to save this sweep file
                 #ginst.saveFileAs(JString("D:\\thesis-research\\VS_code\\PythonGecko\\IPESFolder\\3NPC_sweep_"+pset['_pset_id']+".ipes"))
@@ -474,9 +492,10 @@ class startConnection(QObject):
                 else :
                     meanLosses['file'] = "NA"
                 self.progressUpdate.emit(incrementor*count,'running')
-                return {**meanLosses, **meanTemp}
+                return {**isValidSimulation, **meanLosses, **meanTemp}
             #-----------------------------Function to setup and start NPC topology based simulations-----------------------#
-            def startSimANPC(pset): 
+            def startSimANPC(pset):
+                isValidSimulation = {}
                 # Defining loss keys: order is important!
                 loss_keys = ['IG1_con','IG1_sw','IG2_con','IG2_sw','IG3_con','IG3_sw','IG4_con','IG4_sw','IG5_con','IG5_sw','IG7_con','IG7_sw','IG6_con','IG6_sw','IG8_con','IG8_sw',
                              'D1_con','D1_sw','D2_con','D2_sw','D3_con','D3_sw','D4_con','D4_sw','D5_con','D5_sw','D7_con','D7_sw','D6_con','D6_sw','D8_con','D8_sw']
@@ -485,6 +504,10 @@ class startConnection(QObject):
                 nonlocal  count
                 count+=1;
                 out = loadSClandThermals(pset,switchCount,True)   #set the simulation parameters
+                if (ratings['Vrated'] < out['U_dc']/2) or (ratings['Irated'] < out['I_Peak_inv']) :
+                    isValidSimulation['Status'] = 'aboveRt'
+                else: 
+                    isValidSimulation['Status'] = 'Ok'
                 self.gismsUpdate.emit(out)         #emit the gsims parameters
                 # If required to save this sweep file
                 #ginst.saveFileAs(JString("D:\\thesis-research\\VS_code\\PythonGecko\\IPESFolder\\3NPC_sweep_"+pset['_pset_id']+".ipes"))
@@ -544,7 +567,7 @@ class startConnection(QObject):
                 else :
                     meanLosses['file'] = "NA"
                 self.progressUpdate.emit(incrementor*count,'running')
-                return {**meanLosses, **meanTemp}
+                return {**isValidSimulation, **meanLosses, **meanTemp}
         
             # Select topology file and operating function
             if topology == 'NPC' :

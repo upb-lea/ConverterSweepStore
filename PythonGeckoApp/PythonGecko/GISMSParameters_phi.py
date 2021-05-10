@@ -169,6 +169,7 @@ def GISMSParameters_phi(U_DC_inv, U_Load_LL, f_out_inv, Filter_L, Filter_C, Load
     out["U_RMS_inv"] = U_RMS_Inverter
     out["I_Filter_C"] = abs(I_Filter_C)
     out["U_Filter_L"] = abs(U_Filter_L)
+    out['U_dc'] = U_DC_inv
     #print("+-----------------------------+")
     #print("+  output if display bit is 1 +")
     #print("+-----------------------------+")
