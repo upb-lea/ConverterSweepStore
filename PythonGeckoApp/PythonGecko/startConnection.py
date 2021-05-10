@@ -242,7 +242,7 @@ class startConnection(QObject):
                     parname = JString("$Rth_M")
                     ginst.setGlobalParameterValue(parname,Rth_M)
                     parname = JString("$Cth_M")
-                    ginst.setGlobalParameterValue(parname,min([min(Cth_ig.values()),min(Cth_fwd.values())]))
+                    ginst.setGlobalParameterValue(parname,min([min(Cth_ig.values()),min(Cth_rev.values())]))
 
                  # Setting up the current sources and their phase informations
                 for i in range (3):
