@@ -359,7 +359,7 @@ class startConnection(QObject):
                 switchCount = 4
                 nonlocal  count
                 count+=1;
-                out = loadSClandThermals(pset,switchCount)   #set the simulation parameters
+                out,ratings = loadSClandThermals(pset,switchCount)   #set the simulation parameters
                 if (ratings['Vrated']/2 < out['U_dc']) or (ratings['Irated']*3 < out['I_Peak_inv']) :
                     isValidSimulation['Status'] = 'aboveRtgs'
                 else: 
@@ -436,7 +436,7 @@ class startConnection(QObject):
                 switchCount = 2
                 nonlocal  count
                 count+=1
-                out = loadSClandThermals(pset,switchCount)   #set the simulation parameters
+                out,ratings = loadSClandThermals(pset,switchCount)   #set the simulation parameters
                 if (ratings['Vrated']/2 < out['U_dc']) or (ratings['Irated']*3 < out['I_Peak_inv']) :
                     isValidSimulation['Status'] = 'aboveRtgs'
                 else: 
@@ -514,7 +514,7 @@ class startConnection(QObject):
                 switchCount = 8
                 nonlocal  count
                 count+=1;
-                out = loadSClandThermals(pset,switchCount,True)   #set the simulation parameters
+                out,ratings = loadSClandThermals(pset,switchCount,True)   #set the simulation parameters
                 if (ratings['Vrated']/2 < out['U_dc']/2) or (ratings['Irated']*3 < out['I_Peak_inv']) :
                     isValidSimulation['Status'] = 'aboveRtgs'
                 else: 
