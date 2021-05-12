@@ -282,8 +282,8 @@ class startConnection(QObject):
                 nonlocal  count
                 count+=1;
                 out, ratings = loadSClandThermals(pset,switchCount)   #set the simulation parameters
-                if (ratings['Vrated'] < out['U_dc']/2) or (ratings['Irated'] < out['I_Peak_inv']) :
-                    isValidSimulation['Status'] = 'aboveRt'
+                if (ratings['Vrated']/2 < out['U_dc']/2) or (ratings['Irated']*3 < out['I_Peak_inv']) :
+                    isValidSimulation['Status'] = 'aboveRtgs'
                 else: 
                     isValidSimulation['Status'] = 'Ok'
                 self.gismsUpdate.emit(out)         #emit the gsims parameters
@@ -320,14 +320,17 @@ class startConnection(QObject):
                     key = key[:-3] #remove _sw from key
                     meanLosses[key] = meanLosses[loss_keys[i]] + meanLosses[loss_keys[i+1]]  #adding sw and con losses
                     i+=2
-                # Recording device temparatures of only one leg
+                #Recording device temparatures of only one leg
                 for x in temp_keys:
                      temp = ginst.getSignalData(x,t_start,t_end_new,0)
                      tempArray = np.array(temp)
                      if self.saveData :
                         saveTempData[x] = temp                
                      meanTemp[x] = np.mean(tempArray)
-                time = ginst.getTimeArray('IG1_con',t_start,t_end_new,0); #get last cycle time stamp ???
+                if isValidSimulation['Status'] == 'Ok':
+                    if (max(meanTemp.values()) >150 or min(meanTemp.values()) < -15 and status) :
+                        isValidSimulation['Status'] == 'SinkFailure'
+                #time = ginst.getTimeArray('IG1_con',t_start,t_end_new,0); #get last cycle time stamp ???
                 #ginst.disconnectFromGecko()
                 # Set saveData to True if required to save the simulated loss data over the time range in CSV format
                 if self.saveData:
@@ -355,8 +358,8 @@ class startConnection(QObject):
                 nonlocal  count
                 count+=1;
                 out = loadSClandThermals(pset,switchCount)   #set the simulation parameters
-                if (ratings['Vrated'] < out['U_dc']) or (ratings['Irated'] < out['I_Peak_inv']) :
-                    isValidSimulation['Status'] = 'aboveRt'
+                if (ratings['Vrated']/2 < out['U_dc']) or (ratings['Irated'] < out['I_Peak_inv']) :
+                    isValidSimulation['Status'] = 'aboveRtgs'
                 else: 
                     isValidSimulation['Status'] = 'Ok'
                 self.gismsUpdate.emit(out)         #emit the gsims parameters
@@ -394,14 +397,17 @@ class startConnection(QObject):
                     key = key[:-3] #remove _sw from key
                     meanLosses[key] = meanLosses[loss_keys[i]] + meanLosses[loss_keys[i+1]]  #adding sw and con losses
                     i+=2
-                # Recording device temparatures of only one leg
+                #Recording device temparatures of only one leg
                 for x in temp_keys:
                      temp = ginst.getSignalData(x,t_start,t_end_new,0)
                      tempArray = np.array(temp)
                      if self.saveData :
                         saveTempData[x] = temp                
                      meanTemp[x] = np.mean(tempArray)
-                time = ginst.getTimeArray('IG1_con',t_start,t_end_new,0); #get last cycle time stamp ???
+                if isValidSimulation['Status'] == 'Ok':
+                    if (max(meanTemp.values()) >150 or min(meanTemp.values()) < -15 and status) :
+                        isValidSimulation['Status'] == 'SinkFailure'
+                #time = ginst.getTimeArray('IG1_con',t_start,t_end_new,0); #get last cycle time stamp ???
                 #ginst.disconnectFromGecko()
                 # Set saveData to True if required to save the simulated loss data over the time range in CSV format
                 if self.saveData:
@@ -429,8 +435,8 @@ class startConnection(QObject):
                 nonlocal  count
                 count+=1
                 out = loadSClandThermals(pset,switchCount)   #set the simulation parameters
-                if (ratings['Vrated'] < out['U_dc']) or (ratings['Irated'] < out['I_Peak_inv']) :
-                    isValidSimulation['Status'] = 'aboveRt'
+                if (ratings['Vrated']/2 < out['U_dc']) or (ratings['Irated'] < out['I_Peak_inv']) :
+                    isValidSimulation['Status'] = 'aboveRtgs'
                 else: 
                     isValidSimulation['Status'] = 'Ok'
                 self.gismsUpdate.emit(out)         #emit the gsims parameters
@@ -468,14 +474,17 @@ class startConnection(QObject):
                     key = key[:-3] #remove _sw from key
                     meanLosses[key] = meanLosses[loss_keys[i]] + meanLosses[loss_keys[i+1]]  #adding sw and con losses
                     i+=2
-                # Recording device temparatures of only one leg
+                #Recording device temparatures of only one leg
                 for x in temp_keys:
                      temp = ginst.getSignalData(x,t_start,t_end_new,0)
                      tempArray = np.array(temp)
                      if self.saveData :
                         saveTempData[x] = temp                
                      meanTemp[x] = np.mean(tempArray)
-                time = ginst.getTimeArray('IG1_con',t_start,t_end_new,0); #get last cycle time stamp ???
+                if isValidSimulation['Status'] == 'Ok':
+                    if (max(meanTemp.values()) >150) or (min(meanTemp.values()) < -15) :
+                        isValidSimulation['Status'] == 'SinkFailure'
+                #time = ginst.getTimeArray('IG1_con',t_start,t_end_new,0); #get last cycle time stamp ???
                 #ginst.disconnectFromGecko()
                 # Set saveData to True if required to save the simulated loss data over the time range in CSV format
                 if self.saveData:
@@ -504,8 +513,8 @@ class startConnection(QObject):
                 nonlocal  count
                 count+=1;
                 out = loadSClandThermals(pset,switchCount,True)   #set the simulation parameters
-                if (ratings['Vrated'] < out['U_dc']/2) or (ratings['Irated'] < out['I_Peak_inv']) :
-                    isValidSimulation['Status'] = 'aboveRt'
+                if (ratings['Vrated']/2 < out['U_dc']/2) or (ratings['Irated'] < out['I_Peak_inv']) :
+                    isValidSimulation['Status'] = 'aboveRtgs'
                 else: 
                     isValidSimulation['Status'] = 'Ok'
                 self.gismsUpdate.emit(out)         #emit the gsims parameters
@@ -543,14 +552,17 @@ class startConnection(QObject):
                     key = key[:-3] #remove _sw from key
                     meanLosses[key] = meanLosses[loss_keys[i]] + meanLosses[loss_keys[i+1]]  #adding sw and con losses
                     i+=2
-                # Recording device temparatures of only one leg
+                #Recording device temparatures of only one leg
                 for x in temp_keys:
                      temp = ginst.getSignalData(x,t_start,t_end_new,0)
                      tempArray = np.array(temp)
                      if self.saveData :
                         saveTempData[x] = temp                
                      meanTemp[x] = np.mean(tempArray)
-                time = ginst.getTimeArray('IG1_con',t_start,t_end_new,0); #get last cycle time stamp ???
+                if isValidSimulation['Status'] == 'Ok':
+                    if (max(meanTemp.values()) >150 or min(meanTemp.values()) < -15 and status) :
+                        isValidSimulation['Status'] == 'SinkFailure'
+                #time = ginst.getTimeArray('IG1_con',t_start,t_end_new,0); #get last cycle time stamp ???
                 #ginst.disconnectFromGecko()
                 # Set saveData to True if required to save the simulated loss data over the time range in CSV format
                 if self.saveData:
