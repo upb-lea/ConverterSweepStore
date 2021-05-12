@@ -26,7 +26,7 @@ class startConnection(QObject):
         self.saveData = saveData
         self.afeMode = isAfeSelected
         self.topology = {"Topology":topology}
-        self.prevDataSheet = None
+        self.prevDataSheet = {"Datasheet":None,"ratings":None}
     def eventemit(self):
         print('we are inside')
         print(self.params)
@@ -179,12 +179,14 @@ class startConnection(QObject):
                 Rfw_jc = {}
                 Rfw_cs = {}
                 Cth_fwd = {}
+                ratings ={}
                 Rth_M = None
-                if self.prevDataSheet is not params["Datasheet"]:
-                    self.prevDataSheet = params["Datasheet"]
+                ratings = self.prevDataSheet["ratings"]
+                if self.prevDataSheet["Datasheet"] is not params["Datasheet"]:
+                    self.prevDataSheet["Datasheet"] = params["Datasheet"]
                     df = pd.read_csv(self.thermal_file_path,index_col =['Datasheet'])
                     igbtDatasheets,diodeDatasheets,clampDatasheets,ratings = self.getComponentSCLs(params["Datasheet"])
-
+                    self.prevDataSheet["ratings"] = ratings
                     for sheet in igbtDatasheets:
                         thermalTransData[sheet] = df.loc[df.index == igbtDatasheets[sheet]].to_dict(orient = 'records')[0]
                         Rth_M = thermalTransData[sheet]['Rth']
