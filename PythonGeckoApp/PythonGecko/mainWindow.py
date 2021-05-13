@@ -48,9 +48,9 @@ class MainWindow(QMainWindow):
     clickedPen = pg.mkPen('b', width=2)
     igbtList = {'B6':['IG1','IG2'],'NPC':['IG1','IG2','IG3','IG4'],'TNPC':['IG1','IG2','IG3','IG4'],'FC-ANPC':['IG1','IG2','IG3','IG4','IG5','IG6','IG7','IG8']}
     diodeList = {'B6':['D1','D2'],'NPC':['D1','D2','D3','D4','D5','D6'],'TNPC':['D1','D2','D3','D4'],'FC-ANPC':['D1','D2','D3','D4','D5','D6','D7','D8']}
-    xDataInvList = {'V_DC':['Load_S','f_s','Load_phi'],'Load_S':['V_DC','f_s','Load_phi'],'f_s':['V_DC','Load_S','Load_phi'],'Load_phi':['V_DC','Load_S','f_s']}
-    xDataAFEList = {'V_DC':['Mains_S','f_s','Mains_phi'],'Mains_S':['V_DC','f_s','Mains_phi'],'f_s':['V_DC','Mains_S','Mains_phi'],'Mains_phi':['V_DC','Mains_S','f_s']}
-    filterListOld = {'Inverter':['Load_S','f_s','Load_phi'],'AFE':['Mains_S','f_s','Mains_phi']}
+    xDataInvList = {'V_DC':['Load_S','f_s','Load_phi','Datasheet'],'Load_S':['V_DC','f_s','Load_phi','Datasheet'],'f_s':['V_DC','Load_S','Load_phi','Datasheet'],'Load_phi':['V_DC','Load_S','f_s','Datasheet'],'Datasheet':['V_DC','Load_S','f_s','Load_phi']}
+    xDataAFEList = {'V_DC':['Mains_S','f_s','Mains_phi','Datasheet'],'Mains_S':['V_DC','f_s','Mains_phi','Datasheet'],'f_s':['V_DC','Mains_S','Mains_phi','Datasheet'],'Mains_phi':['V_DC','Mains_S','f_s','Datasheet'],'Datasheet':['V_DC','Mains_S','f_s','Mains_phi']}
+    #filterListOld = {'Inverter':['Load_S','f_s','Load_phi','Datasheet'],'AFE':['Mains_S','f_s','Mains_phi','Datasheet']}
     filterList = []
     topologyList = ['B6','NPC','TNPC','FC-ANPC']        
     lastClicked = []
@@ -537,12 +537,14 @@ class MainWindow(QMainWindow):
             pass
         try :
             filtString = {}
+            self.opErrorLabel.clear()
+            self.opErrorLabel.setStyleSheet("")
             resultDF = pd.DataFrame(None)
             if not selected:
                 raise Exception("select the loss type")
-            if len(self.filter) < 2 :
-                raise Exception("min 2 filters required")
-            elif len(self.filter) == 2 or len(self.filter) == 3:
+            if len(self.filter) < 3 :
+                raise Exception("min 3 filters required")
+            elif len(self.filter) == 3 or len(self.filter) == 4:
                 for key in self.filter :
                    filtString[key] =  (self.plot_df[key] == self.filter[key])
                    if not filtString[key].values.sum():
@@ -550,7 +552,8 @@ class MainWindow(QMainWindow):
             conditionsBoolReturns = list(filtString.values())
             resultDF = self.plot_df[self.conjunction(*conditionsBoolReturns)]
             heatSinkTemp = self.tempSlider.value()
-            resultDF = resultDF[resultDF['T_HS']==heatSinkTemp]
+            if heatSinkTemp:
+                resultDF = resultDF[resultDF['T_HS']==heatSinkTemp]
             if resultDF.empty :
                 raise Exception("Not in DB, Check Temp° \ OPoint")
             index = set(self.filterList)- self.filter.keys()
@@ -818,7 +821,7 @@ class MainWindow(QMainWindow):
         self.annot.get_bbox_patch().set_alpha(0.4)
 
     def update_linear_annot(self, line,idx) : 
-        posx, posy = [line.get_xdata()[idx], line.get_ydata()[idx]]
+        posx, posy = [line.get_xdata(orig=True)[idx], line.get_ydata()[idx]]
         self.annot.xy = (posx, posy)
         leg = line.axes.get_legend()
         ind = line.axes.get_lines().index(line)
@@ -1103,7 +1106,8 @@ def getXisLabel(x):
         'Load_S': 'Apparent Load Power(in W)',
         'Mains_phi': 'Mains power factor(in deg)',
         'Mains_S': 'Apparent Mains Power(in W)',
-        'ConvTotalLoss' : 'Total Losses(in W)'
+        'ConvTotalLoss' : 'Total Losses(in W)',
+        'Datasheet':'Datasheet'
     }.get(x, x+' Loss(in W)')                
 def getPalette():
     palette = QtGui.QPalette()
