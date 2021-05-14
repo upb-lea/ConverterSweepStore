@@ -22,6 +22,7 @@ from PyQt5.QtGui import QIcon, QPixmap
 from pandasModel import pandasModel
 from thermalParamClass import thermalParamClass
 from checkablecombobox import CheckableComboBox
+from collections import defaultdict,Counter
 import pyqtgraph as pg
 import functools
 import re
@@ -55,6 +56,7 @@ class MainWindow(QMainWindow):
     topologyList = ['B6','NPC','TNPC','FC-ANPC']        
     lastClicked = []
     linAnnotKeys = []
+    xList = []
     data2plot ={}
     filter = {}
     rePlotInfo = {}
@@ -786,13 +788,22 @@ class MainWindow(QMainWindow):
                 self.MplWidget.canvas.figure.set_visible(False)
                 self.MplWidget.toolbar.hide()
                 raise Exception('No simulations to plot')
+            xMapList = []
+            self.xList =  []
             self.MplWidget.canvas.axes.clear()
             self.c = np.random.randint(1,5,size=length)
             self.norm = plt.Normalize(1,4)
             self.cmap = plt.cm.RdYlGn
-            self.sc['scatter'] = self.MplWidget.canvas.axes.scatter(list(xData.values()), list(yData.values()),c=self.c, s=10, cmap=self.cmap, norm=self.norm)
+            self.xList = list(xData.values())[0]
+            temp = defaultdict(lambda: len(temp))
+            xMapList = [temp[ele] for ele in self.xList]
+            self.sc['scatter'] = self.MplWidget.canvas.axes.scatter(xMapList, list(yData.values()),c=self.c, s=10, cmap=self.cmap, norm=self.norm)
             self.sc.pop('linear', None)
             self.MplWidget.canvas.axes.set_xlabel(xLabel)
+            self.xList = list(Counter(self.xList).keys())
+            xMapList = list(Counter(xMapList).keys())
+            self.MplWidget.canvas.axes.set_xticks(xMapList)
+            self.MplWidget.canvas.axes.set_xticklabels(self.xList)
             self.MplWidget.canvas.axes.set_ylabel(yLabel)
             self.annot = self.MplWidget.canvas.axes.annotate("", xy=(0,0), xytext=(15,15), va='top', textcoords="offset points",
                                 bbox=dict(boxstyle="round", fc="w"),
@@ -809,11 +820,15 @@ class MainWindow(QMainWindow):
             msgBox.exec()
         
     def update_scatter_annot(self,sc,ind):
+        xpos = None
+        ypos = None
         pos = sc.get_offsets()[ind]
         self.annot.xy = pos 
-        OpPoint = self.data2plot['Dataset'][(self.data2plot['Dataset'][[*self.data2plot['xData']][0]] == pos[0]) & (self.data2plot['Dataset'][[*self.data2plot['yData']][0]] == pos[1])]
+        xpos= self.xList[int(pos[0])]
+        ypos = float(pos[1])
+        OpPoint = self.data2plot['Dataset'][(self.data2plot['Dataset'][[*self.data2plot['xData']][0]] == xpos) & (self.data2plot['Dataset'][[*self.data2plot['yData']][0]] == ypos)]
 
-        text = "V_DC :{},\nTLoss:{},\nLoad :{},\nPhi    :{},\nFsw   :{}".format("".join(str(OpPoint.iloc[0]['V_DC'])),"".join(str(round(OpPoint.iloc[0]['ConvTotalLoss'],2))),
+        text = "DS:{},\nV_DC :{},\nTLoss:{},\nLoad :{},\nPhi    :{},\nFsw   :{}".format("".join(str(OpPoint.iloc[0]['Datasheet'])),"".join(str(OpPoint.iloc[0]['V_DC'])),"".join(str(round(OpPoint.iloc[0]['ConvTotalLoss'],2))),
                                        "".join(str(OpPoint.iloc[0]['Load_S'])),"".join(str(OpPoint.iloc[0]['Load_phi'])),
                                        "".join(str(OpPoint.iloc[0]['f_s'])))
         self.annot.set_text(text)
