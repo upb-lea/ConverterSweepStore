@@ -427,7 +427,7 @@ class MainWindow(QMainWindow):
                 filterSeries = df[column]==searchValue
             isAValidSeries = filterSeries.sum()                                
             if not isAValidSeries:
-                raise Exception("{} :{} = {} not found\n".format(''.join(topology),''.join(column),''.join(str(searchValue))))
+                raise Exception("\n{} :{} = {} not found".format(''.join(topology),''.join(column),''.join(str(searchValue))))
             else : 
                 return filterSeries
        

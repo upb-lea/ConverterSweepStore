@@ -1101,7 +1101,7 @@
        <x>10</x>
        <y>10</y>
        <width>291</width>
-       <height>181</height>
+       <height>171</height>
       </rect>
      </property>
      <property name="title">
@@ -1648,13 +1648,1030 @@
       </attribute>
      </widget>
     </widget>
-    <widget class="QWidget" name="verticalLayoutWidget_3">
+    <widget class="QWidget" name="gridLayoutWidget_5">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>240</y>
+       <width>301</width>
+       <height>241</height>
+      </rect>
+     </property>
+     <layout class="QGridLayout" name="tempGridLayout">
+      <item row="0" column="0">
+       <widget class="QGroupBox" name="B6TempHouse">
+        <property name="font">
+         <font>
+          <weight>75</weight>
+          <bold>true</bold>
+         </font>
+        </property>
+        <property name="title">
+         <string/>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+        <widget class="QWidget" name="gridLayoutWidget_6">
+         <property name="geometry">
+          <rect>
+           <x>30</x>
+           <y>7</y>
+           <width>261</width>
+           <height>45</height>
+          </rect>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_5">
+          <item row="1" column="0">
+           <widget class="QLabel" name="Igbt2TempLabel_B6">
+            <property name="font">
+             <font>
+              <pointsize>7</pointsize>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>T2:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="Igbt1TempLabel_B6">
+            <property name="font">
+             <font>
+              <pointsize>7</pointsize>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>T1:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="3">
+           <widget class="QLineEdit" name="Diodet2TempEdit_B6">
+            <property name="minimumSize">
+             <size>
+              <width>42</width>
+              <height>17</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>42</width>
+              <height>17</height>
+             </size>
+            </property>
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QLineEdit" name="Igbt1TempEdit_B6">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>42</width>
+              <height>17</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>42</width>
+              <height>17</height>
+             </size>
+            </property>
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="2">
+           <widget class="QLabel" name="Diode1TempLabel_B6">
+            <property name="font">
+             <font>
+              <pointsize>7</pointsize>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>D1:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="4" rowspan="2">
+           <spacer name="horizontalSpacer_B6">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>177</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="1" column="2">
+           <widget class="QLabel" name="Diode2TempLabel_B6">
+            <property name="font">
+             <font>
+              <pointsize>7</pointsize>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>D2:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="3">
+           <widget class="QLineEdit" name="Diodet1TempEdit_B6">
+            <property name="minimumSize">
+             <size>
+              <width>42</width>
+              <height>17</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>42</width>
+              <height>17</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>8</pointsize>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLineEdit" name="Igbt2TempEdit_B6">
+            <property name="minimumSize">
+             <size>
+              <width>42</width>
+              <height>17</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>42</width>
+              <height>17</height>
+             </size>
+            </property>
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QLabel" name="label_4">
+         <property name="geometry">
+          <rect>
+           <x>3</x>
+           <y>3</y>
+           <width>21</width>
+           <height>50</height>
+          </rect>
+         </property>
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>21</width>
+           <height>50</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>21</width>
+           <height>50</height>
+          </size>
+         </property>
+         <property name="layoutDirection">
+          <enum>Qt::LeftToRight</enum>
+         </property>
+         <property name="text">
+          <string>B6</string>
+         </property>
+         <property name="indent">
+          <number>-1</number>
+         </property>
+        </widget>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QGroupBox" name="TNPCTempHouse">
+        <property name="font">
+         <font>
+          <weight>75</weight>
+          <bold>true</bold>
+         </font>
+        </property>
+        <property name="title">
+         <string/>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+        <widget class="QWidget" name="gridLayoutWidget_8">
+         <property name="geometry">
+          <rect>
+           <x>30</x>
+           <y>10</y>
+           <width>271</width>
+           <height>48</height>
+          </rect>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_8">
+          <item row="1" column="0">
+           <widget class="QLabel" name="Igbt2TempLabel_TNPC">
+            <property name="font">
+             <font>
+              <pointsize>7</pointsize>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>T2:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="Igbt1TempLabel_TNPC">
+            <property name="font">
+             <font>
+              <pointsize>7</pointsize>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>T1:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="3">
+           <widget class="QLineEdit" name="Diodet2TempEdit_TNPC">
+            <property name="minimumSize">
+             <size>
+              <width>42</width>
+              <height>17</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>42</width>
+              <height>17</height>
+             </size>
+            </property>
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QLineEdit" name="Igbt1TempEdit_TNPC">
+            <property name="minimumSize">
+             <size>
+              <width>42</width>
+              <height>17</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>42</width>
+              <height>17</height>
+             </size>
+            </property>
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="2">
+           <widget class="QLabel" name="Diode1TempLabel_TNPC">
+            <property name="font">
+             <font>
+              <pointsize>7</pointsize>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>D1:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="2">
+           <widget class="QLabel" name="Diode2TempLabel_TNPC">
+            <property name="font">
+             <font>
+              <pointsize>7</pointsize>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>D2:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="3">
+           <widget class="QLineEdit" name="Diodet1TempEdit_TNPC">
+            <property name="minimumSize">
+             <size>
+              <width>42</width>
+              <height>17</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>42</width>
+              <height>17</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>8</pointsize>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLineEdit" name="Igbt2TempEdit_TNPC">
+            <property name="minimumSize">
+             <size>
+              <width>42</width>
+              <height>17</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>42</width>
+              <height>17</height>
+             </size>
+            </property>
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="4" rowspan="2">
+           <spacer name="horizontalSpacer_TNPC">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>178</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QLabel" name="label_2">
+         <property name="geometry">
+          <rect>
+           <x>3</x>
+           <y>3</y>
+           <width>21</width>
+           <height>50</height>
+          </rect>
+         </property>
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>21</width>
+           <height>50</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>21</width>
+           <height>50</height>
+          </size>
+         </property>
+         <property name="layoutDirection">
+          <enum>Qt::LeftToRight</enum>
+         </property>
+         <property name="text">
+          <string>3T</string>
+         </property>
+         <property name="indent">
+          <number>-1</number>
+         </property>
+        </widget>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QGroupBox" name="ANPCTempHouse">
+        <property name="font">
+         <font>
+          <weight>75</weight>
+          <bold>true</bold>
+         </font>
+        </property>
+        <property name="title">
+         <string/>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+        <widget class="QWidget" name="gridLayoutWidget_9">
+         <property name="geometry">
+          <rect>
+           <x>30</x>
+           <y>7</y>
+           <width>261</width>
+           <height>51</height>
+          </rect>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_10">
+          <item row="0" column="2">
+           <widget class="QLabel" name="Igbt5TempLabel_ANPC">
+            <property name="font">
+             <font>
+              <pointsize>7</pointsize>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>T5:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="4">
+           <widget class="QLabel" name="Diode2TempLabel_ANPC">
+            <property name="font">
+             <font>
+              <pointsize>7</pointsize>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>D2:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="4">
+           <widget class="QLabel" name="Diode1TempLabel_ANPC">
+            <property name="font">
+             <font>
+              <pointsize>7</pointsize>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>D1:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QLineEdit" name="Igbt1TempEdit_ANPC">
+            <property name="maximumSize">
+             <size>
+              <width>42</width>
+              <height>17</height>
+             </size>
+            </property>
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="6">
+           <widget class="QLabel" name="Diode7TempLabel_ANPC">
+            <property name="font">
+             <font>
+              <pointsize>7</pointsize>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>D7:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="5">
+           <widget class="QLineEdit" name="Diodet2TempEdit_ANPC">
+            <property name="maximumSize">
+             <size>
+              <width>42</width>
+              <height>17</height>
+             </size>
+            </property>
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="7">
+           <widget class="QLineEdit" name="Diodet7TempEdit_ANPC">
+            <property name="maximumSize">
+             <size>
+              <width>42</width>
+              <height>17</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>8</pointsize>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="7">
+           <widget class="QLineEdit" name="Diodet5TempEdit_ANPC">
+            <property name="maximumSize">
+             <size>
+              <width>42</width>
+              <height>17</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>8</pointsize>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLineEdit" name="Igbt2TempEdit_ANPC">
+            <property name="maximumSize">
+             <size>
+              <width>42</width>
+              <height>17</height>
+             </size>
+            </property>
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="Igbt2TempLabel_ANPC">
+            <property name="font">
+             <font>
+              <pointsize>7</pointsize>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>T2:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="Igbt1TempLabel_ANPC">
+            <property name="font">
+             <font>
+              <pointsize>7</pointsize>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>T1:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="5">
+           <widget class="QLineEdit" name="Diodet1TempEdit_ANPC">
+            <property name="maximumSize">
+             <size>
+              <width>42</width>
+              <height>17</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>8</pointsize>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="6">
+           <widget class="QLabel" name="Diode5TempLabel_ANPC">
+            <property name="font">
+             <font>
+              <pointsize>7</pointsize>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>D5:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="3">
+           <widget class="QLineEdit" name="Igbt5TempEdit_ANPC">
+            <property name="maximumSize">
+             <size>
+              <width>42</width>
+              <height>17</height>
+             </size>
+            </property>
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="2">
+           <widget class="QLabel" name="Igbt7TempLabel_ANPC">
+            <property name="font">
+             <font>
+              <pointsize>7</pointsize>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>T7:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="3">
+           <widget class="QLineEdit" name="Igbt7TempEdit_ANPC">
+            <property name="maximumSize">
+             <size>
+              <width>42</width>
+              <height>17</height>
+             </size>
+            </property>
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QLabel" name="label">
+         <property name="geometry">
+          <rect>
+           <x>3</x>
+           <y>3</y>
+           <width>21</width>
+           <height>50</height>
+          </rect>
+         </property>
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>21</width>
+           <height>50</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>21</width>
+           <height>50</height>
+          </size>
+         </property>
+         <property name="layoutDirection">
+          <enum>Qt::LeftToRight</enum>
+         </property>
+         <property name="text">
+          <string>FA</string>
+         </property>
+         <property name="indent">
+          <number>-1</number>
+         </property>
+        </widget>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QGroupBox" name="NPCTempHouse">
+        <property name="font">
+         <font>
+          <weight>50</weight>
+          <bold>false</bold>
+         </font>
+        </property>
+        <property name="title">
+         <string/>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+        <widget class="QWidget" name="gridLayoutWidget_7">
+         <property name="geometry">
+          <rect>
+           <x>30</x>
+           <y>10</y>
+           <width>261</width>
+           <height>48</height>
+          </rect>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_6">
+          <item row="0" column="0">
+           <widget class="QLabel" name="Igbt1TempLabel_NPC">
+            <property name="font">
+             <font>
+              <pointsize>7</pointsize>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>T1:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="Igbt2TempLabel_NPC">
+            <property name="font">
+             <font>
+              <pointsize>7</pointsize>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>T2:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="2">
+           <widget class="QLabel" name="Diode2TempLabel_NPC">
+            <property name="font">
+             <font>
+              <pointsize>7</pointsize>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>D2:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="5">
+           <widget class="QLineEdit" name="Diodet5TempEdit_NPC">
+            <property name="minimumSize">
+             <size>
+              <width>42</width>
+              <height>17</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>42</width>
+              <height>17</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>8</pointsize>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QLineEdit" name="Igbt1TempEdit_NPC">
+            <property name="minimumSize">
+             <size>
+              <width>42</width>
+              <height>17</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>42</width>
+              <height>17</height>
+             </size>
+            </property>
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="3">
+           <widget class="QLineEdit" name="Diodet1TempEdit_NPC">
+            <property name="minimumSize">
+             <size>
+              <width>42</width>
+              <height>17</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>42</width>
+              <height>17</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>8</pointsize>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="4">
+           <widget class="QLabel" name="Diode5TempLabel_NPC">
+            <property name="font">
+             <font>
+              <pointsize>7</pointsize>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>D5:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLineEdit" name="Igbt2TempEdit_NPC">
+            <property name="minimumSize">
+             <size>
+              <width>42</width>
+              <height>17</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>42</width>
+              <height>17</height>
+             </size>
+            </property>
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="3">
+           <widget class="QLineEdit" name="Diodet2TempEdit_NPC">
+            <property name="minimumSize">
+             <size>
+              <width>42</width>
+              <height>17</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>42</width>
+              <height>17</height>
+             </size>
+            </property>
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="2">
+           <widget class="QLabel" name="Diode1TempLabel_NPC">
+            <property name="font">
+             <font>
+              <pointsize>7</pointsize>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>D1:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="6" rowspan="2">
+           <spacer name="horizontalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>95</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QLabel" name="label_3">
+         <property name="geometry">
+          <rect>
+           <x>3</x>
+           <y>3</y>
+           <width>21</width>
+           <height>50</height>
+          </rect>
+         </property>
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>21</width>
+           <height>50</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>21</width>
+           <height>50</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="layoutDirection">
+          <enum>Qt::LeftToRight</enum>
+         </property>
+         <property name="text">
+          <string>3N</string>
+         </property>
+         <property name="indent">
+          <number>-1</number>
+         </property>
+        </widget>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+    <widget class="QWidget" name="layoutWidget">
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>200</y>
-       <width>291</width>
-       <height>31</height>
+       <y>180</y>
+       <width>289</width>
+       <height>53</height>
       </rect>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -1917,9 +2934,9 @@
      <widget class="QGroupBox" name="scatterDataBox">
       <property name="geometry">
        <rect>
-        <x>10</x>
+        <x>50</x>
         <y>80</y>
-        <width>161</width>
+        <width>151</width>
         <height>107</height>
        </rect>
       </property>
@@ -1952,7 +2969,7 @@
         <rect>
          <x>10</x>
          <y>20</y>
-         <width>141</width>
+         <width>131</width>
          <height>71</height>
         </rect>
        </property>
@@ -2128,8 +3145,8 @@
        <rect>
         <x>10</x>
         <y>90</y>
-        <width>31</width>
-        <height>91</height>
+        <width>34</width>
+        <height>98</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -2168,6 +3185,9 @@
         <widget class="QToolButton" name="tempScaleBtn">
          <property name="layoutDirection">
           <enum>Qt::LeftToRight</enum>
+         </property>
+         <property name="autoFillBackground">
+          <bool>true</bool>
          </property>
          <property name="text">
           <string>TEMP</string>
@@ -2224,12 +3244,12 @@
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="buttonGroupOptMode"/>
-  <buttongroup name="buttonGroupPlotMode"/>
-  <buttongroup name="buttonGroupScatterData"/>
-  <buttongroup name="buttonGroupRangeType"/>
-  <buttongroup name="buttonGroupMode"/>
   <buttongroup name="buttonGroupTopology"/>
+  <buttongroup name="buttonGroupOptMode"/>
   <buttongroup name="buttonGroupPlotType"/>
+  <buttongroup name="buttonGroupMode"/>
+  <buttongroup name="buttonGroupPlotMode"/>
+  <buttongroup name="buttonGroupRangeType"/>
+  <buttongroup name="buttonGroupScatterData"/>
  </buttongroups>
 </ui>
