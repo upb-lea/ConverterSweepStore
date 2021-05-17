@@ -36,6 +36,7 @@ class  MplMultiWidget(QWidget):
         self.canvas.figure.text(0.5, 0, 'Switches', ha='center')
         self.canvas.figure.text(0, 0.5, 'Loss In Watts', va='center', rotation='vertical')   
         self.canvas.figure.set_visible(True)
+        self.canvas.toolbar.show()
         self.canvas.draw_idle()
 
     def plotTwo(self, dfContainer,opPointRow):
@@ -60,7 +61,7 @@ class  MplMultiWidget(QWidget):
         self.canvas.figure.legend(lines, labels, loc = 'upper left')
         self.canvas.figure.text(0.5, 0, 'Switches', ha='center')
         self.canvas.figure.text(0, 0.5, 'Loss In Watts', va='center', rotation='vertical')   
-        
+        self.canvas.toolbar.show()
         self.canvas.figure.set_visible(True)
         self.canvas.draw_idle()
 
@@ -95,6 +96,7 @@ class  MplMultiWidget(QWidget):
         self.canvas.figure.text(0.5, 0, 'Switches', ha='center')
         self.canvas.figure.text(0, 0.5, 'Loss In Watts', va='center', rotation='vertical')   
         self.canvas.figure.set_visible(True)
+        self.canvas.toolbar.show()
         self.canvas.draw_idle()
     def plotFour(self, dfContainer, opPointRow):
         self.canvas.figure.clf()
@@ -132,6 +134,7 @@ class  MplMultiWidget(QWidget):
         self.canvas.figure.legend(lines, labels, loc = 'upper left')
         self.canvas.figure.text(0.5, 0, 'Switches', ha='center')
         self.canvas.figure.text(0, 0.5, 'Loss In Watts', va='center', rotation='vertical')   
+        self.canvas.toolbar.show()
         self.canvas.figure.set_visible(True)
         self.canvas.draw_idle()
        

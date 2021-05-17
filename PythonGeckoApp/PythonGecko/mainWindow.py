@@ -295,6 +295,8 @@ class MainWindow(QMainWindow):
            self.xDatacomboBox.clear()
            self.xDatacomboBox.addItems(self.xDataInvList.keys())
         self.plot_df = df_all[(df_all['Topology']==plotTopology) & (df_all['Status']=='Ok')]
+        self.plot_df['SwitchTmax'] = self.plot_df[['Igbt1Temp','Igbt2Temp','Igbt5Temp','Igbt7Temp']].max(axis=1)
+        self.plot_df['DiodeTmax'] = self.plot_df[['D1Temp','D2Temp','D5Temp','D7Temp']].max(axis=1)
         self.xAxisChanged('V_DC')
         if not isDFUpdated :
             self.replotScatter() 
@@ -325,12 +327,12 @@ class MainWindow(QMainWindow):
         else:
             self.opt_df = pd.read_pickle(self.invfilepath)
             self.opt_df['PWatts'] = round(self.opt_df['Load_S']* self.opt_df['Load_phi'].apply(math.cos))
-        self.opt_df = self.opt_df[self.opt_df['Status']=='Ok']
+        self.opt_df = self.opt_df[(self.opt_df['Status']=='Ok') ]#& ~self.opt_df['Datasheet'].isin(['F3L300R07PE4','FF300R06KE3','F3L400R12PT4_B26'])]
         if not isDFUpdated:
             self.optStatusLabel.setStyleSheet("")  #check the position
             self.optStatusLabel.clear()
             self.OptimalChartArea.canvas.figure.set_visible(False)
-            self.OptimalChartArea.toolbar.hide()
+            self.OptimalChartArea.toolbar.show()
             self.OptimalChartArea.canvas.draw()
             self.rangeAndUpdate() #UPDATES all sliders irrespective of visibility of each slider everytime db gets changed
         
@@ -539,11 +541,16 @@ class MainWindow(QMainWindow):
             pass
         try :
             filtString = {}
+            switchTypekeys = list()
             self.opErrorLabel.clear()
             self.opErrorLabel.setStyleSheet("")
+            isTempScaleReq = self.tempScaleBtn.isChecked()
             resultDF = pd.DataFrame(None)
-            if not selected:
-                raise Exception("select the loss type")
+            if not selected : 
+                if isTempScaleReq:
+                    raise Exception("select the device type")
+                else  : 
+                    raise Exception("select the loss type")
             if len(self.filter) < 3 :
                 raise Exception("min 3 filters required")
             elif len(self.filter) == 3 or len(self.filter) == 4:
@@ -560,13 +567,15 @@ class MainWindow(QMainWindow):
                 raise Exception("Not in DB, Check Temp° \ OPoint")
             index = set(self.filterList)- self.filter.keys()
             key =  self.filterList[2] if index == set() else index.pop()
-            xLabel = self.xDatacomboBox.currentText()
-            self.makeLinearPlot(resultDF, selected, xLabel, key)
+            xkey = self.xDatacomboBox.currentText()
+            switchTypekeys = getSelectionKey(selected) if isTempScaleReq else [selected]
+            self.makeLinearPlot(resultDF, switchTypekeys, xkey, key)
         except Exception as e:
             self.opErrorLabel.setStyleSheet("QLabel { background-color : yellow; color : red; }")
             self.opErrorLabel.setText(str(e.args[0]))
 
-
+    
+            
     def selectPlotType(self,button) :
         self.scatterDataBox.setEnabled(True)
         self.xDatacomboBox.setEnabled(True)
@@ -575,13 +584,17 @@ class MainWindow(QMainWindow):
         if button.text() == 'Linear':
             self.opPointBox.setEnabled(True)
             self.scatterDataBox.setTitle('Linear Data')
+            self.tempScaleBtn.setEnabled(True)
             self.reconnect(self.buttonGroupScatterData.buttonClicked) #disconnecting slots
             self.reconnect(self.invTotalRadio.clicked, self.linComboboxChanged)
             self.reconnect(self.scDiodeCombo.textActivated, self.linComboboxChanged) #changing slots
             self.reconnect(self.scIgbtCombo.textActivated, self.linComboboxChanged)  #changing slots
             self.reconnect(self.xDatacomboBox.textActivated, self.xAxisChanged)
+            self.plotBtn.setEnabled(True)
         else :
             self.opPointBox.setEnabled(False)
+            self.tempScaleBtn.setEnabled(False)
+            self.plotBtn.setEnabled(False)
             self.clear()
             self.scatterDataBox.setTitle('Scatter Data')
             self.reconnect(self.buttonGroupScatterData.buttonClicked,self.updateScatterRadios) #reconnecting slots
@@ -604,12 +617,22 @@ class MainWindow(QMainWindow):
         if newhandler is not None:
             signal.connect(newhandler)
     
-    def makeLinearPlot(self,df,ykey,xkey,key) :
+    def makeLinearPlot(self,df,ykeys,xkey,key) :
         self.MplWidget.canvas.axes.clear()
+        markers = {}
         self.linAnnotKeys.clear()
-        self.linAnnotKeys= [xkey, ykey]
-        for key, grp in df.groupby([key]):
-            l= grp.plot(ax=self.MplWidget.canvas.axes, kind='line', x=xkey, y=ykey, marker='o',grid =True, label=key)
+        self.linAnnotKeys= [xkey, ykeys[0]]
+        if len(ykeys) >1:
+            markers = ['d','*']
+            legendLabel = ['(SW)','(D)']
+        else :
+            markers = ['o']
+            legendLabel = ['']
+        i = 0
+        for ykey in ykeys:
+            for ikey, grp in df.groupby([key]):
+                l= grp.plot(ax=self.MplWidget.canvas.axes, kind='line', x=xkey, y=ykey, marker=markers[i], grid =True, label= ikey+legendLabel[i])
+            i +=1    
         self.sc['linear'] = l.lines
         self.sc.pop('scatter',None)
         self.annot = self.MplWidget.canvas.axes.annotate("", xy=(0,0), xytext=(20,20),textcoords="offset points",
@@ -617,7 +640,7 @@ class MainWindow(QMainWindow):
                             arrowprops=dict(arrowstyle="->"))
         self.annot.set_visible(False)
         self.cid = self.MplWidget.canvas.mpl_connect('motion_notify_event', self.hover)
-        self.MplWidget.canvas.axes.set_ylabel(getXisLabel(ykey))
+        self.MplWidget.canvas.axes.set_ylabel(getYisLabel(ykeys[0]))
         self.MplWidget.canvas.axes.set_xlabel(getXisLabel(xkey))
         self.MplWidget.canvas.draw()
         self.MplWidget.canvas.figure.set_visible(True)
@@ -686,7 +709,10 @@ class MainWindow(QMainWindow):
     def addFilterCriteria(self):
         try :
             item = str(self.opComboType.currentText())
-            input = float(self.opComboInput.text())
+            if item == 'Datasheet':
+                input = str(self.opComboInput.text())
+            else:
+                input = float(self.opComboInput.text())
             global opLabelAppend
             self.filter[item] = input
             if item in self.filter:
@@ -706,22 +732,26 @@ class MainWindow(QMainWindow):
             self.optInvBtn.setChecked(True)
             self.plotInvBtn.setChecked(True)
             df_all = pd.read_pickle(self.invfilepath)
-            self.opt_df = df_all[df_all['Status']=='Ok']
+            self.opt_df = df_all[(df_all['Status']=='Ok')]# & ~df_all['Datasheet'].isin(['F3L300R07PE4','FF300R06KE3','F3L400R12PT4_B26'])]
             self.plot_df =  df_all[(df_all['Topology']==plotTopology) & (df_all['Status']=='Ok')]
             self.opt_df['PWatts'] = round(self.opt_df['Load_S']*self.opt_df['Load_phi'].apply(math.cos))
-            self.filterList = self.xDataInvList['V_DC'][:]
+            self.filterList = self.xDataInvList['V_DC'][:]#this is aaaaaaaaaaaaaaaaaaaa bug
             self.opComboType.insertItems(0,self.filterList)
             self.xDatacomboBox.addItems(self.xDataInvList.keys())
         elif DBmode == 'AFE':
             self.optAfeBtn.setChecked(True)
             self.plotAFEBtn.setChecked(True)
             df_all = pd.read_pickle(self.afefilepath)
-            self.opt_df = df_all[df_all['Status']=='Ok']
+            self.opt_df = df_all[(df_all['Status']=='Ok')]# & ~df_all['Datasheet'].isin(['F3L300R07PE4','FF300R06KE3','F3L400R12PT4_B26'])]
             self.plot_df =  df_all[(df_all['Topology']==plotTopology) & (df_all['Status']=='Ok')]
             self.opt_df['PWatts'] = round(self.opt_df['Mains_S']* self.opt_df['Mains_phi'].apply(math.cos))
             self.filterList= self.xDataAFEList['V_DC'][:]
             self.opComboType.insertItems(0,self.filterList)
             self.xDatacomboBox.addItems(self.xDataAFEList.keys())
+        self.opt_df['SwitchTmax'] = self.opt_df[['Igbt1Temp','Igbt2Temp','Igbt5Temp','Igbt7Temp']].max(axis=1)
+        self.opt_df['DiodeTmax'] = self.opt_df[['D1Temp','D2Temp','D5Temp','D7Temp']].max(axis=1)
+        self.plot_df['SwitchTmax'] = self.plot_df[['Igbt1Temp','Igbt2Temp','Igbt5Temp','Igbt7Temp']].max(axis=1)
+        self.plot_df['DiodeTmax'] = self.plot_df[['D1Temp','D2Temp','D5Temp','D7Temp']].max(axis=1)
         self.scIgbtCombo.addItems(self.igbtList[plotTopology])
         self.scDiodeCombo.addItems(self.diodeList[plotTopology])
         self.scIgbtCombo.setCurrentIndex(-1) 
@@ -733,6 +763,9 @@ class MainWindow(QMainWindow):
         self.invIgbtRadio.setChecked(False) 
         self.opPointBox.setEnabled(False)  
         self.scatterDataBox.setEnabled(False)
+        self.tempScaleBtn.setChecked(False)
+        self.tempScaleBtn.setEnabled(False)
+        self.plotBtn.setEnabled(False)
         self.xDatacomboBox.setCurrentIndex(-1)
         self.xDatacomboBox.setEnabled(False)
         self.MplWidget.canvas.mpl_disconnect(self.cid)
@@ -746,12 +779,16 @@ class MainWindow(QMainWindow):
         self.plotInvBtn.setChecked(True)
         plotTopology = self.topologyCombo.currentText()
         self.plot_df =  df_all[(df_all['Topology']==plotTopology)& (df_all['Status']=='Ok')]
+        self.plot_df['SwitchTmax'] = self.plot_df[['Igbt1Temp','Igbt2Temp','Igbt5Temp','Igbt7Temp']].max(axis=1)
+        self.plot_df['DiodeTmax'] = self.plot_df[['D1Temp','D2Temp','D5Temp','D7Temp']].max(axis=1)
         self.MplWidget.canvas.mpl_disconnect(self.cid)
         self.scIgbtCombo.clear()
         self.scDiodeCombo.clear()
         self.opComboType.clear()
         self.xDatacomboBox.clear()
         self.rePlotInfo={}
+        self.tempScaleBtn.setChecked(False)
+        self.tempScaleBtn.setEnabled(False)
         self.scIgbtCombo.addItems(self.igbtList[plotTopology])
         self.scDiodeCombo.addItems(self.diodeList[plotTopology])
         self.filterList = self.xDataInvList['V_DC']
@@ -1113,6 +1150,16 @@ class MainWindow(QMainWindow):
 class InvalidInputs(Exception):
     pass
 
+def getSelectionKey(findKey):
+    TempKeys = {'Igbt1Temp':['IG1','IG4'],'Igbt2Temp':['IG2','IG3'],'Igbt5Temp':['IG5','IG6'],'Igbt7Temp' : ['IG7','IG8'],'SwitchTmax':['ConvTotalLoss'],
+                'D1Temp':['D1','D4'],'D2Temp':['D2','D3'],'D5Temp':['D5','D6'],'D7Temp' : ['D7','D8'],'DiodeTmax':['ConvTotalLoss']}
+    listOfKeys = list()
+    listOfItems = TempKeys.items()
+    for item in listOfItems:
+        for TempValue in item[1]:
+            if TempValue == findKey:
+                listOfKeys.append(item[0])
+    return listOfKeys   
 def getXisLabel(x):
     return {
         'V_DC': 'Dc Link Voltage',
@@ -1122,8 +1169,22 @@ def getXisLabel(x):
         'Mains_phi': 'Mains power factor(in deg)',
         'Mains_S': 'Apparent Mains Power(in W)',
         'ConvTotalLoss' : 'Total Losses(in W)',
-        'Datasheet':'Datasheet'
-    }.get(x, x+' Loss(in W)')                
+        'Datasheet':'Datasheet',
+    }.get(x, x+' Loss(in W)')   
+
+def getYisLabel(y):
+    return {
+        'Igbt1Temp' : 'IG1/IG4 Junction Temp (°C)',
+        'Igbt2Temp' : 'IG2/IG3 Junction Temp (°C)',
+        'Igbt5Temp' : 'IG5/IG6 Junction Temp (°C)',
+        'Igbt7Temp' : 'IG7/IG8 Junction Temp (°C)',
+        'D1Temp' : 'D1/D4 Junction Temp (°C)',
+        'D2Temp' : 'D2/D3 Junction Temp (°C)',
+        'D5Temp' : 'D5/D6 Junction Temp (°C)',
+        'D7Temp' : 'D7/D8 Junction Temp (°C)',
+        'SwitchTmax' : 'Max Switch/Diode Temp (°C)',
+        'DiodeTmax' : 'Max Switch/Diode Temp (°C)'
+        }.get(y,getXisLabel(y))
 def getPalette():
     palette = QtGui.QPalette()
     palette.setColor(QtGui.QPalette.Window, QtGui.QColor(53,53,53))
