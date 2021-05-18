@@ -9,6 +9,9 @@ import random
 #randomlist = random.sample(range(10, 200), total_rows)
 #object['D1'] = randomlist
 #object.to_pickle(r'calc_AFE\results.pkl')
-clampDatasheets = []
-for fdI,cSheet in zip(list(range(len(clampDatasheets))),list(clampDatasheets)):
-    print('Hello')
+
+df = pd.read_pickle(r'calc\results.pk')
+newdf = df[~df['Datasheet'].isin(['SEMiX205TMLI12E4B'])]
+newdf.to_pickle(r'calc\resultsnew.pk')
+#readdf = pd.read_pickle('resultsnew.pk')
+#show(readdf)

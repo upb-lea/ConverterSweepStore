@@ -327,7 +327,7 @@ class MainWindow(QMainWindow):
         else:
             self.opt_df = pd.read_pickle(self.invfilepath)
             self.opt_df['PWatts'] = round(self.opt_df['Load_S']* self.opt_df['Load_phi'].apply(math.cos))
-        self.opt_df = self.opt_df[(self.opt_df['Status']=='Ok') ]#& ~self.opt_df['Datasheet'].isin(['F3L300R07PE4','FF300R06KE3','F3L400R12PT4_B26'])]
+        self.opt_df = self.opt_df[(self.opt_df['Status']=='Ok') & ~self.opt_df['Datasheet'].isin(['F3L300R07PE4','FF300R06KE3','F3L400R12PT4_B26'])]
         if not isDFUpdated:
             self.optStatusLabel.setStyleSheet("")  #check the position
             self.optStatusLabel.clear()
@@ -774,7 +774,7 @@ class MainWindow(QMainWindow):
             self.optInvBtn.setChecked(True)
             self.plotInvBtn.setChecked(True)
             df_all = pd.read_pickle(self.invfilepath)
-            self.opt_df = df_all[(df_all['Status']=='Ok')]# & ~df_all['Datasheet'].isin(['F3L300R07PE4','FF300R06KE3','F3L400R12PT4_B26'])]
+            self.opt_df = df_all[(df_all['Status']=='Ok') & ~df_all['Datasheet'].isin(['F3L300R07PE4','FF300R06KE3','F3L400R12PT4_B26'])]
             self.plot_df =  df_all[(df_all['Topology']==plotTopology) & (df_all['Status']=='Ok')]
             self.opt_df['PWatts'] = round(self.opt_df['Load_S']*self.opt_df['Load_phi'].apply(math.cos))
             self.filterList = self.xDataInvList['V_DC'][:]#this is aaaaaaaaaaaaaaaaaaaa bug
@@ -784,7 +784,7 @@ class MainWindow(QMainWindow):
             self.optAfeBtn.setChecked(True)
             self.plotAFEBtn.setChecked(True)
             df_all = pd.read_pickle(self.afefilepath)
-            self.opt_df = df_all[(df_all['Status']=='Ok')]# & ~df_all['Datasheet'].isin(['F3L300R07PE4','FF300R06KE3','F3L400R12PT4_B26'])]
+            self.opt_df = df_all[(df_all['Status']=='Ok') & ~df_all['Datasheet'].isin(['F3L300R07PE4','FF300R06KE3','F3L400R12PT4_B26'])]
             self.plot_df =  df_all[(df_all['Topology']==plotTopology) & (df_all['Status']=='Ok')]
             self.opt_df['PWatts'] = round(self.opt_df['Mains_S']* self.opt_df['Mains_phi'].apply(math.cos))
             self.filterList= self.xDataAFEList['V_DC'][:]
