@@ -408,6 +408,10 @@ class MainWindow(QMainWindow):
         errorMsg = ''
         self.optStatusLabel.setStyleSheet("")  #check the position
         self.optStatusLabel.clear()
+        self.NPCTempHouse.setEnabled(False)
+        self.B6TempHouse.setEnabled(False)
+        self.TNPCTempHouse.setEnabled(False)
+        self.ANPCTempHouse.setEnabled(False)
         self.OptimalChartArea.canvas.figure.clf()
         self.OptimalChartArea.canvas.draw_idle()
         if not 'PWatts' in self.opt_df.columns:
@@ -470,6 +474,7 @@ class MainWindow(QMainWindow):
     def processAndMaptoFigure(self,dfsCollected):
         dfToBar = {}
         opPoint = {}
+        rcdTemps = {}
         for topology in dfsCollected:
             df = dfsCollected[topology]
             finalRow = df[df['ConvTotalLoss']==df['ConvTotalLoss'].min()].to_dict('records')[0]
@@ -477,23 +482,28 @@ class MainWindow(QMainWindow):
             if topology == 'NPC':
                 conductionLoss = [finalRow['IG1_con'],finalRow['D1_con'],finalRow['IG2_con'],finalRow['D2_con'],finalRow['D5_con']]
                 switchLoss = [finalRow['IG1_sw'],finalRow['D1_sw'],finalRow['IG2_sw'],finalRow['D2_sw'],finalRow['D5_sw']]
+                rcdTemps[topology] = [finalRow['Igbt1Temp'],finalRow['Igbt2Temp'],finalRow['D1Temp'],finalRow['D2Temp'],finalRow['D5Temp']]
                 index  = ['T1/T4','D1/D4','T2/T3','D2/D3','D5/D6']
                 dfToBar[topology] = pd.DataFrame({'Cond Loss': conductionLoss,'SW Loss': switchLoss}, index=index)
             elif topology == 'TNPC':
                 conductionLoss = [finalRow['IG1_con'],finalRow['D1_con'],finalRow['IG2_con'],finalRow['D2_con']]
                 switchLoss = [finalRow['IG1_sw'],finalRow['D1_sw'],finalRow['IG2_sw'],finalRow['D2_sw']]
+                rcdTemps[topology] = [finalRow['Igbt1Temp'],finalRow['Igbt2Temp'],finalRow['D1Temp'],finalRow['D2Temp']]
                 index  = ['T1/T4','D1/D4','T2/T3','D2/D3']
                 dfToBar[topology] = pd.DataFrame({'Cond Loss': conductionLoss,'SW Loss': switchLoss}, index=index)
             elif topology == 'B6':
                 conductionLoss = [finalRow['IG1_con'],finalRow['D1_con'],finalRow['IG2_con'],finalRow['D2_con']]
                 switchLoss = [finalRow['IG1_sw'],finalRow['D1_sw'],finalRow['IG2_sw'],finalRow['D2_sw']]
+                rcdTemps[topology] = [finalRow['Igbt1Temp'],finalRow['Igbt2Temp'],finalRow['D1Temp'],finalRow['D2Temp']]
                 index  = ['T1','D1','T2','D2']
                 dfToBar[topology] = pd.DataFrame({'Cond Loss': conductionLoss,'SW Loss': switchLoss}, index=index)
             elif topology == 'FC-ANPC':
                 conductionLoss = [finalRow['IG1_con'],finalRow['D1_con'],finalRow['IG2_con'],finalRow['D2_con'],finalRow['IG6_con'],finalRow['D6_con'],finalRow['IG8_con'],finalRow['D8_con']]
                 switchLoss = [finalRow['IG1_sw'],finalRow['D1_sw'],finalRow['IG2_sw'],finalRow['D2_sw'],finalRow['IG6_sw'],finalRow['D6_sw'],finalRow['IG8_sw'],finalRow['D8_sw']]
+                rcdTemps[topology] = [finalRow['Igbt1Temp'],finalRow['Igbt2Temp'],finalRow['Igbt5Temp'],finalRow['Igbt7Temp'],finalRow['D1Temp'],finalRow['D2Temp'],finalRow['D5Temp'],finalRow['D7Temp']]
                 index  = ['T1/T4','D1/D4','T2/T3','D2/D3','T5\T6','D5\D6','T7\T8','D7\D8']
                 dfToBar[topology] = pd.DataFrame({'Cond Loss': conductionLoss,'SW Loss': switchLoss}, index=index)
+        self.loadIntoTempEdits(rcdTemps)
         plotNum = len(dfToBar)
         if plotNum == 1:
            self.OptimalChartArea.plotOne(dfToBar,opPoint)
@@ -513,6 +523,39 @@ class MainWindow(QMainWindow):
            self.optStatusLabel.setText(str(list(dfToBar.keys())[0])+', '+ list(dfToBar.keys())[1]+', '+list(dfToBar.keys())[2] +', '+list(dfToBar.keys())[3] + ' exists in Range')
         
 
+    def loadIntoTempEdits(self, rcdTemps):
+        for topology in rcdTemps:
+            tempList = [round(num, 1) for num in rcdTemps[topology]]
+            if topology == 'NPC':
+                self.NPCTempHouse.setEnabled(True)
+                self.IG1TpEdit_NPC.setText(str(tempList[0]))
+                self.IG2TpEdit_NPC.setText(str(tempList[1]))
+                self.D1TpEdit_NPC.setText(str(tempList[2]))
+                self.D2TpEdit_NPC.setText(str(tempList[3]))
+                self.D5TpEdit_NPC.setText(str(tempList[4]))
+            if topology == 'B6':
+                self.B6TempHouse.setEnabled(True)
+                self.IG1TpEdit_B6.setText(str(tempList[0]))
+                self.IG2TpEdit_B6.setText(str(tempList[1]))
+                self.D1TpEdit_B6.setText(str(tempList[2]))
+                self.D2TpEdit_B6.setText(str(tempList[3]))
+            if topology == 'TNPC':
+                self.TNPCTempHouse.setEnabled(True)
+                self.IG1TpEdit_TNPC.setText(str(tempList[0]))
+                self.IG2TpEdit_TNPC.setText(str(tempList[1]))
+                self.D1TpEdit_TNPC.setText(str(tempList[2]))
+                self.D2TpEdit_TNPC.setText(str(tempList[3]))
+            if topology == 'FC-ANPC':
+                self.ANPCTempHouse.setEnabled(True)
+                self.IG1TpEdit_ANPC.setText(str(tempList[0]))
+                self.IG2TpEdit_ANPC.setText(str(tempList[1]))
+                self.IG5TpEdit_ANPC.setText(str(tempList[2]))
+                self.IG7TpEdit_ANPC.setText(str(tempList[3]))
+                self.D1TpEdit_ANPC.setText(str(tempList[4]))
+                self.D2TpEdit_ANPC.setText(str(tempList[5]))
+                self.D5TpEdit_ANPC.setText(str(tempList[6]))
+                self.D7TpEdit_ANPC.setText(str(tempList[7]))
+
     def toggleInput(self,rangeBtn,inputBtn,Max,Min,rangeMin,rangeMax,normValue=1,decimalValue=0):
             if rangeBtn.isVisible():
                 rangeBtn.hide()
@@ -520,8 +563,7 @@ class MainWindow(QMainWindow):
             else :
                 inputBtn.hide() 
                 rangeBtn.show()
-                self.updateSlider(rangeBtn,inputBtn,Max,Min,rangeMin,rangeMax,normValue,decimalValue)
-                   
+                self.updateSlider(rangeBtn,inputBtn,Max,Min,rangeMin,rangeMax,normValue,decimalValue)                
 
     def updateSlider(self,rangeBtn,inputBtn,Max,Min,rangeMin,rangeMax,normValue= 1,decimalValue = 0):
                 if Max == Min:
@@ -631,7 +673,7 @@ class MainWindow(QMainWindow):
         i = 0
         for ykey in ykeys:
             for ikey, grp in df.groupby([key]):
-                l= grp.plot(ax=self.MplWidget.canvas.axes, kind='line', x=xkey, y=ykey, marker=markers[i], grid =True, label= ikey+legendLabel[i])
+                l= grp.plot(ax=self.MplWidget.canvas.axes, kind='line', x=xkey, y=ykey, marker=markers[i], grid =True, label= str(ikey)+legendLabel[i])
             i +=1    
         self.sc['linear'] = l.lines
         self.sc.pop('scatter',None)
@@ -771,6 +813,10 @@ class MainWindow(QMainWindow):
         self.MplWidget.canvas.mpl_disconnect(self.cid)
         self.MplWidget.canvas.figure.set_visible(False)
         self.OptimalChartArea.canvas.figure.set_visible(False)
+        self.NPCTempHouse.setEnabled(False)
+        self.B6TempHouse.setEnabled(False)
+        self.TNPCTempHouse.setEnabled(False)
+        self.ANPCTempHouse.setEnabled(False)
         self.MplWidget.toolbar.hide()
         self.OptimalChartArea.toolbar.hide()
         

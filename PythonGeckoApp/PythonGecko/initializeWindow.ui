@@ -1662,8 +1662,8 @@
        <widget class="QGroupBox" name="B6TempHouse">
         <property name="font">
          <font>
-          <weight>75</weight>
-          <bold>true</bold>
+          <weight>50</weight>
+          <bold>false</bold>
          </font>
         </property>
         <property name="title">
@@ -1711,7 +1711,7 @@
            </widget>
           </item>
           <item row="1" column="3">
-           <widget class="QLineEdit" name="Diodet2TempEdit_B6">
+           <widget class="QLineEdit" name="D2TpEdit_B6">
             <property name="minimumSize">
              <size>
               <width>42</width>
@@ -1730,7 +1730,7 @@
            </widget>
           </item>
           <item row="0" column="1">
-           <widget class="QLineEdit" name="Igbt1TempEdit_B6">
+           <widget class="QLineEdit" name="IG1TpEdit_B6">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
               <horstretch>0</horstretch>
@@ -1796,7 +1796,7 @@
            </widget>
           </item>
           <item row="0" column="3">
-           <widget class="QLineEdit" name="Diodet1TempEdit_B6">
+           <widget class="QLineEdit" name="D1TpEdit_B6">
             <property name="minimumSize">
              <size>
               <width>42</width>
@@ -1822,7 +1822,7 @@
            </widget>
           </item>
           <item row="1" column="1">
-           <widget class="QLineEdit" name="Igbt2TempEdit_B6">
+           <widget class="QLineEdit" name="IG2TpEdit_B6">
             <property name="minimumSize">
              <size>
               <width>42</width>
@@ -1869,6 +1869,12 @@
            <height>50</height>
           </size>
          </property>
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
          <property name="layoutDirection">
           <enum>Qt::LeftToRight</enum>
          </property>
@@ -1885,8 +1891,8 @@
        <widget class="QGroupBox" name="TNPCTempHouse">
         <property name="font">
          <font>
-          <weight>75</weight>
-          <bold>true</bold>
+          <weight>50</weight>
+          <bold>false</bold>
          </font>
         </property>
         <property name="title">
@@ -1934,7 +1940,7 @@
            </widget>
           </item>
           <item row="1" column="3">
-           <widget class="QLineEdit" name="Diodet2TempEdit_TNPC">
+           <widget class="QLineEdit" name="D2TpEdit_TNPC">
             <property name="minimumSize">
              <size>
               <width>42</width>
@@ -1953,7 +1959,7 @@
            </widget>
           </item>
           <item row="0" column="1">
-           <widget class="QLineEdit" name="Igbt1TempEdit_TNPC">
+           <widget class="QLineEdit" name="IG1TpEdit_TNPC">
             <property name="minimumSize">
              <size>
               <width>42</width>
@@ -2000,7 +2006,7 @@
            </widget>
           </item>
           <item row="0" column="3">
-           <widget class="QLineEdit" name="Diodet1TempEdit_TNPC">
+           <widget class="QLineEdit" name="D1TpEdit_TNPC">
             <property name="minimumSize">
              <size>
               <width>42</width>
@@ -2026,7 +2032,7 @@
            </widget>
           </item>
           <item row="1" column="1">
-           <widget class="QLineEdit" name="Igbt2TempEdit_TNPC">
+           <widget class="QLineEdit" name="IG2TpEdit_TNPC">
             <property name="minimumSize">
              <size>
               <width>42</width>
@@ -2086,6 +2092,12 @@
            <height>50</height>
           </size>
          </property>
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
          <property name="layoutDirection">
           <enum>Qt::LeftToRight</enum>
          </property>
@@ -2102,8 +2114,8 @@
        <widget class="QGroupBox" name="ANPCTempHouse">
         <property name="font">
          <font>
-          <weight>75</weight>
-          <bold>true</bold>
+          <weight>50</weight>
+          <bold>false</bold>
          </font>
         </property>
         <property name="title">
@@ -2117,7 +2129,7 @@
           <rect>
            <x>30</x>
            <y>7</y>
-           <width>261</width>
+           <width>270</width>
            <height>51</height>
           </rect>
          </property>
@@ -2165,7 +2177,7 @@
            </widget>
           </item>
           <item row="0" column="1">
-           <widget class="QLineEdit" name="Igbt1TempEdit_ANPC">
+           <widget class="QLineEdit" name="IG1TpEdit_ANPC">
             <property name="maximumSize">
              <size>
               <width>42</width>
@@ -2192,7 +2204,7 @@
            </widget>
           </item>
           <item row="1" column="5">
-           <widget class="QLineEdit" name="Diodet2TempEdit_ANPC">
+           <widget class="QLineEdit" name="D2TpEdit_ANPC">
             <property name="maximumSize">
              <size>
               <width>42</width>
@@ -2205,7 +2217,7 @@
            </widget>
           </item>
           <item row="1" column="7">
-           <widget class="QLineEdit" name="Diodet7TempEdit_ANPC">
+           <widget class="QLineEdit" name="D7TpEdit_ANPC">
             <property name="maximumSize">
              <size>
               <width>42</width>
@@ -2225,7 +2237,7 @@
            </widget>
           </item>
           <item row="0" column="7">
-           <widget class="QLineEdit" name="Diodet5TempEdit_ANPC">
+           <widget class="QLineEdit" name="D5TpEdit_ANPC">
             <property name="maximumSize">
              <size>
               <width>42</width>
@@ -2245,7 +2257,7 @@
            </widget>
           </item>
           <item row="1" column="1">
-           <widget class="QLineEdit" name="Igbt2TempEdit_ANPC">
+           <widget class="QLineEdit" name="IG2TpEdit_ANPC">
             <property name="maximumSize">
              <size>
               <width>42</width>
@@ -2286,7 +2298,7 @@
            </widget>
           </item>
           <item row="0" column="5">
-           <widget class="QLineEdit" name="Diodet1TempEdit_ANPC">
+           <widget class="QLineEdit" name="D1TpEdit_ANPC">
             <property name="maximumSize">
              <size>
               <width>42</width>
@@ -2320,7 +2332,7 @@
            </widget>
           </item>
           <item row="0" column="3">
-           <widget class="QLineEdit" name="Igbt5TempEdit_ANPC">
+           <widget class="QLineEdit" name="IG5TpEdit_ANPC">
             <property name="maximumSize">
              <size>
               <width>42</width>
@@ -2347,7 +2359,7 @@
            </widget>
           </item>
           <item row="1" column="3">
-           <widget class="QLineEdit" name="Igbt7TempEdit_ANPC">
+           <widget class="QLineEdit" name="IG7TpEdit_ANPC">
             <property name="maximumSize">
              <size>
               <width>42</width>
@@ -2387,6 +2399,12 @@
            <width>21</width>
            <height>50</height>
           </size>
+         </property>
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
          </property>
          <property name="layoutDirection">
           <enum>Qt::LeftToRight</enum>
@@ -2467,7 +2485,7 @@
            </widget>
           </item>
           <item row="0" column="5">
-           <widget class="QLineEdit" name="Diodet5TempEdit_NPC">
+           <widget class="QLineEdit" name="D5TpEdit_NPC">
             <property name="minimumSize">
              <size>
               <width>42</width>
@@ -2493,7 +2511,7 @@
            </widget>
           </item>
           <item row="0" column="1">
-           <widget class="QLineEdit" name="Igbt1TempEdit_NPC">
+           <widget class="QLineEdit" name="IG1TpEdit_NPC">
             <property name="minimumSize">
              <size>
               <width>42</width>
@@ -2512,7 +2530,7 @@
            </widget>
           </item>
           <item row="0" column="3">
-           <widget class="QLineEdit" name="Diodet1TempEdit_NPC">
+           <widget class="QLineEdit" name="D1TpEdit_NPC">
             <property name="minimumSize">
              <size>
               <width>42</width>
@@ -2552,7 +2570,7 @@
            </widget>
           </item>
           <item row="1" column="1">
-           <widget class="QLineEdit" name="Igbt2TempEdit_NPC">
+           <widget class="QLineEdit" name="IG2TpEdit_NPC">
             <property name="minimumSize">
              <size>
               <width>42</width>
@@ -2571,7 +2589,7 @@
            </widget>
           </item>
           <item row="1" column="3">
-           <widget class="QLineEdit" name="Diodet2TempEdit_NPC">
+           <widget class="QLineEdit" name="D2TpEdit_NPC">
             <property name="minimumSize">
              <size>
               <width>42</width>
@@ -3244,12 +3262,12 @@
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="buttonGroupTopology"/>
-  <buttongroup name="buttonGroupOptMode"/>
-  <buttongroup name="buttonGroupPlotType"/>
   <buttongroup name="buttonGroupMode"/>
-  <buttongroup name="buttonGroupPlotMode"/>
-  <buttongroup name="buttonGroupRangeType"/>
   <buttongroup name="buttonGroupScatterData"/>
+  <buttongroup name="buttonGroupOptMode"/>
+  <buttongroup name="buttonGroupTopology"/>
+  <buttongroup name="buttonGroupPlotMode"/>
+  <buttongroup name="buttonGroupPlotType"/>
+  <buttongroup name="buttonGroupRangeType"/>
  </buttongroups>
 </ui>
