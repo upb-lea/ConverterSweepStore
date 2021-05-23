@@ -503,6 +503,7 @@ class MainWindow(QMainWindow):
                 rcdTemps[topology] = [finalRow['Igbt1Temp'],finalRow['Igbt2Temp'],finalRow['Igbt5Temp'],finalRow['Igbt7Temp'],finalRow['D1Temp'],finalRow['D2Temp'],finalRow['D5Temp'],finalRow['D7Temp']]
                 index  = ['T1/T4','D1/D4','T2/T3','D2/D3','T5\T6','D5\D6','T7\T8','D7\D8']
                 dfToBar[topology] = pd.DataFrame({'Cond Loss': conductionLoss,'SW Loss': switchLoss}, index=index)
+        self.clearTempEdits()
         self.loadIntoTempEdits(rcdTemps)
         plotNum = len(dfToBar)
         if plotNum == 1:
@@ -522,6 +523,28 @@ class MainWindow(QMainWindow):
            self.optStatusLabel.setStyleSheet("QLabel { background-color : green; color : black; }")
            self.optStatusLabel.setText(str(list(dfToBar.keys())[0])+', '+ list(dfToBar.keys())[1]+', '+list(dfToBar.keys())[2] +', '+list(dfToBar.keys())[3] + ' exists in Range')
         
+    def clearTempEdits(self):
+        self.IG1TpEdit_NPC.clear()
+        self.IG2TpEdit_NPC.clear()
+        self.D1TpEdit_NPC.clear()
+        self.D2TpEdit_NPC.clear()
+        self.D5TpEdit_NPC.clear()
+        self.IG1TpEdit_B6.clear()
+        self.IG2TpEdit_B6.clear()
+        self.D1TpEdit_B6.clear()
+        self.D2TpEdit_B6.clear()
+        self.IG1TpEdit_TNPC.clear()
+        self.IG2TpEdit_TNPC.clear()
+        self.D1TpEdit_TNPC.clear()
+        self.D2TpEdit_TNPC.clear()
+        self.IG1TpEdit_ANPC.clear()
+        self.IG2TpEdit_ANPC.clear()
+        self.IG5TpEdit_ANPC.clear()
+        self.IG7TpEdit_ANPC.clear()
+        self.D1TpEdit_ANPC.clear()
+        self.D2TpEdit_ANPC.clear()
+        self.D5TpEdit_ANPC.clear()
+        self.D7TpEdit_ANPC.clear()
 
     def loadIntoTempEdits(self, rcdTemps):
         for topology in rcdTemps:

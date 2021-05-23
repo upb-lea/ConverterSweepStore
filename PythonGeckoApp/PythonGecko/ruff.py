@@ -11,7 +11,7 @@ import random
 #object.to_pickle(r'calc_AFE\results.pkl')
 
 df = pd.read_pickle(r'calc\results.pk')
-newdf = df[~df['Datasheet'].isin(['SEMiX205TMLI12E4B'])]
+newdf = df[~df['V_DC'].isin([185,200,215,350,320])]
 newdf.to_pickle(r'calc\resultsnew.pk')
 #readdf = pd.read_pickle('resultsnew.pk')
 #show(readdf)

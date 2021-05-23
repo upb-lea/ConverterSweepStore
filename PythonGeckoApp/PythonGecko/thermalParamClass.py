@@ -24,8 +24,8 @@ class thermalParamClass(QWidget):
         thermalParaInputs['Rcs'] = re.split(',|\s+|;|\n',self.rcs.toPlainText())
         thermalParaInputs['Rjc'] = re.split(',|\s+|;|\n',self.rjc.toPlainText())
         thermalParaInputs['Cth'] = re.split(',|\s+|;|\n',self.cth.toPlainText())
-        isValid = len(thermalParaInputs['Rcs']) == len(thermalParaInputs['Rjc']) and len(thermalParaInputs['Rjc']) == len(thermalParaInputs['Cth'])
-        
+        thermalParaInputs['Rth'] = re.split(',|\s+|;|\n',self.rth.toPlainText())
+        isValid = len(thermalParaInputs['Rcs']) == len(thermalParaInputs['Rjc']) and len(thermalParaInputs['Rjc']) == len(thermalParaInputs['Cth']) and len(thermalParaInputs['Cth']) == len(thermalParaInputs['Rth'])
         thermalParaInputs['Datasheet'] = self.missingSheets
         if isValid  and len(thermalParaInputs['Rcs']) == len(self.missingSheets) :
             thermalDF = pd.DataFrame(thermalParaInputs)
@@ -54,6 +54,7 @@ class thermalParamClass(QWidget):
                     self.rcs.append(str(thermalSet[x]['Rcs']))
                     self.rjc.append(str(thermalSet[x]['Rjc']))
                     self.cth.append(str(thermalSet[x]['Cth']))    
+                    self.rth.append(str(thermalSet[x]['Rth']))    
                     self.available = True
                     self.thermDoneBtn.setEnabled(False)     
             else:

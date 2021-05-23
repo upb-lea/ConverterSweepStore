@@ -330,7 +330,7 @@ class startConnection(QObject):
                         saveTempData[x] = temp                
                      meanTemp[x] = np.mean(tempArray)
                 if isValidSimulation['Status'] == 'Ok':
-                    if (((max(meanTemp.values()) >150) or (min(meanTemp.values()) < -15)) and status) :
+                    if (max(meanTemp.values()) >150 or min(meanTemp.values()) < -15) :
                         isValidSimulation['Status'] == 'SinkFailure'
                 #time = ginst.getTimeArray('IG1_con',t_start,t_end_new,0); #get last cycle time stamp ???
                 #ginst.disconnectFromGecko()
@@ -407,7 +407,7 @@ class startConnection(QObject):
                         saveTempData[x] = temp                
                      meanTemp[x] = np.mean(tempArray)
                 if isValidSimulation['Status'] == 'Ok':
-                    if (max(meanTemp.values()) >150 or min(meanTemp.values()) < -15 and status) :
+                    if (max(meanTemp.values()) >150 or min(meanTemp.values()) < -15) :
                         isValidSimulation['Status'] == 'SinkFailure'
                 #time = ginst.getTimeArray('IG1_con',t_start,t_end_new,0); #get last cycle time stamp ???
                 #ginst.disconnectFromGecko()
@@ -562,7 +562,7 @@ class startConnection(QObject):
                         saveTempData[x] = temp                
                      meanTemp[x] = np.mean(tempArray)
                 if isValidSimulation['Status'] == 'Ok':
-                    if (max(meanTemp.values()) >150 or min(meanTemp.values()) < -15 and status) :
+                    if (max(meanTemp.values()) >150 or min(meanTemp.values()) < -15) :
                         isValidSimulation['Status'] == 'SinkFailure'
                 #time = ginst.getTimeArray('IG1_con',t_start,t_end_new,0); #get last cycle time stamp ???
                 #ginst.disconnectFromGecko()
