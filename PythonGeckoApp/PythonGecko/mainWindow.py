@@ -14,6 +14,7 @@ from PyQt5.QtWidgets import QApplication,QWidget,QMainWindow,QMessageBox,QAbstra
 from  matplotlib.backends.backend_qt5agg  import  ( NavigationToolbar2QT  as  NavigationToolbar )
 import matplotlib.pyplot as plt
 import matplotlib as mpl
+from copy import deepcopy
 import  random
 import math
 import itertools
@@ -311,9 +312,9 @@ class MainWindow(QMainWindow):
         plotMode = self.buttonGroupPlotMode.checkedButton().text()
         self.filterList.clear()
         if plotMode == 'Inverter':
-            self.filterList = self.xDataInvList[xAxisLabel][:]
+            self.filterList = deepcopy(self.xDataInvList[xAxisLabel])
         elif plotMode == 'AFE':
-            self.filterList = self.xDataAFEList[xAxisLabel][:]
+            self.filterList = deepcopy(self.xDataAFEList[xAxisLabel])
         self.filter.clear()
         self.opComboType.clear()
         self.opComboType.insertItems(0,self.filterList)
@@ -800,7 +801,7 @@ class MainWindow(QMainWindow):
             self.opt_df = df_all[(df_all['Status']=='Ok') & ~df_all['Datasheet'].isin(['F3L300R07PE4','FF300R06KE3','F3L400R12PT4_B26'])]
             self.plot_df =  df_all[(df_all['Topology']==plotTopology) & (df_all['Status']=='Ok')]
             self.opt_df['PWatts'] = round(self.opt_df['Load_S']*self.opt_df['Load_phi'].apply(math.cos))
-            self.filterList = self.xDataInvList['V_DC'][:]#this is aaaaaaaaaaaaaaaaaaaa bug
+            self.filterList = deepcopy(self.xDataInvList['V_DC'])#this is aaaaaaaaaaaaaaaaaaaa bug
             self.opComboType.insertItems(0,self.filterList)
             self.xDatacomboBox.addItems(self.xDataInvList.keys())
         elif DBmode == 'AFE':
@@ -810,7 +811,7 @@ class MainWindow(QMainWindow):
             self.opt_df = df_all[(df_all['Status']=='Ok') & ~df_all['Datasheet'].isin(['F3L300R07PE4','FF300R06KE3','F3L400R12PT4_B26'])]
             self.plot_df =  df_all[(df_all['Topology']==plotTopology) & (df_all['Status']=='Ok')]
             self.opt_df['PWatts'] = round(self.opt_df['Mains_S']* self.opt_df['Mains_phi'].apply(math.cos))
-            self.filterList= self.xDataAFEList['V_DC'][:]
+            self.filterList= deepcopy(self.xDataAFEList['V_DC'])
             self.opComboType.insertItems(0,self.filterList)
             self.xDatacomboBox.addItems(self.xDataAFEList.keys())
         self.opt_df['SwitchTmax'] = self.opt_df[['Igbt1Temp','Igbt2Temp','Igbt5Temp','Igbt7Temp']].max(axis=1)
@@ -860,7 +861,7 @@ class MainWindow(QMainWindow):
         self.tempScaleBtn.setEnabled(False)
         self.scIgbtCombo.addItems(self.igbtList[plotTopology])
         self.scDiodeCombo.addItems(self.diodeList[plotTopology])
-        self.filterList = self.xDataInvList['V_DC']
+        self.filterList = deepcopy(self.xDataInvList['V_DC'])
         self.xDatacomboBox.addItems(self.xDataInvList.keys())
         self.opComboType.insertItems(0,self.filterList)
         self.scIgbtCombo.setCurrentIndex(-1) 
