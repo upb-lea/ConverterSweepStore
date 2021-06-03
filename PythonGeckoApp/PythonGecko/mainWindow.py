@@ -685,21 +685,22 @@ class MainWindow(QMainWindow):
     
     def makeLinearPlot(self,df,ykeys,xkey,key) :
         self.MplWidget.canvas.axes.clear()
-        markers = {}
+        keyLen = len(ykeys)
         self.linAnnotKeys.clear()
         self.linAnnotKeys= [xkey, ykeys[0]]
-        if len(ykeys) >1:
-            markers = ['d','*']
-            legendLabel = ['(SW)','(D)']
-        else :
-            markers = ['o']
-            legendLabel = ['']
-        i = 0
-        for ykey in ykeys:
-            for ikey, grp in df.groupby([key]):
-                l= grp.plot(ax=self.MplWidget.canvas.axes, kind='line', x=xkey, y=ykey, marker=markers[i], grid =True, label= str(ikey)+legendLabel[i])
-            i +=1    
-        self.sc['linear'] = l.lines
+        markers = ['o','d']
+        for n,ykey in enumerate(ykeys):
+            pvtd_df = df.pivot(index=xkey, columns=key, values=ykey)
+            ax = pvtd_df.plot(ax= self.MplWidget.canvas.axes,grid =True, marker=markers[n], kind = 'line')
+        if keyLen >1:
+            handles, labels = ax.get_legend_handles_labels()
+            legendCount = len(labels)
+            for n in range(legendCount//2):
+                labels[n]=labels[n]+'(SW)'
+                legendCount = legendCount -1
+                labels[legendCount]= labels[legendCount]+'(D)'
+            ax.legend(handles,labels)
+        self.sc['linear'] = ax.lines
         self.sc.pop('scatter',None)
         self.annot = self.MplWidget.canvas.axes.annotate("", xy=(0,0), xytext=(20,20),textcoords="offset points",
                             bbox=dict(boxstyle="round", fc="w"),
@@ -801,7 +802,7 @@ class MainWindow(QMainWindow):
             self.opt_df = df_all[(df_all['Status']=='Ok') & ~df_all['Datasheet'].isin(['F3L300R07PE4','FF300R06KE3','F3L400R12PT4_B26'])]
             self.plot_df =  df_all[(df_all['Topology']==plotTopology) & (df_all['Status']=='Ok')]
             self.opt_df['PWatts'] = round(self.opt_df['Load_S']*self.opt_df['Load_phi'].apply(math.cos))
-            self.filterList = deepcopy(self.xDataInvList['V_DC'])#this is aaaaaaaaaaaaaaaaaaaa bug
+            self.filterList = deepcopy(self.xDataInvList['V_DC'])
             self.opComboType.insertItems(0,self.filterList)
             self.xDatacomboBox.addItems(self.xDataInvList.keys())
         elif DBmode == 'AFE':
