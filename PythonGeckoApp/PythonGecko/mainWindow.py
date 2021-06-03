@@ -950,7 +950,13 @@ class MainWindow(QMainWindow):
         legendValue = leg.texts[ind].get_text()
         index = set(self.filterList)-self.filter.keys()
         key = self.filterList[2] if index == set() else index.pop()
-        text = f'{key} :{legendValue},\n{self.linAnnotKeys[0]} :{posx:.2f},\n{self.linAnnotKeys[1]} :{posy:.2f}'
+        if self.linAnnotKeys[0] == 'Datasheet':
+            xlabels = line.axes.get_xticklabels(True)
+            xlabels = [item.get_text() for item in line.axes.get_xticklabels()]
+            xlabels = list(filter(None, xlabels))
+            text = f'{key} :{legendValue},\n{self.linAnnotKeys[0]} :{xlabels[posx]},\n{self.linAnnotKeys[1]} :{posy:.2f}'
+        else:
+            text = f'{key} :{legendValue},\n{self.linAnnotKeys[0]} :{posx:.2f},\n{self.linAnnotKeys[1]} :{posy:.2f}'
         self.annot.set_text(text)
         self.annot.get_bbox_patch().set_alpha(0.4)
 
@@ -964,7 +970,7 @@ class MainWindow(QMainWindow):
                 if cont:
                     if key == 'linear':
                         self.update_linear_annot(plotLine, ind['ind'][0])
-                    if key == 'scatter':
+                    elif key == 'scatter':
                         self.update_scatter_annot(plotLine,ind['ind'][0])
                     self.annot.set_visible(True)
                     self.MplWidget.canvas.draw_idle()
