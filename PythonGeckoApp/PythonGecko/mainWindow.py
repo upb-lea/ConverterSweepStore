@@ -1186,15 +1186,6 @@ class MainWindow(QMainWindow):
             self.switchFreqIn.clear()
             self.tempIn.clear()
             self.fOutIn.clear()
-       
-
-    #def switchCase(self,x):
-    #        return {
-    #         'toolButtonIGBT': self.igbtDataIn.toPlainText(),
-    #         'toolButtonFW': self.fwDataIn.toPlainText(),
-    #         'toolButtonRev': self.revDataIn.toPlainText()
-    #        }.get(x, [])
-
    
     def loadThermalBox(self,isInnerCall):
         try :
