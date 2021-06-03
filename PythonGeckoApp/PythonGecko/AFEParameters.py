@@ -1,6 +1,5 @@
 import math
 import cmath
-import numpy as np
 def AFE_Parameters(U_DC_inv, U_mains_LL, f, Filter_L, Filter_C, Mains_S, Mains_phi_degree, R_Fe_Transformer, R_S_Transformer, L_par, plotbit):
     """
      * Initial author: N. Foerster      

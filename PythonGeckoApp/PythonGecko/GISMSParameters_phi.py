@@ -1,3 +1,5 @@
+import cmath
+import math
 
 def GISMSParameters_phi(U_DC_inv, U_Load_LL, f_out_inv, Filter_L, Filter_C, Load_S, Load_phi_degree, Transformer_Rfe, Transformer_Rs,
                                     l_par, plotbit):
@@ -75,9 +77,6 @@ def GISMSParameters_phi(U_DC_inv, U_Load_LL, f_out_inv, Filter_L, Filter_C, Load
       * 1.2.1 / 17.12.2020 / N.Foerster: Add i_peak_inv
       * 2.0.0 / 30.12.2020 / N.Foerster: Rewrite function in python, remove kt_transformer (unused)
     """
-    import cmath
-    import math
-    import numpy as np
     out = {}     
     U_Load = U_Load_LL/math.sqrt(3)
     Load_phi_rad = math.radians(Load_phi_degree)

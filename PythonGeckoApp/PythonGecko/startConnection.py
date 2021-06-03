@@ -1,5 +1,3 @@
-import sys
-import re
 import os
 import numpy as np
 import time as t
@@ -8,12 +6,9 @@ import pandas as pd
 from retrying import retry
 from GISMSParameters_phi import GISMSParameters_phi
 from AFEParameters import AFE_Parameters
-import glob
 import psweep as ps
 import subprocess
-from PyQt5 import QtCore, QtGui 
-from PyQt5.QtCore import QThread,pyqtSignal,QObject
-from PyQt5.QtWidgets import QMessageBox
+from PyQt5.QtCore import pyqtSignal,QObject
 class startConnection(QObject):
     gismsUpdate = pyqtSignal([dict])
     progressUpdate = pyqtSignal(int,str)
