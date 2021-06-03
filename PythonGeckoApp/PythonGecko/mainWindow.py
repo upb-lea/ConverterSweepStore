@@ -295,7 +295,7 @@ class MainWindow(QMainWindow):
            df_all = pd.read_pickle(self.invfilepath)
            self.xDatacomboBox.clear()
            self.xDatacomboBox.addItems(self.xDataInvList.keys())
-        self.plot_df = df_all[(df_all['Topology']==plotTopology) & (df_all['Status']=='Ok')]
+        self.plot_df = df_all[(df_all['Topology']==plotTopology) & (df_all['Status']=='Ok')].copy()
         self.plot_df['SwitchTmax'] = self.plot_df[['Igbt1Temp','Igbt2Temp','Igbt5Temp','Igbt7Temp']].max(axis=1)
         self.plot_df['DiodeTmax'] = self.plot_df[['D1Temp','D2Temp','D5Temp','D7Temp']].max(axis=1)
         self.xAxisChanged('V_DC')
@@ -323,12 +323,13 @@ class MainWindow(QMainWindow):
         optMode = button.text()
         self.opt_df = pd.DataFrame(None)
         if optMode =='AFE':
-            self.opt_df = pd.read_pickle(self.afefilepath)
+            df_all = pd.read_pickle(self.afefilepath)
+            self.opt_df = df_all[(df_all['Status']=='Ok')].copy()
             self.opt_df['PWatts'] = round(self.opt_df['Mains_S']* self.opt_df['Mains_phi'].apply(math.cos))
         else:
-            self.opt_df = pd.read_pickle(self.invfilepath)
+            df_all = pd.read_pickle(self.invfilepath)
+            self.opt_df = df_all[(df_all['Status']=='Ok')].copy()
             self.opt_df['PWatts'] = round(self.opt_df['Load_S']* self.opt_df['Load_phi'].apply(math.cos))
-        self.opt_df = self.opt_df[(self.opt_df['Status']=='Ok') & ~self.opt_df['Datasheet'].isin(['F3L300R07PE4','FF300R06KE3','F3L400R12PT4_B26'])]
         if not isDFUpdated:
             self.optStatusLabel.setStyleSheet("")  #check the position
             self.optStatusLabel.clear()
@@ -799,8 +800,8 @@ class MainWindow(QMainWindow):
             self.optInvBtn.setChecked(True)
             self.plotInvBtn.setChecked(True)
             df_all = pd.read_pickle(self.invfilepath)
-            self.opt_df = df_all[(df_all['Status']=='Ok') & ~df_all['Datasheet'].isin(['F3L300R07PE4','FF300R06KE3','F3L400R12PT4_B26'])]
-            self.plot_df =  df_all[(df_all['Topology']==plotTopology) & (df_all['Status']=='Ok')]
+            self.opt_df = df_all[(df_all['Status']=='Ok')].copy()
+            self.plot_df =  df_all[(df_all['Topology']==plotTopology) & (df_all['Status']=='Ok')].copy()
             self.opt_df['PWatts'] = round(self.opt_df['Load_S']*self.opt_df['Load_phi'].apply(math.cos))
             self.filterList = deepcopy(self.xDataInvList['V_DC'])
             self.opComboType.insertItems(0,self.filterList)
@@ -809,8 +810,8 @@ class MainWindow(QMainWindow):
             self.optAfeBtn.setChecked(True)
             self.plotAFEBtn.setChecked(True)
             df_all = pd.read_pickle(self.afefilepath)
-            self.opt_df = df_all[(df_all['Status']=='Ok') & ~df_all['Datasheet'].isin(['F3L300R07PE4','FF300R06KE3','F3L400R12PT4_B26'])]
-            self.plot_df =  df_all[(df_all['Topology']==plotTopology) & (df_all['Status']=='Ok')]
+            self.opt_df = df_all[(df_all['Status']=='Ok')].copy()
+            self.plot_df =  df_all[(df_all['Topology']==plotTopology) & (df_all['Status']=='Ok')].copy()
             self.opt_df['PWatts'] = round(self.opt_df['Mains_S']* self.opt_df['Mains_phi'].apply(math.cos))
             self.filterList= deepcopy(self.xDataAFEList['V_DC'])
             self.opComboType.insertItems(0,self.filterList)
@@ -849,7 +850,7 @@ class MainWindow(QMainWindow):
         df_all = pd.read_pickle(self.invfilepath)
         self.plotInvBtn.setChecked(True)
         plotTopology = self.topologyCombo.currentText()
-        self.plot_df =  df_all[(df_all['Topology']==plotTopology)& (df_all['Status']=='Ok')]
+        self.plot_df =  df_all[(df_all['Topology']==plotTopology)& (df_all['Status']=='Ok')].copy()
         self.plot_df['SwitchTmax'] = self.plot_df[['Igbt1Temp','Igbt2Temp','Igbt5Temp','Igbt7Temp']].max(axis=1)
         self.plot_df['DiodeTmax'] = self.plot_df[['D1Temp','D2Temp','D5Temp','D7Temp']].max(axis=1)
         self.MplWidget.canvas.mpl_disconnect(self.cid)
