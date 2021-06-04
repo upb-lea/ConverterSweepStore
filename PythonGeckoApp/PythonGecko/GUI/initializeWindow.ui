@@ -1055,9 +1055,9 @@
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>10</y>
+        <y>0</y>
         <width>741</width>
-        <height>451</height>
+        <height>461</height>
        </rect>
       </property>
      </widget>
@@ -2726,6 +2726,9 @@
      <height>38</height>
     </size>
    </property>
+   <property name="allowedAreas">
+    <set>Qt::LeftDockWidgetArea|Qt::RightDockWidgetArea</set>
+   </property>
    <property name="windowTitle">
     <string>Controls</string>
    </property>
@@ -3238,36 +3241,36 @@
   <customwidget>
    <class>MplWidget</class>
    <extends>QWidget</extends>
-   <header>mplwidget.h</header>
+   <header>mplWidget.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>RangeSlider</class>
    <extends>QWidget</extends>
-   <header>RangeSlider.h</header>
+   <header location="global">rangeSlider.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>CheckableComboBox</class>
    <extends>QComboBox</extends>
-   <header>checkablecombobox.h</header>
+   <header>checkableComboBox.h</header>
   </customwidget>
   <customwidget>
    <class>MplMultiWidget</class>
    <extends>QWidget</extends>
-   <header location="global">mplmultiwidget.h</header>
+   <header>mplMultiWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="buttonGroupMode"/>
   <buttongroup name="buttonGroupScatterData"/>
-  <buttongroup name="buttonGroupOptMode"/>
-  <buttongroup name="buttonGroupTopology"/>
-  <buttongroup name="buttonGroupPlotMode"/>
-  <buttongroup name="buttonGroupPlotType"/>
+  <buttongroup name="buttonGroupMode"/>
   <buttongroup name="buttonGroupRangeType"/>
+  <buttongroup name="buttonGroupPlotType"/>
+  <buttongroup name="buttonGroupPlotMode"/>
+  <buttongroup name="buttonGroupTopology"/>
+  <buttongroup name="buttonGroupOptMode"/>
  </buttongroups>
 </ui>

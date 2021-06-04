@@ -40,7 +40,6 @@ class MainWindow(QMainWindow):
     diodeList = {'B6':['D1','D2'],'NPC':['D1','D2','D3','D4','D5','D6'],'TNPC':['D1','D2','D3','D4'],'FC-ANPC':['D1','D2','D3','D4','D5','D6','D7','D8']}
     xDataInvList = {'V_DC':['Load_S','f_s','Load_phi','Datasheet'],'Load_S':['V_DC','f_s','Load_phi','Datasheet'],'f_s':['V_DC','Load_S','Load_phi','Datasheet'],'Load_phi':['V_DC','Load_S','f_s','Datasheet'],'Datasheet':['V_DC','Load_S','f_s','Load_phi']}
     xDataAFEList = {'V_DC':['Mains_S','f_s','Mains_phi','Datasheet'],'Mains_S':['V_DC','f_s','Mains_phi','Datasheet'],'f_s':['V_DC','Mains_S','Mains_phi','Datasheet'],'Mains_phi':['V_DC','Mains_S','f_s','Datasheet'],'Datasheet':['V_DC','Mains_S','f_s','Mains_phi']}
-    #filterListOld = {'Inverter':['Load_S','f_s','Load_phi','Datasheet'],'AFE':['Mains_S','f_s','Mains_phi','Datasheet']}
     filterList = []
     topologyList = ['B6','NPC','TNPC','FC-ANPC']        
     lastClicked = []
