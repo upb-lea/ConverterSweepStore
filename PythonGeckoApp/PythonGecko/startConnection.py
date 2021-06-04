@@ -13,8 +13,8 @@ class startConnection(QObject):
     gismsUpdate = pyqtSignal([dict])
     progressUpdate = pyqtSignal(int,str)
     tabsDFUpdate = pyqtSignal(str)
-    thermal_file_path = r'calc\Thermal\params.csv'
-    datasheetpath = r'calc\Thermal\DatasheetDB.csv'
+    thermal_file_path = r'..\Thermal\params.csv'
+    datasheetpath = r'..\Thermal\DatasheetDB.csv'
     def __init__(self,dataimport,saveData,isAfeSelected,topology):
         super().__init__()
         self.params = dataimport
@@ -70,10 +70,10 @@ class startConnection(QObject):
             SCRIPT IMPLEMENTATION:
             """
             # Get the current path of GeckoCIRCUITS:
-            curdir = os.path.dirname(os.path.abspath(__file__ + '\..\..'))
+            curdir = os.path.dirname(os.path.abspath(__file__ + '\..'))
             geckopath = curdir + "\\GeckoCIRCUITS\\GeckoCIRCUITS.jar"
-            lossfilepath = curdir+"\\workspace"
-            simfilepath = curdir + "\\InverterModels\\"
+            lossfilepath = curdir+"\\ModuleSCLs"
+            simfilepath = "InverterModels\\"
             # For java.  This must be before the jnius-imports:
             os.environ['CLASSPATH'] = geckopath
             def retry_if_result_none(result):

@@ -11,9 +11,9 @@ class dataBaseClass(QWidget):
     
     def __init__(self, parent=None): 
         super(dataBaseClass,self).__init__(parent)
-        uic.loadUi('dataBaseWindow.ui',self)
+        uic.loadUi('GUI\dataBaseWindow.ui',self)
         _translate = QtCore.QCoreApplication.translate
-        self.setWindowIcon(QIcon('dataIcon.png'))
+        self.setWindowIcon(QIcon('Images\\dataIcon.png'))
         self.setWindowTitle(_translate("Form", "Simulated Data"))
         self.refreshBtn.clicked.connect(self.refreshTableView)
         self.exitBtn.clicked.connect(self.close)

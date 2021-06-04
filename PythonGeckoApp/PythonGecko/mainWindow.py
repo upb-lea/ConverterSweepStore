@@ -32,8 +32,8 @@ opLabelAppend = ''
 class MainWindow(QMainWindow):
     invfilepath = r'calc\results.pk'
     afefilepath = r'calc_AFE\results.pk'
-    Tfilepath = r'calc\Thermal\params.csv'
-    datasheetpath = r'calc\Thermal\DatasheetDB.csv'
+    Tfilepath = r'..\Thermal\params.csv'
+    datasheetpath = r'..\Thermal\DatasheetDB.csv'
     ## Make all plots clickable
     clickedPen = pg.mkPen('b', width=2)
     igbtList = {'B6':['IG1','IG2'],'NPC':['IG1','IG2','IG3','IG4'],'TNPC':['IG1','IG2','IG3','IG4'],'FC-ANPC':['IG1','IG2','IG3','IG4','IG5','IG6','IG7','IG8']}
@@ -51,9 +51,9 @@ class MainWindow(QMainWindow):
     rePlotInfo = {}
     def __init__(self,parent =None): 
         super(MainWindow,self).__init__(parent)
-        uic.loadUi('initializeWindow.ui',self)
+        uic.loadUi('GUI\initializeWindow.ui',self)
         _translate = QtCore.QCoreApplication.translate
-        self.setWindowIcon(QIcon('clienticon.png'))
+        self.setWindowIcon(QIcon('Images\\clienticon.png'))
         self.setWindowTitle(_translate("MainWindow", "Converter Sweep Store"))
         app.aboutToQuit.connect(self.closeEvent)
         self.simulateBtn.clicked.connect(self.simulate)
@@ -236,7 +236,7 @@ class MainWindow(QMainWindow):
 
     def loadDataSheets(self):
         topology = self.buttonGroupTopology.checkedButton().text()
-        pixmap = QPixmap(topology+'.png')
+        pixmap = QPixmap('Images\\'+topology+'.png')
         self.topologyPicture.setPixmap(pixmap)
         self.topologyPicture.setScaledContents(True)
         self.dataSheetComboBox.clear()
@@ -246,7 +246,7 @@ class MainWindow(QMainWindow):
    
     def openPandasGUI(self) :
         df = pd.read_pickle(self.invfilepath)
-        #show(df)
+        show(df)
 
     def conjunction(*conditions):
         return functools.reduce(np.logical_and, conditions)

@@ -5,11 +5,11 @@ import pandas as pd
 import re
 import os
 class thermalParamClass(QWidget):
-    filepath = r'calc\Thermal\params.csv'
+    filepath = r'..\Thermal\params.csv'
     #thermalInputSignal = pyqtSignal(int,str)
     def __init__(self,datasheets): 
         super().__init__()
-        uic.loadUi('thermalParametersDialogModular.ui',self)
+        uic.loadUi('GUI\\thermalParametersDialogModular.ui',self)
         self.datasheets = datasheets
         self.available = False
         self.missingSheets = datasheets

@@ -21,9 +21,6 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="AddToTransistorDB.py">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="AFEParameters.py" />
     <Compile Include="checkablecombobox.py">
       <SubType>Code</SubType>
@@ -42,20 +39,8 @@
     <Compile Include="pandasModel.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ParaSweepScript.py">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="ParaSweepScriptAFE.py">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="RangeSlider.py" />
-    <Compile Include="ruff.py">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="startConnection.py">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="SweepClass.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="thermalParamClass.py">

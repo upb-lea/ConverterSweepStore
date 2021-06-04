@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Form</class>
+ <widget class="QWidget" name="Form">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>758</width>
+    <height>406</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout_3">
+   <item row="0" column="0" rowspan="2" colspan="2">
+    <layout class="QGridLayout" name="gridLayout_2">
+     <item row="1" column="3">
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <item>
+        <widget class="QPushButton" name="exitBtn">
+         <property name="text">
+          <string>Exit</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>120</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </item>
+     <item row="1" column="0">
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeType">
+        <enum>QSizePolicy::Expanding</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="1" column="1">
+      <widget class="QLabel" name="rowCountLabel">
+       <property name="minimumSize">
+        <size>
+         <width>124</width>
+         <height>22</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>124</width>
+         <height>22</height>
+        </size>
+       </property>
+       <property name="autoFillBackground">
+        <bool>true</bool>
+       </property>
+       <property name="text">
+        <string>195 simulation exists!!</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="2">
+      <layout class="QGridLayout" name="gridLayout">
+       <item row="1" column="3">
+        <widget class="QRadioButton" name="multiDbBtn">
+         <property name="text">
+          <string>FC-ANPC</string>
+         </property>
+         <attribute name="buttonGroup">
+          <string notr="true">buttonGroupDbType</string>
+         </attribute>
+        </widget>
+       </item>
+       <item row="0" column="2">
+        <widget class="QRadioButton" name="b6DbBtn">
+         <property name="text">
+          <string>B6</string>
+         </property>
+         <attribute name="buttonGroup">
+          <string notr="true">buttonGroupDbType</string>
+         </attribute>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QRadioButton" name="invDbBtn">
+         <property name="text">
+          <string>Inverter</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+         <attribute name="buttonGroup">
+          <string notr="true">buttonGroupDbMode</string>
+         </attribute>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QRadioButton" name="afeDbBtn">
+         <property name="text">
+          <string>AFE</string>
+         </property>
+         <attribute name="buttonGroup">
+          <string notr="true">buttonGroupDbMode</string>
+         </attribute>
+        </widget>
+       </item>
+       <item row="1" column="2">
+        <widget class="QRadioButton" name="tnpcDbBtn">
+         <property name="text">
+          <string>TNPC</string>
+         </property>
+         <attribute name="buttonGroup">
+          <string notr="true">buttonGroupDbType</string>
+         </attribute>
+        </widget>
+       </item>
+       <item row="0" column="3">
+        <widget class="QRadioButton" name="npcDbBtn">
+         <property name="text">
+          <string>NPC</string>
+         </property>
+         <attribute name="buttonGroup">
+          <string notr="true">buttonGroupDbType</string>
+         </attribute>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QPushButton" name="refreshBtn">
+         <property name="text">
+          <string>Refresh</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QRadioButton" name="allDbBtn">
+         <property name="text">
+          <string>Explore All</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+         <attribute name="buttonGroup">
+          <string notr="true">buttonGroupDbType</string>
+         </attribute>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item row="0" column="0" colspan="4">
+      <widget class="QTableView" name="dataBaseTableView"/>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+ <buttongroups>
+  <buttongroup name="buttonGroupDbType"/>
+  <buttongroup name="buttonGroupDbMode"/>
+ </buttongroups>
+</ui>
