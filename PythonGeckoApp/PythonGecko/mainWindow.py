@@ -730,7 +730,7 @@ class MainWindow(QMainWindow):
             length = len(self.data2plot['yData'][selected])
             xLabel = getXisLabel(xAxisPoint)
             yLabel =  button.text() if 'Loss' in button.text() else button.text()+' Loss'
-            self.data2plot['Dataset'] = self.plot_df
+            self.data2plot['Dataset'] = tempFilteredDF
             self.plotScatter(self.data2plot['xData'],self.data2plot['yData'],xLabel,yLabel,length)
 
     def scComboboxChanged(self):

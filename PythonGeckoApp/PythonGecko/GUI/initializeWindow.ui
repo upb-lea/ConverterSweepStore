@@ -3111,6 +3111,12 @@
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
+          <property name="maximumSize">
+           <size>
+            <width>169</width>
+            <height>33</height>
+           </size>
+          </property>
           <property name="text">
            <string/>
           </property>
@@ -3265,12 +3271,12 @@
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="buttonGroupScatterData"/>
   <buttongroup name="buttonGroupMode"/>
-  <buttongroup name="buttonGroupRangeType"/>
   <buttongroup name="buttonGroupPlotType"/>
+  <buttongroup name="buttonGroupRangeType"/>
+  <buttongroup name="buttonGroupOptMode"/>
   <buttongroup name="buttonGroupPlotMode"/>
   <buttongroup name="buttonGroupTopology"/>
-  <buttongroup name="buttonGroupOptMode"/>
+  <buttongroup name="buttonGroupScatterData"/>
  </buttongroups>
 </ui>
