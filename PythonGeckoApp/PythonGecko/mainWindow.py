@@ -19,23 +19,20 @@ from PyQt5 import QtCore,uic, QtGui
 from PyQt5.QtGui import QIcon, QPixmap
 from thermalParamClass import thermalParamClass
 from collections import defaultdict,Counter
-import pyqtgraph as pg
 import functools
 import re
 import os
 import numpy as np
 import pandas as pd
-#from pandasgui import show
+from pandasgui import show
 from startConnection import startConnection 
 from dataBaseClass import dataBaseClass
 opLabelAppend = ''
 class MainWindow(QMainWindow):
-    invfilepath = r'calc\results.pk'
-    afefilepath = r'calc_AFE\results.pk'
+    invfilepath = r'calc\database.pk'
+    afefilepath = r'calc_AFE\database.pk'
     Tfilepath = r'..\Thermal\params.csv'
     datasheetpath = r'..\Thermal\DatasheetDB.csv'
-    ## Make all plots clickable
-    clickedPen = pg.mkPen('b', width=2)
     igbtList = {'B6':['IG1','IG2'],'NPC':['IG1','IG2','IG3','IG4'],'TNPC':['IG1','IG2','IG3','IG4'],'FC-ANPC':['IG1','IG2','IG3','IG4','IG5','IG6','IG7','IG8']}
     diodeList = {'B6':['D1','D2'],'NPC':['D1','D2','D3','D4','D5','D6'],'TNPC':['D1','D2','D3','D4'],'FC-ANPC':['D1','D2','D3','D4','D5','D6','D7','D8']}
     xDataInvList = {'V_DC':['Load_S','f_s','Load_phi','Datasheet'],'Load_S':['V_DC','f_s','Load_phi','Datasheet'],'f_s':['V_DC','Load_S','Load_phi','Datasheet'],'Load_phi':['V_DC','Load_S','f_s','Datasheet'],'Datasheet':['V_DC','Load_S','f_s','Load_phi']}
@@ -58,7 +55,7 @@ class MainWindow(QMainWindow):
         self.simulateBtn.clicked.connect(self.simulate)
         self.dataBaseWindow = None
         self.thermalWindow = None
-        self.showGSIMS.stateChanged.connect(self.showGSIMSData)
+        self.showGISMS.stateChanged.connect(self.showGISMSData)
         self.tabWidget.currentChanged.connect(self.onChange)
         self.progressBar.hide()
         self.progressBar.reset()
@@ -98,8 +95,10 @@ class MainWindow(QMainWindow):
         self.xDatacomboBox.textActivated.connect(self.replotScatter)
         self.tempSlider.valueChanged.connect(self.updateTempLabel)
         self.tempDispBtn.clicked.connect(self.lockTemp)
+        self.pandasgui = None
         self.sc = {}
         self.themeFlag = False
+        self.isAFEselected = False
         self.PinRangeSelector.hide()
         self.VdcRangeSelector.hide()
         self.SwRangeSelector.hide()
@@ -209,12 +208,12 @@ class MainWindow(QMainWindow):
             TempColumnList = ['Igbt1Temp','Igbt2Temp','Igbt5Temp','Igbt7Temp','D1Temp','D2Temp','D5Temp','D7Temp']  
             if not fileInv:
                 InvOperatingList = ['Topology','Datasheet','V_DC','Load_S','Load_phi','f_s','T_HS','f_out','Status','TransformerLoss']#13
-                columns_list = InvOperatingList+TotalColumnList+TempColumnList+IGBTColumnList+DiodeColumnList + ['_run_id','_pset_id','_calc_dir','_time_utc']
+                columns_list = InvOperatingList+TotalColumnList+TempColumnList+IGBTColumnList+DiodeColumnList + ['_pset_seq','_run_seq','_time_utc','_run_id','_pset_id','_calc_dir','_pset_sha1']
                 df = pd.DataFrame(columns=columns_list)
                 df.to_pickle(self.invfilepath)
             if not fileAfe :
                 AfeOperatingList = ['Topology','Datasheet','V_DC','Mains_S','Mains_phi','f_s','T_HS','f_out','Status','TransformerLoss']
-                columns_list = AfeOperatingList+TotalColumnList+TempColumnList+IGBTColumnList+DiodeColumnList+ ['_run_id','_pset_id','_calc_dir','_time_utc']
+                columns_list = AfeOperatingList+TotalColumnList+TempColumnList+IGBTColumnList+DiodeColumnList+ ['_pset_seq','_run_seq','_time_utc','_run_id','_pset_id','_calc_dir','_pset_sha1']
                 df = pd.DataFrame(columns=columns_list)
                 df.to_pickle(self.afefilepath)
         df_inv = pd.read_pickle(self.invfilepath)
@@ -244,8 +243,16 @@ class MainWindow(QMainWindow):
         self.dataSheetComboBox.insertItems(0,datasheets)
    
     def openPandasGUI(self) :
-        df = pd.read_pickle(self.invfilepath)
-        show(df)
+        try:
+            df= pd.dataframe(None)
+            self.pandasgui.close()
+        except:
+            pass
+        if self.buttonGroupMode.checkedButton().text() == 'Inverter':
+            df = pd.read_pickle(self.invfilepath)
+        else :
+            df = pd.read_pickle(self.afefilepath)
+        self.pandasgui = show(df)
 
     def conjunction(*conditions):
         return functools.reduce(np.logical_and, conditions)
@@ -1048,9 +1055,14 @@ class MainWindow(QMainWindow):
                 raise Exception('Thermal params file not found')
             self.statusWriteLabel.adjustSize()
             saveData = self.saveLossData.isChecked()
-            isAFEselected = self.AFEModeBtn.isChecked()
+            self.isAFEselected = self.AFEModeBtn.isChecked()
+            self.AFEModeBtn.setEnabled(False)
+            self.InverterModeBtn.setEnabled(False)
+            self.saveLossData.setEnabled(False)
+            self.showGISMS.setEnabled(False)
+            self.simulateBtn.setEnabled(False)
             topology = self.buttonGroupTopology.checkedButton().text()
-            createobj = startConnection(paramsContainer,saveData,isAFEselected, topology)
+            createobj = startConnection(paramsContainer,saveData,self.isAFEselected, topology)
             createobj.gismsUpdate.connect(self.updateGSIMS)
             createobj.progressUpdate.connect(self.updateProgressBar)
             createobj.tabsDFUpdate.connect(self.updateTabsDF)
@@ -1085,8 +1097,8 @@ class MainWindow(QMainWindow):
             self.statusWriteLabel.adjustSize()
    
 
-    def showGSIMSData(self):
-        if(self.showGSIMS.isChecked()):
+    def showGISMSData(self):
+        if(self.showGISMS.isChecked()):
             self.gridLayoutWidget.show()
             self.topologyPicture.hide()
         else:
@@ -1103,7 +1115,7 @@ class MainWindow(QMainWindow):
             self.cCurrentOut.setText(str(round(out['I_Filter_C'],2)))
             self.lVltgOut.setText(str(round(out['U_Filter_L'],2)))
             self.invVtlgOut.setText(str(round(out['U_RMS_inv'],2)))
-            if self.AFEModeBtn.isChecked():
+            if self.isAFEselected:
                 self.loadVltgOut.setText(str(round(out['U_Mains_LL'],2)))
                 self.loadZOut.setText(str(complex(round(out['Z_Inv'].real,2),round(out['Z_Inv'].imag,2))))
             else :
@@ -1125,6 +1137,11 @@ class MainWindow(QMainWindow):
             self.tabWidget.setTabEnabled(1,True)
             self.tabWidget.setTabEnabled(2,True)
             self.initializeTabControls(mode) 
+        self.AFEModeBtn.setEnabled(True)
+        self.InverterModeBtn.setEnabled(True)
+        self.saveLossData.setEnabled(True)
+        self.showGISMS.setEnabled(True)
+        self.simulateBtn.setEnabled(True)
         optModeBtn =  self.buttonGroupOptMode.checkedButton()
         plotModeBtn = self.buttonGroupPlotMode.checkedButton()
         self.optChangeDb(optModeBtn,True)
@@ -1141,7 +1158,7 @@ class MainWindow(QMainWindow):
             self.progressBar.setFormat(text)
         else :
             self.progressBar.setValue(value)
-            self.progressBar.setFormat(text +": %v")
+            self.progressBar.setFormat(text +": %v%")
     
 
     def openDataBase(self):

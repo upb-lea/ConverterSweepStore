@@ -6,8 +6,8 @@ import pandas as pd
 import os
 
 class dataBaseClass(QWidget):
-    invfilepath = r'calc\results.pk'
-    afefilepath = r'calc_AFE\results.pk'
+    invfilepath = r'calc\database.pk'
+    afefilepath = r'calc_AFE\database.pk'
     
     def __init__(self, parent=None): 
         super(dataBaseClass,self).__init__(parent)

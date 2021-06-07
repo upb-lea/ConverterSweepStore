@@ -229,7 +229,7 @@
         </widget>
        </item>
        <item row="2" column="1">
-        <widget class="QCheckBox" name="showGSIMS">
+        <widget class="QCheckBox" name="showGISMS">
          <property name="text">
           <string>Show GSIMS</string>
          </property>
@@ -3271,12 +3271,12 @@
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="buttonGroupMode"/>
-  <buttongroup name="buttonGroupPlotType"/>
-  <buttongroup name="buttonGroupRangeType"/>
   <buttongroup name="buttonGroupOptMode"/>
+  <buttongroup name="buttonGroupMode"/>
   <buttongroup name="buttonGroupPlotMode"/>
-  <buttongroup name="buttonGroupTopology"/>
+  <buttongroup name="buttonGroupRangeType"/>
+  <buttongroup name="buttonGroupPlotType"/>
   <buttongroup name="buttonGroupScatterData"/>
+  <buttongroup name="buttonGroupTopology"/>
  </buttongroups>
 </ui>

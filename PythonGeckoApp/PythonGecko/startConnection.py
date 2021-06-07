@@ -597,10 +597,10 @@ class startConnection(QObject):
             # Check if to start the simulation in AFE mode or Inverter mode
             if self.afeMode:
                 mode = 'AFE'
-                df = ps.run(startSim, paramsList, calc_dir='calc_AFE')
+                df = ps.run_local(startSim, paramsList, calc_dir='calc_AFE')
             else :
                 mode = 'Inverter'
-                df = ps.run(startSim, paramsList)
+                df = ps.run_local(startSim, paramsList)
             self.progressUpdate.emit(-1,'Done')
             self.tabsDFUpdate.emit(mode)
             ginst.shutdown()
