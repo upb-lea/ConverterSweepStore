@@ -49,7 +49,7 @@ class MainWindow(QMainWindow):
         super(MainWindow,self).__init__(parent)
         uic.loadUi('GUI\initializeWindow.ui',self)
         _translate = QtCore.QCoreApplication.translate
-        self.setWindowIcon(QIcon('Images\\clienticon.png'))
+        self.setWindowIcon(QIcon('Images\\logo.png'))
         self.setWindowTitle(_translate("MainWindow", "Converter Sweep Store"))
         app.aboutToQuit.connect(self.closeEvent)
         self.simulateBtn.clicked.connect(self.simulate)
