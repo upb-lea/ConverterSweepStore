@@ -3247,36 +3247,36 @@
   <customwidget>
    <class>MplWidget</class>
    <extends>QWidget</extends>
-   <header>mplWidget.h</header>
+   <header>mplwidget.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>RangeSlider</class>
    <extends>QWidget</extends>
-   <header location="global">rangeSlider.h</header>
+   <header>rangeslider.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>CheckableComboBox</class>
    <extends>QComboBox</extends>
-   <header>checkableComboBox.h</header>
+   <header>checkablecombobox.h</header>
   </customwidget>
   <customwidget>
    <class>MplMultiWidget</class>
    <extends>QWidget</extends>
-   <header>mplMultiWidget.h</header>
+   <header>mplmultiwidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="buttonGroupOptMode"/>
+  <buttongroup name="buttonGroupTopology"/>
   <buttongroup name="buttonGroupMode"/>
+  <buttongroup name="buttonGroupOptMode"/>
   <buttongroup name="buttonGroupPlotMode"/>
   <buttongroup name="buttonGroupRangeType"/>
   <buttongroup name="buttonGroupPlotType"/>
   <buttongroup name="buttonGroupScatterData"/>
-  <buttongroup name="buttonGroupTopology"/>
  </buttongroups>
 </ui>

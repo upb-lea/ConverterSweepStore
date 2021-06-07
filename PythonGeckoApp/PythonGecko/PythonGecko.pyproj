@@ -22,7 +22,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="AFEParameters.py" />
-    <Compile Include="checkableComboBox.py">
+    <Compile Include="checkablecombobox.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="dataBaseClass.py">
@@ -30,16 +30,16 @@
     </Compile>
     <Compile Include="GISMSParameters_phi.py" />
     <Compile Include="mainWindow.py" />
-    <Compile Include="mplMultiWidget.py">
+    <Compile Include="mplmultiwidget.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="mplWidget.py">
+    <Compile Include="mplwidget.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="pandasModel.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="rangeSlider.py" />
+    <Compile Include="rangeslider.py" />
     <Compile Include="startConnection.py">
       <SubType>Code</SubType>
     </Compile>
