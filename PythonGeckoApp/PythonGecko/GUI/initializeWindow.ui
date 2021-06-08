@@ -3271,12 +3271,12 @@
  <resources/>
  <connections/>
  <buttongroups>
+  <buttongroup name="buttonGroupScatterData"/>
+  <buttongroup name="buttonGroupPlotMode"/>
   <buttongroup name="buttonGroupTopology"/>
+  <buttongroup name="buttonGroupPlotType"/>
   <buttongroup name="buttonGroupMode"/>
   <buttongroup name="buttonGroupOptMode"/>
-  <buttongroup name="buttonGroupPlotMode"/>
   <buttongroup name="buttonGroupRangeType"/>
-  <buttongroup name="buttonGroupPlotType"/>
-  <buttongroup name="buttonGroupScatterData"/>
  </buttongroups>
 </ui>
