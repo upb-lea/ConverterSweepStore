@@ -85,7 +85,7 @@ present inside Thermal folder.
 ## Debug
 To create a debbugging environment proceed with following steps.
 1. Clone the repository.
-2. Make sure that GeckoCIRCUITS main window can be opened which ensures successful installation of java environment (jdk1.8.0_281).
+2. Make sure that GeckoCIRCUITS main window can be opened which ensures successful installation of java environment (jdk1.8.0_281 or higher).
 3. Ensure the folder path locations as specified. 
 4. Use Visual studio 2019 or similar python IDE's to run in developer mode.
 
