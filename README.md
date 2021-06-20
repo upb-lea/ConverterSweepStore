@@ -65,22 +65,20 @@ Project is created with:
 To run this application, it is necessary first to set up the GeckoCIRCUITS which in turn requires java version 1.8 installation. Once java is installed 
 GeckoCIRCUITS is opened and tested if everything works perfectly. Application internally points to .jar location of the GeckoCIRCUITS inside the folder.
 And so it is atmost important to place the GeckoCIRCUITS folder in the application search path. Also the application uses converter model (.ipes) files
-for perfoming the simulations. These can be found inside the 'PythonGecko' folder under 'InverterModels'.
+for perfoming the simulations. These can be found inside the 'InverterModels' folder within 'PythonGecko' folder.
 The relative path of every folder is as follows:<br/>
 _----Parent Folder------_<br/>
  +_GeckoCIRCUITS_+<br/>
- +_ComponentSCLs_+<br/>
- +_CSweep Store_+<br/>
+ +_ModuleSCLs_+<br/>
+ +_PythonGecko_+<br/>
  +_Thermal_+<br/>
- **_GeckoCIRCUITS_** : Folder is intially empty and hence it is advised to download the GeckoCIRCUITS from wikepedia page. The empty folder should be then replaced 
-with the downloaded folder.<br/>
- **_ComponentSCLs_** : This folder holds the .scl files which will used by the GeckoCIRCUITS tool to load the characteristic curves into every switch of the converter.<br/>
- **_CSweep Store_**  : Folder where the main application .exe file resides along with other required dependancies.<br/>
+ **_GeckoCIRCUITS_** : Folder is intially empty and hence it is advised to download the GeckoCIRCUITS from wikepedia page. The downloaded folder is placed in the same level as PythonGecko folder.<br/>
+ **_ModuleSCLs_** : This folder holds the .scl files which will used by the GeckoCIRCUITS tool to load the characteristic curves into every switch of the converter.<br/>
+ **_PythonGecko_**  : Folder where the main application .exe file resides along with other required dependancies.<br/>
  **_Thermal_**       : It contains two .CSV files 'DatasheetDB.csv' and 'params.csv' which relates the .scl file thermal parameters and switch relations which constitue a datasheet.
  <p>Failure to maintain this order results in the application not finding required model files, component .SCL files or failure to start the GeckoCIRCUITS.
-Currently only 4 Datasheets are created and added to the application. User can created more by him\herself's from the manufacturers datasheet switch
-characteristic curves. From which the .scl files and required thermal parameters are extracted and mapped to each other using 'AddToTransistorDB.py'
-present inside Thermal folder.
+Currently only 4 Datasheets are created for individual topologies and added to the application. User can created more by him\herself's from the manufacturers datasheet. The switch and loss energy
+characteristic curves are extrated and are converterd into .scl file format. These files along with required thermal parameters are extracted and mapped to each other using 'AddToTransistorDB.py' or using 'Thermal parameters' graphical dialog developed within the application.
 
 ## Debug
 To create a debbugging environment proceed with following steps.
@@ -101,7 +99,7 @@ To-do list:
 * A possibilty to establish connection with the LEA transistor database can serve a good future scope of the application.
 
 ## Status
-Project is: _Testing Phase_
+Project is: _Finished_
 
 ## Inspiration
 The application is an automated tool to carry out steady state simulations, store the results and make comparison for choosing a particular 
